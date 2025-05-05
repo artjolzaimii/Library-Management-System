@@ -23,13 +23,13 @@
       </li>
 
       <!-- User Dropdown -->
-      <li class="nav-item navbar-dropdown dropdown-user dropdown">
+      <li class="nav-item navbar-dropdown dropdown-user dropdown" style="z-index: 1050;">
         <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown">
           <div class="avatar avatar-online">
             <img src="../assets/img/avatars/1.png" alt class="w-px-40 h-auto rounded-circle" />
           </div>
         </a>
-        <ul class="dropdown-menu dropdown-menu-end">
+        <ul class="dropdown-menu dropdown-menu-end" style="z-index: 1050;">
           <li>
             <a class="dropdown-item" href="#">
               <div class="d-flex">
@@ -45,7 +45,7 @@
               </div>
             </a>
           </li>
-          <li><div class="dropdown-divider"></div></li>
+          <li><div class="dropdown-divider" ></div></li>
           <li><a class="dropdown-item" href="#"><i class="bx bx-user me-2"></i>My Profile</a></li>
           <li><a class="dropdown-item" href="#"><i class="bx bx-cog me-2"></i>Settings</a></li>
           <li><a class="dropdown-item" href="#"><i class="bx bx-credit-card me-2"></i>Billing<span class="badge badge-center rounded-pill bg-danger w-px-20 h-px-20 ms-1">4</span></a></li>

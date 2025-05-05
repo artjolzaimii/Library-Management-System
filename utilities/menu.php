@@ -18,9 +18,6 @@
   <link rel="stylesheet" href="../assets/css/demo.css" />
   <link rel="stylesheet" href="../assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css" />
 
-  <!-- JS Helpers -->
-  <script src="../assets/vendor/js/helpers.js"></script>
-  <script src="../assets/js/config.js"></script>
 </head>
 
 <body>
@@ -28,7 +25,7 @@
   <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
     <div class="app-brand demo">
       <a href="index.php" class="app-brand-link">
-        <span class="app-brand-text demo menu-text fw-bolder ms-2">BookNoW</span>
+        <span class="app-brand-text demo menu-text fw-bolder ms-2">BookNow</span>
       </a>
       <a href="javascript:void(0);" class="layout-menu-toggle menu-link text-large ms-auto d-block d-xl-none">
         <i class="bx bx-chevron-left bx-sm align-middle"></i>
@@ -88,5 +85,18 @@
       </li>
     </ul>
   </aside>
+  
+  <!-- JS Helpers -->
+  <script src="../assets/vendor/js/helpers.js"></script>
+  <script src="../assets/js/config.js"></script>
+  <script src="../assets/vendor/libs/jquery/jquery.js"></script>
+  <script src="../assets/vendor/libs/popper/popper.js"></script>
+  <script src="../assets/vendor/js/bootstrap.js"></script>
+  <script src="../assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
+
+  <script src="../assets/vendor/js/menu.js"></script> 
+
+  <!-- Main JS -->
+  <script src="../assets/js/main.js"></script>
 </body>
 </html>
