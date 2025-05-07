@@ -24,10 +24,7 @@ CREATE TABLE book(
     nr_pages INT,
     description TEXT,
     format varchar(20),
-    image_path VARCHAR(255),
-    inventory_quantity INT,
-    price DECIMAL(10,2),
-    book_condition varchar(20)
+    image_path VARCHAR(255)
 );
 
 CREATE TABLE author (
@@ -55,3 +52,25 @@ CREATE TABLE book_genre(
     FOREIGN KEY (book_id) REFERENCES book(book_id) ON DELETE CASCADE   
 );
 
+create table eBook(
+	ebook_id INT AUTO_INCREMENT PRIMARY KEY,
+    book_id INT,
+    book_path varchar(255),
+    FOREIGN KEY (book_id) REFERENCES book(book_id)
+);
+
+CREATE TABLE sale_book(
+	sale_book_id INT AUTO_INCREMENT PRIMARY KEY,
+    book_id INT,
+    inventory INT,
+    price DECIMAL(10,2),
+    FOREIGN KEY (book_id) REFERENCES book(book_id)
+);
+
+CREATE TABLE borrow_book(
+	borrow_book_id INT AUTO_INCREMENT PRIMARY KEY,
+    book_id INT,
+    inventory INT,
+    book_condition varchar(20),
+    FOREIGN KEY (book_id) REFERENCES book(book_id)
+)
