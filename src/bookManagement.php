@@ -91,11 +91,14 @@
                                       $a_result = mysqli_query($conn, $a_query);
                                       while ($author = mysqli_fetch_assoc($a_result)) {
                                         echo "<li class='avatar avatar-xs pull-up'>
-                                                <a data-bs-toggle='tooltip' data-bs-html='true' 
-                                                   data-bs-original-title=\"<i class='bx bx-user'></i> <span>{$author['full_name']}</span>\">
+                                                <a href='#' 
+                                                   data-bs-toggle='tooltip' 
+                                                   data-bs-html='true' 
+                                                   data-bs-title=\"<i class='bx bx-user'></i> <span>{$author['full_name']}</span>\">
                                                   <img src='https://i.pinimg.com/564x/35/bc/af/35bcafd19a9b4557b972ccf96cc34a6c.jpg' alt='Avatar' class='rounded-circle'>
                                                 </a>
                                               </li>";
+
                                       }
                                       echo "</ul></td>";
                         
@@ -115,17 +118,17 @@
                         
                                       // Actions
                                       echo "<td>
-                                              <button type='button' class='btn rounded-pill btn-icon btn-outline-primary'>
-                                                <span class='bx bx-show'></span>
-                                              </button>
-                                              <button type='button' class='btn rounded-pill btn-icon btn-outline-primary'>
-                                                <span class='bx bx-pencil'></span>
-                                              </button>
-                                              <button type='button' class='btn rounded-pill btn-icon btn-outline-primary'>
-                                                <span class='bx bx-trash'></span>
-                                              </button>
-                                            </td>
-                                            </tr>";
+                                      <button type='button' class='btn rounded-pill btn-icon btn-outline-primary'>
+                                        <span class='bx bx-show'></span>
+                                      </button>
+                                      <button type='button' class='btn rounded-pill btn-icon btn-outline-warning'>
+                                        <span class='bx bx-pencil'></span>
+                                      </button>
+                                      <button type='button' class='btn rounded-pill btn-icon btn-outline-danger'>
+                                        <span class='bx bx-trash'></span>
+                                      </button>
+                                    </td>
+                                    </tr>";
                                     endwhile;
                                   ?>
                                 </tbody>
@@ -160,7 +163,14 @@
           row.style.display = text.includes(filter) ? '' : 'none';
         });
       });
-    }
+    };
+    
+      document.addEventListener('DOMContentLoaded', function () {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        tooltipTriggerList.map(function (tooltipTriggerEl) {
+          return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
+      });
 </script>
 
 </body>

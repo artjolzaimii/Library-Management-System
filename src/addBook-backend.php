@@ -42,10 +42,10 @@
     
     // Validate format-dependent fields
     if ($format === 'For Sale') {
-        if (!isset($_POST['inventorySale']) || trim($_POST['inventory']) === "" || !ctype_digit($_POST['inventory'])) {
+        if (!isset($_POST['inventorySale']) || trim($_POST['inventorySale']) === "" || !ctype_digit($_POST['inventorySale'])) {
             $errors['inventory'] = "Inventory must be a valid number.";
         } else {
-            $inventory = filterInput($conn, $_POST['inventory']);
+            $inventory = filterInput($conn, $_POST['inventorySale']);
         }
     
         if (!isset($_POST['price']) || !is_numeric($_POST['price'])) {

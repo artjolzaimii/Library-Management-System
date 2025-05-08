@@ -62,23 +62,23 @@
         </a>
         <ul class="menu-sub">
           <li class="menu-item">
-            <a href="author_management.php" class="menu-link">
+            <a href="authorManagement.php" class="menu-link">
               <div>Author Management</div>
             </a>
           </li>
           <li class="menu-item">
-            <a href="genre_management.php" class="menu-link">
+            <a href="genreManagement.php" class="menu-link">
               <div>Genre Management</div>
             </a>
           </li>
           <li class="menu-item">
-            <a href="add_book.php" class="menu-link">
+            <a href="addBook.php" class="menu-link">
               <div>Add Book</div>
             </a>
           </li>
           <li class="menu-item">
-            <a href="edit_delete_book.php" class="menu-link">
-              <div>Edit/Delete</div>
+            <a href="bookManagement.php" class="menu-link">
+              <div>Book Management</div>
             </a>
           </li>
         </ul>
