@@ -6,7 +6,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Add Book</title>
+  <title>Stock Management</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
   <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet"/>
 </head>
@@ -77,19 +77,20 @@
                           $result = mysqli_query($conn, $query);
 
                           while ($row = mysqli_fetch_array($result)):
-                            if (($row['sale_inventory'] <= 5 && $row['format']=='For Sale')|| ($row['borrow_inventory'] <= 2 && $row['format']=='For Borrow')) { 
+                            $modalId = "modalCenter_" . $row['book_id'];
+                        
+                            if (($row['sale_inventory'] <= 5 && $row['format'] == 'For Sale') || 
+                                ($row['borrow_inventory'] <= 2 && $row['format'] == 'For Borrow')) { 
                                 echo "<tr class='table-danger'>"; 
-                            } 
-                            else if ($row['sale_inventory'] <= 10  && $row['format']=='For Sale') { 
+                            } else if ($row['sale_inventory'] <= 10  && $row['format'] == 'For Sale') { 
                                 echo "<tr class='table-warning'>"; 
-                            } 
-                            else { 
+                            } else { 
                                 echo "<tr>"; 
                             }
-                            
+                        
                             echo "<td>{$row['isbn']}</td>
-                                    <td>{$row['title']}</td>";
-
+                                  <td>{$row['title']}</td>";
+                        
                             // Authors
                             echo "<td><ul class='list-unstyled users-list m-0 avatar-group d-flex align-items-center'>";
                             $a_query = "SELECT author.full_name FROM author 
@@ -97,15 +98,15 @@
                                         WHERE book_author.book_id = '{$row['book_id']}'";
                             $a_result = mysqli_query($conn, $a_query);
                             while ($author = mysqli_fetch_assoc($a_result)) {
-                              echo "<li class='avatar avatar-xs pull-up'>
-                                      <a data-bs-toggle='tooltip' data-bs-html='true' 
-                                         data-bs-original-title=\"<i class='bx bx-user'></i> <span>{$author['full_name']}</span>\">
-                                        <img src='https://i.pinimg.com/564x/35/bc/af/35bcafd19a9b4557b972ccf96cc34a6c.jpg' alt='Avatar' class='rounded-circle'>
-                                      </a>
-                                    </li>";
+                                echo "<li class='avatar avatar-xs pull-up'>
+                                        <a data-bs-toggle='tooltip' data-bs-html='true' 
+                                           data-bs-original-title=\"<i class='bx bx-user'></i> <span>{$author['full_name']}</span>\">
+                                          <img src='https://i.pinimg.com/564x/35/bc/af/35bcafd19a9b4557b972ccf96cc34a6c.jpg' alt='Avatar' class='rounded-circle'>
+                                        </a>
+                                      </li>";
                             }
                             echo "</ul></td>";
-
+                        
                             // Genres
                             echo "<td>";
                             $g_query = "SELECT genres.name FROM genres 
@@ -113,13 +114,11 @@
                                         WHERE book_genre.book_id = '{$row['book_id']}'";
                             $g_result = mysqli_query($conn, $g_query);
                             while ($genre = mysqli_fetch_assoc($g_result)) {
-                              echo "<span class='badge bg-label-primary me-1'>{$genre['name']}</span>";
+                                echo "<span class='badge bg-label-primary me-1'>{$genre['name']}</span>";
                             }
                             echo "</td>";
-
-                            // Format
-
-                            // Inventory
+                        
+                            // Format and Inventory
                             if ($row['format'] == 'For Sale') {
                                 echo "<td><span class='badge rounded-pill bg-label-primary'>For Sale</span></td>";
                                 echo "<td><span class='badge rounded-pill bg-label-info'>" . ($row['sale_inventory'] ?? 0) . "</span></td>";
@@ -127,15 +126,58 @@
                                 echo "<td><span class='badge rounded-pill bg-label-secondary'>For Borrow</span></td>";
                                 echo "<td><span class='badge rounded-pill bg-label-info'>" . ($row['borrow_inventory'] ?? 0) . "</span></td>";
                             }
-                            
-
-                            // Actions
+                        
+                            // Restock Button
                             echo "<td>
-                                    <button type=\"button\" class=\"btn btn-outline-primary\"><i class=\"bx bx-layer-plus\"></i>Restock</button>
+                                    <button type=\"button\" class=\"btn btn-outline-primary\" data-bs-toggle=\"modal\" data-bs-target=\"#$modalId\">
+                                      <i class=\"bx bx-layer-plus\"></i> Restock
+                                    </button>
                                   </td>
-                                  </tr>";
-                          endwhile;
+                                </tr>";
+                        
+                            // Modal HTML
+                            echo "<div class=\"modal fade\" id=\"$modalId\" tabindex=\"-1\" aria-hidden=\"true\">
+                                    <div class=\"modal-dialog modal-dialog-centered\" role=\"document\">
+                                      <div class=\"modal-content\">
+                                        <form method=\"POST\" action=\"restock_handler.php\">
+                                          <div class=\"modal-header\">
+                                            <h5 class=\"modal-title\">Book Restock</h5>
+                                            <button type=\"button\" class=\"btn-close\" data-bs-dismiss=\"modal\" aria-label=\"Close\"></button>
+                                          </div>
+                                          <div class=\"modal-body\">
+                                            <input type=\"hidden\" name=\"book_id\" value=\"{$row['book_id']}\">
+                                            <input type=\"hidden\" name=\"format\" value=\"{$row['format']}\">
+                        
+                                            <div class=\"mb-3\">
+                                              <label class=\"form-label\">ISBN</label>
+                                              <input type=\"text\" class=\"form-control\" value=\"{$row['isbn']}\" disabled>
+                                            </div>
+                                            <div class=\"mb-3\">
+                                              <label class=\"form-label\">Title</label>
+                                              <input type=\"text\" class=\"form-control\" value=\"{$row['title']}\" disabled>
+                                            </div>
+                                            <div class=\"mb-3\">
+                                              <label class=\"form-label\">Inventory Items</label>";
+                                              if ($row['format'] == 'For Sale') {
+                                                  echo "<input type=\"number\" name=\"inventory\" class=\"form-control\" value=\"{$row['sale_inventory']}\" min=\"0\" required>";
+                                              } else {
+                                                  echo "<input type=\"number\" name=\"inventory\" class=\"form-control\" value=\"{$row['borrow_inventory']}\" min=\"0\" required>";
+                                              }
+                                          echo " </div>
+                                          </div>
+                                          <div class=\"modal-footer\">
+                                            <button type=\"button\" class=\"btn btn-outline-secondary\" data-bs-dismiss=\"modal\">Close</button>
+                                            <button type=\"submit\" class=\"btn btn-primary\">Restock</button>
+                                          </div>
+                                        </form>
+                                      </div>
+                                    </div>
+                                  </div>";
+                        endwhile;
+
+                          
                         ?>
+                        
                       </tbody>
                     </table>
                   </div>
