@@ -51,7 +51,7 @@
 
       <!-- User Management -->
       <li class="menu-item">
-        <a href="user_management.php" class="menu-link">
+        <a href="userManagement.php" class="menu-link">
           <i class="menu-icon tf-icons bx bx-user"></i>
           <div>User Management</div>
         </a>
@@ -70,7 +70,7 @@
             </a>
           </li>
           <li class="menu-item">
-            <a href="genre_management.php" class="menu-link">
+            <a href="genreManagement.php" class="menu-link">
               <div>Genre Management</div>
             </a>
           </li>
