@@ -171,26 +171,25 @@ if (isset($_GET['delete'])) {
   <script src="../assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
   <script src="../assets/vendor/js/menu.js"></script>
   <script src="../assets/js/main.js"></script>
-
   <script>
-    // Get the form and error message elements
-    const genreForm = document.getElementById('genreForm');
-    const genreNameField = document.getElementById('genreName');
-    const errorMessage = document.getElementById('error-message');
+  document.getElementById('searchBar').addEventListener("keyup", () => {
+    filterTables();
+  });
 
-    // Add event listener to the form submission
-    genreForm.addEventListener('submit', function (event) {
-      // Check if the Genre Name field is empty
-      if (genreNameField.value.trim() === "") {
-        // Prevent form submission
-        event.preventDefault();
-        // Show error message
-        errorMessage.style.display = 'block';
-      } else {
-        // Hide error message if form is valid
-        errorMessage.style.display = 'none';
-      }
+  function filterTables() {
+    const filter = document.getElementById("searchBar").value.toLowerCase();
+    const allTables = document.querySelectorAll("table");
+
+    allTables.forEach(table => {
+      const rows = table.querySelectorAll("tbody tr");
+      rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(filter) ? '' : 'none';
+      });
     });
-  </script>
+  }
+  
+  
+</script>
 </body>
 </html>

@@ -271,7 +271,7 @@ $result = $conn->query($query);
 
   function filterTables() {
     const filter = document.getElementById("searchBar").value.toLowerCase();
-    const allTables = document.querySelectorAll(".tab-content table");
+    const allTables = document.querySelectorAll("table");
 
     allTables.forEach(table => {
       const rows = table.querySelectorAll("tbody tr");
