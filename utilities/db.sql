@@ -12,6 +12,7 @@ CREATE TABLE users (
     address TEXT,
     username VARCHAR(50),
     password TEXT,
+    image_path VARCHAR(255),
     role VARCHAR(20)
 );
 
@@ -32,6 +33,7 @@ CREATE TABLE author (
     full_name VARCHAR(100) NOT NULL,
     bio TEXT,
     nationality VARCHAR(50),
+    image_path varchar(255),
     birth_year YEAR,
     death_year YEAR
 );
@@ -73,4 +75,4 @@ CREATE TABLE borrow_book(
     inventory INT,
     book_condition varchar(20),
     FOREIGN KEY (book_id) REFERENCES book(book_id)
-);
+)
