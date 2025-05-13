@@ -72,12 +72,46 @@
                                 </thead>
                                 <tbody class="table-border-bottom-0">
                                   <?php
-                                    $query = "SELECT `book_id`, `isbn`, `title` FROM `book` WHERE `format` = ?";
-                                    $stmt = $conn->prepare($query);
+                                  
+                                    $perPage=1;
+                                    
+                                    $queryForAll = "SELECT `book_id`, `isbn`, `title` FROM `book` WHERE `format` = ?";
+                                    
+                                    $stmt = $conn->prepare($queryForAll);
                                     $stmt->bind_param("s", $formatName);
                                     $stmt->execute();
                                     $result = $stmt->get_result();
                         
+                                    $allResults = $result->num_rows;
+                                    $nrPages = ceil($allResults / $perPage);
+                                    
+                                    if (isset($_GET['page']) && is_numeric($_GET['page']))
+                                    	{
+                                    		$currentPage = $_GET['page'];
+                                    		
+                                    		if ($currentPage > 0 && $currentPage <= $nrPages)
+                                    		{
+                                    			$startPos = ($currentPage -1) * $perPage;
+                                    			$endPos = $startPos + $perPage; 
+                                    		}
+                                    		else
+                                    		{
+                                    			$startPos = 0;
+                                    			$endPos = $perPage; 
+                                    		}		
+                                    	}
+                                    	else
+                                    	{
+                                    		$startPos = 0;
+                                    		$endPos = $perPage; 
+                                    	}
+                                          
+                                    $queryPerPage = "SELECT `book_id`, `isbn`, `title` FROM `book` WHERE `format` = ? LIMIT ?, ?";                                    
+                                    $stmt = $conn->prepare($queryPerPage);
+                                    $stmt->bind_param("sii", $formatName,$startPos,$perPage);
+                                    $stmt->execute();
+                                    $result = $stmt->get_result();
+                                    
                                     while ($row = $result->fetch_assoc()):
                                       echo "<tr>
                                               <td>{$row['isbn']}</td>
@@ -134,9 +168,45 @@
                                 </tbody>
                               </table>
                             </div>
+                                                              <!-- Pagination-->
+                            <div class="card-body">
+                              <div class="row">
+                                <div class="col">
+                                  <div class="demo-inline-spacing">
+                                    <!-- Basic Pagination -->
+                                    <nav aria-label="Page navigation">
+                                      <ul class="pagination">
+                                  `      <li class="page-item first">
+                                          <a class="page-link" href="bookManagement.php?page=1"><i class="tf-icon bx bx-chevrons-left"></i></a>
+                                        </li>
+                                        <li class="page-item prev">
+                                          <a class="page-link" href="bookManagement.php?page=<?php echo max(1, $currentPage - 1); ?>"><i class="tf-icon bx bx-chevron-left"></i></a>
+                                        </li>
+                                        <?php 
+                                          
+                                          for($i=1;$i<=$nrPages;$i++){
+                                            echo "<li class='page-item " . ($currentPage == $i ? "active" : "") . "'>
+                                                    <a class='page-link' href='bookManagement.php?page=$i'>$i</a>
+                                                  </li>"; 
+                                          }
+                                        ?>
+                                        <li class="page-item next">
+                                          <a class="page-link" href="bookManagement.php?page=<?php echo min($nrPages, $currentPage + 1); ?>"><i class="tf-icon bx bx-chevron-right"></i></a>
+                                        </li>
+                                        <li class="page-item last">
+                                          <a class="page-link" href="bookManagement.php?page=<?php echo $nrPages; ?>"><i class="tf-icon bx bx-chevrons-right"></i></a>
+                                        </li>
+                                      </ul>
+    
+                                    </nav>
+                                    <!--/ Basic Pagination -->
+                                  </div>
+                                </div>
+                              </div>
+                            </div>  
                           </div>
-                        <?php endforeach; ?>
-
+                          
+                        <?php endforeach; ?>        
                       </div>
                     </div>
                   </div>
