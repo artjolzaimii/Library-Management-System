@@ -51,10 +51,22 @@
 
       <!-- User Management -->
       <li class="menu-item">
-        <a href="user_management.php" class="menu-link">
-          <i class="menu-icon tf-icons bx bx-user"></i>
+        <a href="javascript:void(0);" class="menu-link menu-toggle">
+        <i class="menu-icon tf-icons bx bx-user"></i>
           <div>User Management</div>
         </a>
+        <ul class="menu-sub">
+          <li class="menu-item">
+            <a href="userManagement.php" class="menu-link">
+              <div>View Users</div>
+            </a>
+          </li>
+          <li class="menu-item">
+            <a href="addUser.php" class="menu-link">
+              <div>Add User</div>
+            </a>
+          </li>
+        </ul>
       </li>
 
       <!-- Book Management -->
@@ -65,24 +77,62 @@
         </a>
         <ul class="menu-sub">
           <li class="menu-item">
-            <a href="author_management.php" class="menu-link">
+            <a href="authorManagement.php" class="menu-link">
               <div>Author Management</div>
             </a>
           </li>
           <li class="menu-item">
-            <a href="genre_management.php" class="menu-link">
+            <a href="genreManagement.php" class="menu-link">
               <div>Genre Management</div>
             </a>
           </li>
           <li class="menu-item">
-            <a href="add_book.php" class="menu-link">
+            <a href="addBook.php" class="menu-link">
               <div>Add Book</div>
             </a>
           </li>
           <li class="menu-item">
             <a href="edit_delete_book.php" class="menu-link">
-              <div>Edit/Delete</div>
+              <div>Edit/Delete Book</div>
             </a>
+          </li>
+
+
+        </ul>
+      </li>
+            <!-- Borrowed Books -->
+      <li class="menu-item">
+        <a href="javascript:void(0);" class="menu-link menu-toggle">
+	      <i class="menu-icon tf-icons bx bx-book-reader"></i>
+
+          <div>Borrowed Books</div>
+        </a>
+        <ul class="menu-sub">
+                    <li class="menu-item">
+            <a href="borrow_book.php" class="menu-link">
+              <div>Borrow a Book</div>
+            </a>
+          </li>
+          <li class="menu-item">
+            <a href="" class="menu-link">
+              <div>Track Borrowed Books</div>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <!-- Generate Report -->
+      <li class="menu-item">
+        <a href="javascript:void(0);" class="menu-link menu-toggle">
+          <i class="menu-icon tf-icons bx bx-file"></i>
+          <div>Reports</div>
+        </a>
+        <ul class="menu-sub">
+          <li class="menu-item">
+            <a href="generateReport.php" class="menu-link">
+              <div>Generate Report</div>
+            </a>
+          </li>
+        </ul>
           </li>
         </ul>
       </li>

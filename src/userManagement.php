@@ -62,8 +62,7 @@ $result = $conn->query($query);
                     <th>Full Name</th>
                     <th>Email</th>
                     <th>Phone</th>
-                    <th>Username</th>
-                   
+                    <th>Username</th>                   
                     <th>Role</th>
                     <th>Actions</th>
                   </tr>
@@ -113,19 +112,14 @@ $result = $conn->query($query);
                                             <label for='username' class='form-label'>Username</label>
                                             <input type='text' class='form-control' id='username' name='username' value='" . $row['username'] . "' required />
                                         </div>
-                                          <div class='mb-3'>
-                                            <label for='password' class='form-label'>Password</label>
-                                            <input type='text' class='form-control' id='password' name='password' value='" . $row['password'] . "' required />
-                                        </div>
-                                        <div class='mb-3'>
-                                            <label for='password' class='form-label'>Password</label>
-                                            <input type='password' class='form-control' id='password' name='password' placeholder='Enter new password (leave empty to keep current)' />
-                                        </div>
+                                        ";
+                                        //Not necessary to edit role
+                                        echo"
                                         <div class='mb-3'>
                                             <label for='role' class='form-label'>Role</label>
                                             <select class='form-select' id='role' name='role' required>
-                                                <option value='admin' " . ($row['role'] == 'library Manager' ? 'selected' : '') . ">Library Manager</option>
-                                                <option value='user' " . ($row['role'] == 'user' ? 'selected' : '') . ">User</option>
+                                                <option value='Librarian' " . ($row['role'] == 'librarian' ? 'selected' : '') . ">Library Manager</option>
+                                                <option value='User' " . ($row['role'] == 'User' ? 'selected' : '') . ">User</option>
                                             </select>
                                         </div>
                                         <button type='submit' class='btn btn-primary'>Update User</button>

@@ -20,7 +20,7 @@ if (isset($_GET['generateReport'])) {
 
     $query2 = "SELECT b.title, SUM(o.quantity) AS total_qty 
                FROM orders o 
-               JOIN books b ON o.book_id = b.book_id 
+               JOIN book b ON o.book_id = b.book_id 
                GROUP BY o.book_id 
                ORDER BY total_qty DESC 
                LIMIT 1";
@@ -33,7 +33,7 @@ if (isset($_GET['generateReport'])) {
     mysqli_query($conn, $insert);
 
     // Redirect to clean the URL
-    header("Location: sales_report.php");
+    header("Location: generateReport.php");
     exit;
 }
 ?>
@@ -77,14 +77,15 @@ if (isset($_GET['generateReport'])) {
                         <button id="generateReportBtn" class="btn btn-primary">Generate Report</button>
                     </div>
                     <div class="card-body">
+                        
                         <table class="table table-bordered">
                             <thead class="table-light">
                                 <tr>
                                     <th>#</th>
                                     <th>Date</th>
-                                    <th>Total Sold</th>
+                                    <th>Total Books Sold</th>
                                     <th>Most Sold Book</th>
-                                    <th>Revenue</th>
+                                    <th>Total Revenue</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -92,177 +93,51 @@ if (isset($_GET['generateReport'])) {
                                 <?php
                                 $reportQuery = "SELECT * FROM sales_reports ORDER BY report_date DESC";
                                 $reportResult = mysqli_query($conn, $reportQuery);
+
                                 if ($reportResult && mysqli_num_rows($reportResult) > 0) {
                                     while ($report = mysqli_fetch_assoc($reportResult)) {
                                         echo "<tr>
-                                                <td>{$report['id']}</td>
-                                                <td>{$report['report_date']}</td>
-                                                <td>{$report['total_books_sold']}</td>
-                                                <td>" . ($report['most_sold_book']) . "</td>
-                                                <td>$" . number_format($report['total_revenue'], 2) . "</td>
-                                                <td>
-                                                <button class='btn btn-sm btn-info' data-bs-toggle='modal' data-bs-target='#reportModal{$report['id']}'>View</button>
-                                                <a href='generateReport.php?delete_id={$report['id']}' class='btn btn-sm btn-danger' onclick='return confirm('Are you sure you want to delete this user?');'>Delete</a>
-                                              </td>";
-                                        echo "</tr>";
-
-
-                                        // Modal for each saved report
-                                        echo "
-                                        <div class='modal fade' id='reportModal{$report['id']}' aria-hidden='true'>
-                                          <div class='modal-dialog'>
-                                            <div class='modal-content'>
-                                              <div class='modal-header'>
-                                                <h5 class='modal-title'>Sales Report - {$report['report_date']}</h5>
-                                                <button type='button' class='btn-close' data-bs-dismiss='modal'></button>
-                                              </div>
-                                              <div class='modal-body'>
-                                                <p><strong>Report ID:</strong> {$report['id']}</p>
-                                                <p><strong>Total Books Sold:</strong> {$report['total_books_sold']}</p>
-                                                <p><strong>Most Sold Book:</strong> " . ($report['most_sold_book']) . "</p>
-                                                <p><strong>Total Revenue:</strong> $" . number_format($report['total_revenue'], 2) . "</p>
-                                                <p><strong>From Date:</strong> {$report['start_date']}</p>
-                                                <p><strong>To Date:</strong> {$report['end_date']}</p>
-                                              </div>
-                                              <div class='modal-footer'>
-                                                <button type='button' class='btn btn-secondary' data-bs-dismiss='modal'>Close</button>
-                                              </div>
-                                            </div>
-                                          </div>
-                                        </div>";
+                                            <td>{$report['id']}</td>
+                                            <td>{$report['report_date']}</td>
+                                            <td>{$report['total_books_sold']}</td>
+                                            <td>" . htmlspecialchars($report['most_sold_book']) . "</td>
+                                            <td>$" . number_format($report['total_revenue'], 2) . "</td>
+                                            <td>
+                                                <a href='generateReport.php?delete_id={$report['id']}' 
+                                                   class='btn btn-sm btn-danger' 
+                                                   onclick='return confirm(\"Are you sure you want to delete this report?\");'>
+                                                   Delete
+                                                </a>
+                                            </td>
+                                        </tr>";
                                     }
                                 } else {
-                                    echo "<tr><td colspan='6' class='text-center'>No reports yet</td></tr>";
+                                    echo "<tr><td colspan='6' class='text-center'>No reports available</td></tr>";
                                 }
                                 ?>
                             </tbody>
                         </table>
                     </div>
                 </div>
-
-                <!-- Sales Report Modal -->
-                <div class="modal fade" id="salesReportModal" tabindex="-1" aria-labelledby="salesReportModalLabel" aria-hidden="true">
-                    <div class="modal-dialog modal-lg">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="salesReportModalLabel">Sales Report Summary</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-                                <?php
-                                $total_books_query = "SELECT SUM(quantity) AS total_books FROM orders";
-                                $total_books_result = mysqli_query($conn, $total_books_query);
-                                $total_books = mysqli_fetch_assoc($total_books_result)['total_books'] ?? 0;
-
-                                $revenue_query = "SELECT SUM(total_amount) AS total_revenue FROM orders";
-                                $revenue_result = mysqli_query($conn, $revenue_query);
-                                $total_revenue = mysqli_fetch_assoc($revenue_result)['total_revenue'] ?? 0;
-
-                                $top_book_query = "SELECT b.title, SUM(o.quantity) AS total_sold 
-                                                    FROM orders o
-                                                    JOIN books b ON o.book_id = b.book_id
-                                                    GROUP BY o.book_id 
-                                                    ORDER BY total_sold DESC 
-                                                    LIMIT 1";
-                                $top_book_result = mysqli_query($conn, $top_book_query);
-                                $top_book_row = mysqli_fetch_assoc($top_book_result);
-                                $top_book = $top_book_row['title'] ?? 'N/A';
-                                $top_book_sold = $top_book_row['total_sold'] ?? 0;
-                                ?>
-                                <div class="row">
-                                    <div class="col-md-4">
-                                        <div class="card text-center">
-                                            <div class="card-body">
-                                                <h6 class="card-title">Total Books Sold</h6>
-                                                <p class="card-text fs-4 fw-bold"><?= ($total_books) ?></p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="card text-center">
-                                            <div class="card-body">
-                                                <h6 class="card-title">Total Revenue</h6>
-                                                <p class="card-text fs-4 fw-bold">$<?= number_format($total_revenue, 2) ?></p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="card text-center">
-                                            <div class="card-body">
-                                                <h6 class="card-title">Most Sold Book</h6>
-                                                <p class="card-text fs-5"><?= htmlspecialchars($top_book) ?></p>
-                                                <small><?= htmlspecialchars($top_book_sold) ?> copies sold</small>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
         </div>
     </div>
 </div>
 
-  <!-- Scripts -->
-  <script src="../assets/vendor/libs/jquery/jquery.js"></script>
-  <script src="../assets/vendor/libs/popper/popper.js"></script>
-  <script src="../assets/vendor/js/bootstrap.js"></script>
-  <script src="../assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
-  <script src="../assets/vendor/js/menu.js"></script>
-  <script src="../assets/js/main.js"></script>
+<!-- Scripts -->
+<script src="../assets/vendor/libs/jquery/jquery.js"></script>
+<script src="../assets/vendor/libs/popper/popper.js"></script>
+<script src="../assets/vendor/js/bootstrap.js"></script>
+<script src="../assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
+<script src="../assets/vendor/js/menu.js"></script>
+<script src="../assets/js/main.js"></script>
+
 <script>
-document.getElementById("generateReportBtn").addEventListener("click", function () {
-    fetch("save_report.php", { method: "POST" })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                const table = document.querySelector("table tbody");
-                const newRow = document.createElement("tr");
-                newRow.innerHTML = `
-                    <td>${data.report.id}</td>
-                    <td>${data.report.report_date}</td>
-                    <td>${data.report.total_books_sold}</td>
-                    <td>${data.report.most_sold_book}</td>
-                    <td>$${parseFloat(data.report.total_revenue).toFixed(2)}</td>
-                    <td><button class='btn btn-sm btn-info' data-bs-toggle='modal' data-bs-target='#reportModal${data.report.id}'>View</button></td>
-                `;
-                table.prepend(newRow);
-
-                const modalHTML = `
-                <div class='modal fade' id='reportModal${data.report.id}' tabindex='-1' aria-hidden='true'>
-                    <div class='modal-dialog'>
-                        <div class='modal-content'>
-                            <div class='modal-header'>
-                                <h5 class='modal-title'>Sales Report - ${data.report.report_date}</h5>
-                                <button type='button' class='btn-close' data-bs-dismiss='modal'></button>
-                            </div>
-                            <div class='modal-body'>
-                                <p><strong>Total Books Sold:</strong> ${data.report.total_books_sold}</p>
-                                <p><strong>Most Sold Book:</strong> ${data.report.most_sold_book}</p>
-                                <p><strong>Total Revenue:</strong> $${parseFloat(data.report.total_revenue).toFixed(2)}</p>
-                            </div>
-                            <div class='modal-footer'>
-                                <button type='button' class='btn btn-secondary' data-bs-dismiss='modal'>Close</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>`;
-                document.body.insertAdjacentHTML('beforeend', modalHTML);
-
-                const reportModal = new bootstrap.Modal(document.getElementById(`reportModal${data.report.id}`));
-                reportModal.show();
-            } else {
-                alert("Failed to generate report.");
-            }
-        });
+document.getElementById('generateReportBtn').addEventListener('click', function() {
+    window.location.href = 'generateReport.php?generateReport=1';
 });
 </script>
 
 </body>
 </html>
+
+<?php $conn->close(); ?>

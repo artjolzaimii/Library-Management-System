@@ -7,8 +7,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $phone = mysqli_real_escape_string($conn, $_POST['phone']);
     $address = mysqli_real_escape_string($conn, $_POST['address']);
     $username = mysqli_real_escape_string($conn, $_POST['username']);
+    $role = mysqli_real_escape_string($conn, $_POST['role']);
     $password = password_hash($_POST['password'], PASSWORD_DEFAULT); 
-    $role = 'Librarian'; 
   
     $query = "INSERT INTO users ( full_name, email, phone, address, username, password, role) 
               VALUES ('$fullName', '$email', '$phone', '$address', '$username', '$password', '$role')";
@@ -26,7 +26,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Genre Management | BookNoW Admin</title>
+  <title>Add User | BookNoW Admin</title>
 
   <!-- CSS Links -->
   <link rel="stylesheet" href="../assets/vendor/css/core.css" />
@@ -34,8 +34,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   <link rel="stylesheet" href="../assets/css/demo.css" />
   <link rel="stylesheet" href="../assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css" />
   <link rel="stylesheet" href="../assets/vendor/fonts/boxicons.css" />
-  <script src="../assets/vendor/js/helpers.js"></script>
-  <script src="../assets/js/config.js"></script>
 </head>
 
 <body>
@@ -48,11 +46,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <div class="container-xxl flex-grow-1 container-p-y">
 
           <h4 class="fw-bold py-3 mb-4">
-            <span class="text-muted fw-light">Book Management /</span> Genre Management
+            <span class="text-muted fw-light">User Management /</span> Add User
           </h4>
-
+          
   <div class="container mt-5">
-    <h2>Add New Librarian</h2>
+    <h2>Add New User</h2>
     <form action="addUser.php" method="POST">
       <div class="mb-3">
         <label>Full Name</label>
@@ -75,11 +73,26 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <input type="text" name="username" class="form-control" required>
       </div>
       <div class="mb-3">
+        <label>Role</label>
+        <select name="role" class="form-select" required>
+          <option value="Librarian">Librarian</option>
+          <option value="Member">User</option>
+        </select>
+      </div>
+      <div class="mb-3">
         <label>Password</label>
         <input type="password" name="password" class="form-control" required>
       </div>
       <button type="submit" class="btn btn-primary">Add User</button>
     </form>
+    <script src="../assets/vendor/js/helpers.js"></script>
+    <script src="../assets/js/config.js"></script>
+    <script src="../assets/vendor/libs/jquery/jquery.js"></script>
+    <script src="../assets/vendor/libs/popper/popper.js"></script>
+    <script src="../assets/vendor/js/bootstrap.js"></script>
+    <script src="../assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
+    <script src="../assets/vendor/js/menu.js"></script>
+    <script src="../assets/js/main.js"></script>
   </div>
 </body>
 </html>
