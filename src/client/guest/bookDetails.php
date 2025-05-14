@@ -1,0 +1,1136 @@
+<!DOCTYPE html>
+<html lang="en">
+<!--<< Header Area >>-->
+
+<head>
+    <!-- ========== Meta Tags ========== -->
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="pixel-plus">
+    <meta name="description" content="Boimela - Books Library eCommerce Store">
+    <!-- ======== Page title ============ -->
+    <title>Boimela - Books Library eCommerce Store</title>
+    <!--<< Favcion >>-->
+    <link rel="shortcut icon" href="../../assets/img/favicon.png">
+    <!--<< Bootstrap min.css >>-->
+    <link rel="stylesheet" href="../assets/css/bootstrap.min.css">
+    <!--<< All Min Css >>-->
+    <link rel="stylesheet" href="../assets/css/all.min.css">
+    <!--<< Animate.css >>-->
+    <link rel="stylesheet" href="../assets/css/animate.css">
+    <!--<< Magnific Popup.css >>-->
+    <link rel="stylesheet" href="../assets/css/magnific-popup.css">
+    <!--<< MeanMenu.css >>-->
+    <link rel="stylesheet" href="../assets/css/meanmenu.css">
+    <!--<< Swiper Bundle.css >>-->
+    <link rel="stylesheet" href="../assets/css/swiper-bundle.min.css">
+    <!--<< Nice Select.css >>-->
+    <link rel="stylesheet" href="../assets/css/nice-select.css">
+    <!--<< Icomoon.css >>-->
+    <link rel="stylesheet" href="../assets/css/icomoon.css">
+    <!--<< Main.css >>-->
+    <link rel="stylesheet" href="../assets/css/main.css">
+</head>
+
+<body>
+<!-- Find book by isbn , placed in the url by a get request-->
+    <?php 
+        require_once("../../../utilities/config.php");
+    
+        $isbn=mysqli_real_escape_string($conn,$_GET['isbn']);
+        
+        $query="SELECT `isbn`, `publication_year`, `publisher`, `language`, `nr_pages`, `description`, `format`, `image_path`, `title` FROM `book` WHERE `isbn`=?";
+        
+        $stm=$conn->prepare($query);
+        
+        $stm->bind_param("s",$isbn);
+        $stm->execute();
+        
+        $result=$stm->get_result();
+        
+        if($result->num_rows==1){
+            $row=$result->fetch_assoc();
+            
+            //look for other fields
+            if($row['format']=='For Sale'){
+                $query="SELECT inventory, price 
+                        FROM sale_book INNER JOIN book ON book.book_id=sale_book.book_id
+                        WHERE book.isbn=?
+                        ";
+                $stm=$conn->prepare($query);
+        
+                $stm->bind_param("s",$isbn);
+                $stm->execute();
+                
+                $result=$stm->get_result(); 
+                
+                if($result->num_rows==1){
+                    $saleRow=$result->fetch_assoc();
+                }
+            }
+            else if($row['format']=='For Borrow'){
+                $query="SELECT inventory, condition 
+                        FROM borrow_book INNER JOIN book ON book.book_id=borrow_book.book_id
+                        WHERE book.isbn=?
+                        ";
+                $stm=$conn->prepare($query);
+        
+                $stm->bind_param("s",$isbn);
+                $stm->execute();
+                
+                $result=$stm->get_result(); 
+                
+                if($result->num_rows==1){
+                    $borrowRow=$result->fetch_assoc();
+                }
+            }
+            else if($row['format']=='E-Book'){
+                $query="SELECT book_path 
+                        FROM ebook INNER JOIN book ON book.book_id=ebook.book_id
+                        WHERE book.isbn=?
+                        ";
+                $stm=$conn->prepare($query);
+        
+                $stm->bind_param("s",$isbn);
+                $stm->execute();
+                
+                $result=$stm->get_result(); 
+                
+                if($result->num_rows==1){
+                    $ebookRow=$result->fetch_assoc();
+                }
+            }
+            
+            //loog for authors
+            $query="SELECT full_Name FROM author INNER JOIN book_author ON author.author_id=book_author.author_id
+            INNER JOIN book ON book.book_id=book_author.book_id
+            WHERE book.isbn=?" ;
+            
+            $stm=$conn->prepare($query);
+            $stm->bind_param("s",$isbn);
+            $stm->execute();
+            $authorResult=$stm->get_result();
+            $authors = [];
+            while ($author = mysqli_fetch_assoc($authorResult)) {
+                $authors[] = $author['full_Name'];
+            }
+            $authors = implode(" , ", $authors);
+            
+            //look for gneres
+            $query="SELECT `name` FROM genres INNER JOIN book_genre ON genres.id=book_genre.genre_id
+            INNER JOIN book ON book.book_id=book_genre.book_id
+            WHERE book.isbn=?" ;
+            
+            $stm=$conn->prepare($query);
+            $stm->bind_param("s",$isbn);
+            $stm->execute();
+            $genreResult=$stm->get_result();
+            $genres = [];
+            while ($genre = mysqli_fetch_assoc($genreResult)) {
+                $genres[] = $genre['name'];
+            }
+            $genres = implode(" , ", $genres);
+        }
+        else{
+            echo "The book with this id does not exist!";
+            header("Location: mainPage.php");
+        }
+    ?>
+    
+        
+
+    <!-- Cursor follower -->
+    <div class="cursor-follower"></div>
+
+    <!-- Preloader Start -->
+     <?php 
+        require("loading.php");
+     ?>
+     
+    <!-- Back To Top start -->
+    <button id="back-top" class="back-to-top">
+        <i class="fa-solid fa-chevron-up"></i>
+    </button>
+
+    <!-- Offcanvas Area start  -->
+    <div class="fix-area">
+        <div class="offcanvas__info">
+            <div class="offcanvas__wrapper">
+                <div class="offcanvas__content">
+                    <div class="offcanvas__top mb-5 d-flex justify-content-between align-items-center">
+                        <div class="offcanvas__logo">
+                            <a href="index.html">
+                                <img src="../assets/img/logo/logo.png" alt="logo-img">
+                            </a>
+                        </div>
+                        <div class="offcanvas__close">
+                            <button>
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <p class="text d-none d-xl-block">
+                        Nullam dignissim, ante scelerisque the is euismod fermentum odio sem semper the is erat, a
+                        feugiat leo urna eget eros. Duis Aenean a imperdiet risus.
+                    </p>
+                    <div class="mobile-menu fix mb-3"></div>
+                    <div class="offcanvas__contact">
+                        <h4>Contact Info</h4>
+                        <ul>
+                            <li class="d-flex align-items-center">
+                                <div class="offcanvas__contact-icon">
+                                    <i class="fal fa-map-marker-alt"></i>
+                                </div>
+                                <div class="offcanvas__contact-text">
+                                    <a target="_blank" href="shop-details.html">Main Street, Melbourne, Australia</a>
+                                </div>
+                            </li>
+                            <li class="d-flex align-items-center">
+                                <div class="offcanvas__contact-icon mr-15">
+                                    <i class="fal fa-envelope"></i>
+                                </div>
+                                <div class="offcanvas__contact-text">
+                                    <a href="mailto:info@example.com"><span
+                                            class="mailto:info@example.com">info@example.com</span></a>
+                                </div>
+                            </li>
+                            <li class="d-flex align-items-center">
+                                <div class="offcanvas__contact-icon mr-15">
+                                    <i class="fal fa-clock"></i>
+                                </div>
+                                <div class="offcanvas__contact-text">
+                                    <a target="_blank" href="shop-details.html">Mod-friday, 09am -05pm</a>
+                                </div>
+                            </li>
+                            <li class="d-flex align-items-center">
+                                <div class="offcanvas__contact-icon mr-15">
+                                    <i class="far fa-phone"></i>
+                                </div>
+                                <div class="offcanvas__contact-text">
+                                    <a href="tel:+11002345909">+11002345909</a>
+                                </div>
+                            </li>
+                        </ul>
+                        <div class="header-button mt-4">
+                            <a href="contact.html" class="theme-btn text-center">
+                                Get A Quote <i class="fa-solid fa-arrow-right-long"></i>
+                            </a>
+                        </div>
+                        <div class="social-icon d-flex align-items-center">
+                            <a href="https://www.facebook.com/"><i class="fab fa-facebook-f"></i></a>
+                            <a href="https://x.com/"><i class="fab fa-twitter"></i></a>
+                            <a href="https://www.youtube.com/"><i class="fab fa-youtube"></i></a>
+                            <a href="https://www.linkedin.com/"><i class="fab fa-linkedin-in"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="offcanvas__overlay"></div>
+
+    <!-- Header Section Start -->
+    <?php 
+        include("clientMenu.php")
+    ?>
+
+    <!-- Sidebar Area Here -->
+    <?php 
+        include("logInSidebar.php");
+    ?>
+
+    <!-- Breadcumb Section Start -->
+    <div class="breadcrumb-wrapper bg-cover section-padding"
+        style="background-image: url(../assets/img/hero/breadcrumb-bg.jpg);">
+        <div class="container">
+            <div class="page-heading">
+                <h1>Shop Details</h1>
+                <div class="page-header">
+                    <ul class="breadcrumb-items wow fadeInUp" data-wow-delay=".3s">
+                        <li>
+                            <a href="index.html">
+                                Home
+                            </a>
+                        </li>
+                        <li>
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </li>
+                        <li>
+                            Shop Details
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Shop Details Section Start -->
+    <section class="shop-details-section fix section-padding">
+        <div class="container">
+            <div class="shop-details-wrapper">
+                <div class="row g-4">
+                    <div class="col-lg-5">
+                        <div class="shop-details-image">
+                            <div class="tab-content">
+                                <div id="thumb1" class="tab-pane fade show active">
+                                    <div class="shop-details-thumb">
+                                        <img src="<?php echo '../../../uploads/images/'.$row['image_path'] ?>" alt="img" height="402px" width="315px" >
+                                    </div>
+                                </div>
+                            </div>    
+                        </div>
+                    </div>
+                    <div class="col-lg-7">
+                        <div class="shop-details-content">
+                            <div class="title-wrapper">
+                                <h2><?php echo $row['title'];  ?></h2>
+                                <h5>
+                                    <?php 
+                                        if($row['format']=='For Sale'){
+                                            if($saleRow['inventory']>0){
+                                                echo "<h5>Stock Available</h5>";
+                                            }
+                                            else{
+                                                echo "<h5 style=\"color: red;\">Out of Stock</h5>";
+                                            }
+                                        }
+                                        else if($row['format']=='For Borrow'){
+                                            if($borrowRow['inventory']>0){
+                                                echo "<h5>Stock Available</h5>";
+                                            }
+                                            else{
+                                                echo "<h5 style=\"color: red;\">Out of Stock</h5>";
+                                            }
+                                        }
+                                    ?>
+                                </h5>
+                            </div>
+                            <div class="star">
+                                <a href="shop-details.html"> <i class="fas fa-star"></i></a>
+                                <a href="shop-details.html"><i class="fas fa-star"></i></a>
+                                <a href="shop-details.html"> <i class="fas fa-star"></i></a>
+                                <a href="shop-details.html"><i class="fas fa-star"></i></a>
+                                <a href="shop-details.html"><i class="fa-regular fa-star"></i></a>
+                                <span>(1 Customer Reviews)</span>
+                            </div>
+                            <p>
+                                <?php 
+                                    echo $row['description'];
+                                ?>
+                            </p>
+                            <?php 
+                                if($row['format']=='For Sale'){
+                                    echo "<div class=\"price-list\">
+                                            <h3>".$saleRow['price']." ALL</h3>
+                                        </div>";
+                                }
+                            
+                            ?>
+                            <!--If an item is out of stock make buttons, inputs disabled -->
+                            <div class="cart-wrapper">
+                                <div class="quantity-basket">
+                                    <p class="qty">
+                                        <button class="qtyminus" aria-hidden="true"
+                                            <?php 
+                                                if($row['format']=='For Sale'){
+                                                    if($saleRow['inventory']<0){
+                                                        echo "disabled;";
+                                                    }       
+                                                }
+                                            ?>
+                                        >−</button>
+                                        <input type="number" name="qty" id="qty2" min="1" max="10" step="1" value="1"
+                                            <?php 
+                                                if($row['format']=='For Sale'){
+                                                    if($saleRow['inventory']<0){
+                                                        echo "disabled;";
+                                                    }       
+                                                }
+                                            ?>
+                                        >
+                                        <button class="qtyplus" aria-hidden="true"
+                                            <?php 
+                                                if($row['format']=='For Sale'){
+                                                    if($saleRow['inventory']<0){
+                                                        echo "disabled;";
+                                                    }       
+                                                }
+                                            ?>
+                                        >+</button>
+                                    </p>
+                                </div>
+                                <button type="button" class="theme-btn style-2" data-bs-toggle="modal"
+                                    data-bs-target="#readMoreModal" <?php 
+                                                if($row['format']!='E-Book'){
+                                                    echo "style=\"display: none;\"";
+                                                }
+                                            ?>>
+                                    Read A little
+                                </button>
+                                <!-- Read More Modal -->
+                                <div class="modal fade" id="readMoreModal" tabindex="-1"
+                                    aria-labelledby="readMoreModalLabel" aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-body"
+                                                style="background-image: url(../assets/img/popupBg.png);">
+                                                <div class="close-btn">
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                        aria-label="Close"></button>
+                                                </div>
+                                                <div class="readMoreBox">
+                                                    <div class="content">
+                                                        <h3 id="readMoreModalLabel">The Role Of Book</h3>
+                                                        <p>
+                                                            Educating the Public <br>
+                                                            Political books play a crucial role in educating the public
+                                                            about political theories, historical events, policies, and
+                                                            the workings of governments. They provide readers with
+                                                            insights into complex political concepts and the historical
+                                                            context behind current events, helping to foster a more
+                                                            informed citizenry. <br><br>
+
+                                                            Shaping Public Opinion <br>
+                                                            Authors of political books often aim to influence public
+                                                            opinion by presenting arguments and perspectives on various
+                                                            issues. These books can sway readers' views, either
+                                                            reinforcing their existing beliefs or challenging them to
+                                                            consider alternative viewpoints. This influence can extend
+                                                            to political debates and discussions in the public sphere.
+                                                            <br><br>
+
+                                                            Documenting History <br>
+                                                            Political books serve as valuable records of historical
+                                                            events and political movements. They document the thoughts,
+                                                            actions, and decisions of political leaders and activists,
+                                                            providing future generations with a detailed account of
+                                                            significant periods and events. This historical
+                                                            documentation is essential for understanding the evolution
+                                                            of political systems and ideologies.
+
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                
+                                <a href="shop-details.html" class="theme-btn">Add To Cart</a>
+                                <div class="icon-box">
+                                    <a href="shop-details.html" class="icon">
+                                        <i class="far fa-heart"></i>
+                                    </a>
+                                    <a href="shop-details.html" class="icon-2">
+                                        <img src="../assets/img/icon/shuffle.svg" alt="svg-icon">
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="category-box">
+                                <div class="category-list">
+                                    <ul>
+                                        <li>
+                                            <span>ISBN:</span> <?php echo $isbn;?>
+                                        </li>
+                                        <li>
+                                            <span>Genres:</span>
+                                            <?php 
+                                                echo $genres;
+                                            ?>
+                                        </li>
+                                    </ul>
+                                    <ul>
+                                        <li>
+                                            <span>Author:</span> 
+                                            <?php 
+                                                echo $authors;
+                                            ?>
+                                        </li>
+                                        <li>
+                                            <span>Format:</span> <?php echo $row['format']?>
+                                        </li>
+                                    </ul>
+                                    <ul>
+                                        <li>
+                                            <span>Total page:</span> <?php echo $row['nr_pages']?>
+                                        </li>
+                                        <li>
+                                            <span>Language:</span> <?php echo $row['language']?>
+                                        </li>
+                                    </ul>
+                                    <ul>
+                                        <li>
+                                            <span>Publish Years:</span> <?php echo $row['publication_year']?>
+                                        </li>
+                                        <li>
+                                            <span>Century:</span> United States
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="box-check">
+                                <div class="check-list">
+                                    <ul>
+                                        <li>
+                                            <i class="fa-solid fa-check"></i>
+                                            Free shipping orders from $150
+                                        </li>
+                                        <li>
+                                            <i class="fa-solid fa-check"></i>
+                                            30 days exchange & return
+                                        </li>
+                                    </ul>
+                                    <ul>
+                                        <li>
+                                            <i class="fa-solid fa-check"></i>
+                                            Mamaya Flash Discount: Starting at 30% Off
+                                        </li>
+                                        <li>
+                                            <i class="fa-solid fa-check"></i>
+                                            Safe & Secure online shopping
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                        </div>
+                    </div>
+                </div>
+                <div class="single-tab section-padding pb-0">
+                    <ul class="nav mb-5" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <a href="#description" data-bs-toggle="tab" class="nav-link ps-0 active"
+                                aria-selected="true" role="tab">
+                                <h6>Description</h6>
+                            </a>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <a href="#additional" data-bs-toggle="tab" class="nav-link" aria-selected="false"
+                                tabindex="-1" role="tab">
+                                <h6>Additional Information </h6>
+                            </a>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <a href="#review" data-bs-toggle="tab" class="nav-link" aria-selected="false" tabindex="-1"
+                                role="tab">
+                                <h6>reviews (3)</h6>
+                            </a>
+                        </li>
+                    </ul>
+                    <div class="tab-content">
+                        <div id="description" class="tab-pane fade show active" role="tabpanel">
+                            <div class="description-items">
+                                <p>
+                                    <?php 
+                                        echo $row['description'];
+                                    ?>
+                                </p>    
+                            </div>
+                        </div>
+                        <div id="additional" class="tab-pane fade" role="tabpanel">
+                            <div class="table-responsive">
+                                <table class="table table-bordered">
+                                    <tbody>
+                                        <tr>
+                                            <td class="text-1">Availability</td>
+                                            <td class="text-2">
+                                                <?php 
+                                                    if($row['format']=='For Sale'){
+                                                        if($saleRow['inventory']>0){
+                                                            echo "Available";
+                                                        }
+                                                        else{
+                                                            echo "Out of Stock";
+                                                        }
+                                                    }
+                                                ?>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-1">Authors</td>
+                                            <td class="text-2">
+                                                <?php 
+                                                    echo $authors;
+                                            ?>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-1">Genres</td>
+                                            <td class="text-2">
+                                                <?php 
+                                                echo $genres;
+                                            ?>
+                                            </td> 
+                                        </tr>
+                                        <tr>
+                                            <td class="text-1">Publish Year</td>
+                                            <td class="text-2"><?php echo $row['publication_year']?></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-1">Total Page</td>
+                                            <td class="text-2"><?php echo $row['nr_pages']?></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-1">Format</td>
+                                            <td class="text-2"><?php echo $row['format']?></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-1">Country</td>
+                                            <td class="text-2">United States</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-1">Language</td>
+                                            <td class="text-2"><?php echo $row['language']?></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-1">Dimensions</td>
+                                            <td class="text-2">30 × 32 × 46 Inches</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-1">Weight</td>
+                                            <td class="text-2">2.5 Pounds</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div id="review" class="tab-pane fade" role="tabpanel">
+                            <div class="review-items">
+                                <div class="review-wrap-area d-flex gap-4">
+                                    <div class="review-thumb">
+                                        <img src="../assets/img/shop-details/review.png" alt="img">
+                                    </div>
+                                    <div class="review-content">
+                                        <div
+                                            class="head-area d-flex flex-wrap gap-2 align-items-center justify-content-between">
+                                            <div class="cont">
+                                                <h5><a href="news-details.html">Leslie Alexander</a></h5>
+                                                <span>February 10, 2024 at 2:37 pm</span>
+                                            </div>
+                                            <div class="star">
+                                                <i class="fa-solid fa-star"></i>
+                                                <i class="fa-solid fa-star"></i>
+                                                <i class="fa-solid fa-star"></i>
+                                                <i class="fa-solid fa-star"></i>
+                                                <i class="fa-regular fa-star"></i>
+                                            </div>
+                                        </div>
+                                        <p class="mt-30 mb-4">
+                                            Neque porro est qui dolorem ipsum quia quaed inventor veritatis et quasi
+                                            architecto var sed efficitur turpis gilla sed sit amet finibus eros. Lorem
+                                            Ipsum is <br> simply dummy
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="review-title mt-5 py-15 mb-30">
+                                    <h4>Your Rating*</h4>
+                                    <div class="rate-now d-flex align-items-center">
+                                        <p>Your Rating*</p>
+                                        <div class="star">
+                                            <i class="fa-light fa-star"></i>
+                                            <i class="fa-light fa-star"></i>
+                                            <i class="fa-light fa-star"></i>
+                                            <i class="fa-light fa-star"></i>
+                                            <i class="fa-light fa-star"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="review-form">
+                                    <form action="#" id="contact-form2" method="POST">
+                                        <div class="row g-4">
+                                            <div class="col-lg-6">
+                                                <div class="form-clt">
+                                                    <span>Your Name*</span>
+                                                    <input type="text" name="name" id="name" placeholder="Your Name">
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-6">
+                                                <div class="form-clt">
+                                                    <span>Your Email*</span>
+                                                    <input type="text" name="email" id="email" placeholder="Your Email">
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-12 wow fadeInUp animated" data-wow-delay=".8">
+                                                <div class="form-clt">
+                                                    <span>Message*</span>
+                                                    <textarea name="message" id="message"
+                                                        placeholder="Write Message"></textarea>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-12 wow fadeInUp animated" data-wow-delay=".9">
+                                                <div class="form-check d-flex gap-2 from-customradio">
+                                                    <input type="checkbox" class="form-check-input"
+                                                        name="flexRadioDefault" id="flexRadioDefault12">
+                                                    <label class="form-check-label" for="flexRadioDefault12">
+                                                        i accept your terms & conditions
+                                                    </label>
+                                                </div>
+                                                <button type="submit" class="theme-btn style-2">
+                                                    Submit now
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Top Ratting Book Section Start -->
+    <section class="top-ratting-book-section fix">
+        <div class="container">
+            <div class="section-title text-center">
+                <h2 class="mb-3 wow fadeInUp" data-wow-delay=".3s">Related Products</h2>
+                <p class="wow fadeInUp" data-wow-delay=".5s">
+                    Interdum et malesuada fames ac ante ipsum primis in faucibus. <br> Donec at nulla nulla. Duis
+                    posuere ex lacus
+                </p>
+            </div>
+            <div class="swiper book-slider">
+                <div class="swiper-wrapper">
+                    <div class="swiper-slide">
+                        <div class="shop-box-items style-2">
+                            <div class="book-thumb center">
+                                <a href="shop-details"><img src="../assets/img/book/01.png" alt="img"></a>
+                                <ul class="post-box">
+                                    <li>
+                                        Hot
+                                    </li>
+                                    <li>
+                                        -30%
+                                    </li>
+                                </ul>
+                                <ul class="shop-icon d-grid justify-content-center align-items-center">
+                                    <li>
+                                        <a href="shop-cart.html"><i class="far fa-heart"></i></a>
+                                    </li>
+                                </ul>
+                                <ul class="shop-icon d-grid justify-content-center align-items-center">
+                                    <li>
+                                        <a href="shop-cart.html"><i class="far fa-heart"></i></a>
+                                    </li>
+                                    <li>
+                                        <a href="shop-cart.html">
+
+                                            <img class="icon" src="../assets/img/icon/shuffle.svg" alt="svg-icon">
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="shop-details.html"><i class="far fa-eye"></i></a>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="shop-content">
+                                <h5> Design Low Book </h5>
+                                <h3><a href="shop-details.html">Simple Things You To <br> Save BOOK</a></h3>
+                                <ul class="price-list">
+                                    <li>$30.00</li>
+                                    <li>
+                                        <del>$39.99</del>
+                                    </li>
+                                </ul>
+                                <ul class="author-post">
+                                    <li class="authot-list">
+                                        <span class="thumb">
+                                            <img src="../assets/img/testimonial/client-1.png" alt="img">
+                                        </span>
+                                        <span class="content">Wilson</span>
+                                    </li>
+
+                                    <li class="star">
+                                        <i class="fa-solid fa-star"></i>
+                                        <i class="fa-solid fa-star"></i>
+                                        <i class="fa-solid fa-star"></i>
+                                        <i class="fa-solid fa-star"></i>
+                                        <i class="fa-regular fa-star"></i>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="shop-button">
+                                <a href="shop-details.html" class="theme-btn">Add To Cart</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="swiper-slide">
+                        <div class="shop-box-items style-2">
+                            <div class="book-thumb center">
+                                <a href="shop-details"><img src="../assets/img/book/02.png" alt="img"></a>
+                                <ul class="shop-icon d-grid justify-content-center align-items-center">
+                                    <li>
+                                        <a href="shop-cart.html"><i class="far fa-heart"></i></a>
+                                    </li>
+                                    <li>
+                                        <a href="shop-cart.html">
+
+                                            <img class="icon" src="../assets/img/icon/shuffle.svg" alt="svg-icon">
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="shop-details.html"><i class="far fa-eye"></i></a>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="shop-content">
+                                <h5> Design Low Book </h5>
+                                <h3><a href="shop-details.html">How Deal With Very <br> Bad BOOK</a></h3>
+                                <ul class="price-list">
+                                    <li>$30.00</li>
+                                    <li>
+                                        <del>$39.99</del>
+                                    </li>
+                                </ul>
+                                <ul class="author-post">
+                                    <li class="authot-list">
+                                        <span class="thumb">
+                                            <img src="../assets/img/testimonial/client-2.png" alt="img">
+                                        </span>
+                                        <span class="content">Alexander</span>
+                                    </li>
+
+                                    <li class="star">
+                                        <i class="fa-solid fa-star"></i>
+                                        <i class="fa-solid fa-star"></i>
+                                        <i class="fa-solid fa-star"></i>
+                                        <i class="fa-solid fa-star"></i>
+                                        <i class="fa-regular fa-star"></i>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="shop-button">
+                                <a href="shop-details.html" class="theme-btn">Add To Cart</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="swiper-slide">
+                        <div class="shop-box-items style-2">
+                            <div class="book-thumb center">
+                                <a href="shop-details"><img src="../assets/img/book/03.png" alt="img"></a>
+                                <ul class="shop-icon d-grid justify-content-center align-items-center">
+                                    <li>
+                                        <a href="shop-cart.html"><i class="far fa-heart"></i></a>
+                                    </li>
+                                    <li>
+                                        <a href="shop-cart.html">
+
+                                            <img class="icon" src="../assets/img/icon/shuffle.svg" alt="svg-icon">
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="shop-details.html"><i class="far fa-eye"></i></a>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="shop-content">
+                                <h5> Design Low Book </h5>
+                                <h3><a href="shop-details.html">Qple GPad With Retina <br> Sisplay</a></h3>
+                                <ul class="price-list">
+                                    <li>$30.00</li>
+                                    <li>
+                                        <del>$39.99</del>
+                                    </li>
+                                </ul>
+                                <ul class="author-post">
+                                    <li class="authot-list">
+                                        <span class="thumb">
+                                            <img src="../assets/img/testimonial/client-3.png" alt="img">
+                                        </span>
+                                        <span class="content">Esther</span>
+                                    </li>
+
+                                    <li class="star">
+                                        <i class="fa-solid fa-star"></i>
+                                        <i class="fa-solid fa-star"></i>
+                                        <i class="fa-solid fa-star"></i>
+                                        <i class="fa-solid fa-star"></i>
+                                        <i class="fa-regular fa-star"></i>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="shop-button">
+                                <a href="shop-details.html" class="theme-btn">Add To Cart</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="swiper-slide">
+                        <div class="shop-box-items style-2">
+                            <div class="book-thumb center">
+                                <a href="shop-details"><img src="../assets/img/book/04.png" alt="img"></a>
+                                <ul class="post-box">
+                                    <li>
+                                        Hot
+                                    </li>
+                                </ul>
+                                <ul class="shop-icon d-grid justify-content-center align-items-center">
+                                    <li>
+                                        <a href="shop-cart.html"><i class="far fa-heart"></i></a>
+                                    </li>
+                                    <li>
+                                        <a href="shop-cart.html">
+
+                                            <img class="icon" src="../assets/img/icon/shuffle.svg" alt="svg-icon">
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="shop-details.html"><i class="far fa-eye"></i></a>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="shop-content">
+                                <h5> Design Low Book </h5>
+                                <h3><a href="shop-details.html">Qple GPad With Retina <br> Sisplay</a></h3>
+                                <ul class="price-list">
+                                    <li>$30.00</li>
+                                    <li>
+                                        <del>$39.99</del>
+                                    </li>
+                                </ul>
+                                <ul class="author-post">
+                                    <li class="authot-list">
+                                        <span class="thumb">
+                                            <img src="../assets/img/testimonial/client-4.png" alt="img">
+                                        </span>
+                                        <span class="content">Hawkins</span>
+                                    </li>
+
+                                    <li class="star">
+                                        <i class="fa-solid fa-star"></i>
+                                        <i class="fa-solid fa-star"></i>
+                                        <i class="fa-solid fa-star"></i>
+                                        <i class="fa-solid fa-star"></i>
+                                        <i class="fa-regular fa-star"></i>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="shop-button">
+                                <a href="shop-details.html" class="theme-btn">Add To Cart</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="swiper-slide">
+                        <div class="shop-box-items style-2">
+                            <div class="book-thumb center">
+                                <a href="shop-details"><img src="../assets/img/book/05.png" alt="img"></a>
+                                <ul class="shop-icon d-grid justify-content-center align-items-center">
+                                    <li>
+                                        <a href="shop-cart.html"><i class="far fa-heart"></i></a>
+                                    </li>
+                                    <li>
+                                        <a href="shop-cart.html">
+
+                                            <img class="icon" src="../assets/img/icon/shuffle.svg" alt="svg-icon">
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="shop-details.html"><i class="far fa-eye"></i></a>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="shop-content">
+                                <h5> Design Low Book </h5>
+                                <h3><a href="shop-details.html">Simple Things You To <br> Save BOOK</a></h3>
+                                <ul class="price-list">
+                                    <li>$30.00</li>
+                                    <li>
+                                        <del>$39.99</del>
+                                    </li>
+                                </ul>
+                                <ul class="author-post">
+                                    <li class="authot-list">
+                                        <span class="thumb">
+                                            <img src="../assets/img/testimonial/client-5.png" alt="img">
+                                        </span>
+                                        <span class="content">(Author) Albert</span>
+                                    </li>
+
+                                    <li class="star">
+                                        <i class="fa-solid fa-star"></i>
+                                        <i class="fa-solid fa-star"></i>
+                                        <i class="fa-solid fa-star"></i>
+                                        <i class="fa-solid fa-star"></i>
+                                        <i class="fa-regular fa-star"></i>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="shop-button">
+                                <a href="shop-details.html" class="theme-btn">Add To Cart</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer Section start  -->
+    <footer class="footer-section fix">
+        <div class="container">
+            <div class="footer-widget-wrapper">
+                <div class="row">
+                    <div class="col-xl-3 col-lg-4 col-md-4 wow fadeInUp" data-wow-delay=".2s">
+                        <div class="single-footer-widget">
+                            <div class="widget-head"><a href="index.html" class="footer-logo">
+                                    <img src="../assets/img/logo/logo.svg" alt="logo-img">
+                                </a>
+                            </div>
+                            <div class="footer-content">
+                                <div class="text">
+                                    <p>Got Questions? Call us</p>
+                                    <a href="tel:+67041390762">+670 413 90 762</a>
+                                </div>
+                                <ul class="contact-list">
+                                    <li>
+                                        <i class="fa-regular fa-envelope"></i>
+                                        <a href="mailto:readit@gmail.com">readit@gmail.com</a>
+                                    </li>
+                                    <li>
+                                        <i class="fa-regular fa-location-dot"></i>
+                                        79 Sleepy Hollow St.<br>
+                                        Jamaica, New York 1432
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-3 col-lg-4 col-md-4 ps-lg-5 wow fadeInUp" data-wow-delay=".4s">
+                        <div class="single-footer-widget">
+                            <div class="widget-head">
+                                <h3>Costumers Support</h3>
+                            </div>
+                            <ul class="list-items">
+                                <li>
+                                    <a href="shop.html">
+                                        Store List
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="contact.html">
+                                        Opening Hours
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="contact.html">
+                                        Contact Us
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="contact.html">
+                                        Return Policy
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-xl-3 col-lg-4 col-md-4 ps-lg-5 wow fadeInUp" data-wow-delay=".6s">
+                        <div class="single-footer-widget">
+                            <div class="widget-head">
+                                <h3>Categories</h3>
+                            </div>
+                            <ul class="list-items">
+                                <li>
+                                    <a href="contact.html">
+                                        Novel Books
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="shop.html">
+                                        Poetry Books
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="contact.html">
+                                        Political Books
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="contact.html">
+                                        History Books
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-xl-3 col-lg-4 col-md-6 wow fadeInUp" data-wow-delay=".8s">
+                        <div class="single-footer-widget">
+                            <div class="widget-head">
+                                <h3>Subcribe.</h3>
+                            </div>
+                            <div class="footer-content">
+                                <p class="f-text">Our conversation is just getting started</p>
+                                <div class="footer-input">
+                                    <input type="email" id="email2" placeholder="Enter Your Email">
+                                    <button class="newsletter-btn" type="submit">
+                                        <span>Subscribe</span>
+                                    </button>
+                                </div>
+                                <div class="social-item">
+                                    <h6>Follow Us On</h6>
+                                    <div class="social-icon d-flex align-items-center">
+                                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                                        <a href="#"><i class="fab fa-twitter"></i></a>
+                                        <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                                        <a href="#"><i class="fa-brands fa-vimeo-v"></i></a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <div class="footer-wrapper">
+                    <p class="wow fadeInUp" data-wow-delay=".3s">
+                        ©All Rights reserved 2025 by <span>Readit.</span>
+                    </p>
+                    <div class="bottom-list wow fadeInUp" data-wow-delay=".5s">
+                        <div class="app-image">
+                            <img src="../assets/img/footer/01.png" alt="img">
+                        </div>
+                        <div class="app-image">
+                            <img src="../assets/img/footer/02.png" alt="img">
+                        </div>
+                        <div class="app-image">
+                            <img src="../assets/img/footer/03.png" alt="img">
+                        </div>
+                        <div class="app-image">
+                            <img src="../assets/img/footer/04.png" alt="img">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+
+    <!--<< All JS Plugins >>-->
+    <script src="../assets/js/jquery-3.7.1.min.js"></script>
+    <!--<< Viewport Js >>-->
+    <script src="../assets/js/viewport.jquery.js"></script>
+    <!--<< Bootstrap Js >>-->
+    <script src="../assets/js/bootstrap.bundle.min.js"></script>
+    <!--<< Nice Select Js >>-->
+    <script src="../assets/js/jquery.nice-select.min.js"></script>
+    <!--<< Waypoints Js >>-->
+    <script src="../assets/js/jquery.waypoints.js"></script>
+    <!--<< Counterup Js >>-->
+    <script src="../assets/js/jquery.counterup.min.js"></script>
+    <!--<< Swiper Slider Js >>-->
+    <script src="../assets/js/swiper-bundle.min.js"></script>
+    <!--<< MeanMenu Js >>-->
+    <script src="../assets/js/jquery.meanmenu.min.js"></script>
+    <!--<< Magnific Popup Js >>-->
+    <script src="../assets/js/jquery.magnific-popup.min.js"></script>
+    <!--<< Wow Animation Js >>-->
+    <script src="../assets/js/wow.min.js"></script>
+    <!-- Gsap -->
+    <script src="../assets/js/gsap.min.js"></script>
+    <!--<< Main.js >>-->
+    <script src="../assets/js/main.js"></script>
+</body>
+
+</html>

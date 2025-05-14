@@ -73,7 +73,7 @@
                                 <tbody class="table-border-bottom-0">
                                   <?php
                                   
-                                    $perPage=1;
+                                    $perPage=5;
                                     
                                     $queryForAll = "SELECT `book_id`, `isbn`, `title` FROM `book` WHERE `format` = ?";
                                     
