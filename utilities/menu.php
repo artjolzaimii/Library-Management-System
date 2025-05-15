@@ -18,9 +18,6 @@
   <link rel="stylesheet" href="../assets/css/demo.css" />
   <link rel="stylesheet" href="../assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css" />
 
-  <!-- JS Helpers -->
-  <script src="../assets/vendor/js/helpers.js"></script>
-  <script src="../assets/js/config.js"></script>
 </head>
 
 <body>
@@ -28,7 +25,7 @@
   <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
     <div class="app-brand demo">
       <a href="index.php" class="app-brand-link">
-        <span class="app-brand-text demo menu-text fw-bolder ms-2">BookNoW</span>
+        <span class="app-brand-text demo menu-text fw-bolder ms-2">BookNow</span>
       </a>
       <a href="javascript:void(0);" class="layout-menu-toggle menu-link text-large ms-auto d-block d-xl-none">
         <i class="bx bx-chevron-left bx-sm align-middle"></i>
@@ -51,7 +48,7 @@
 
       <!-- User Management -->
       <li class="menu-item">
-        <a href="user_management.php" class="menu-link">
+        <a href="userManagement.php" class="menu-link">
           <i class="menu-icon tf-icons bx bx-user"></i>
           <div>User Management</div>
         </a>
@@ -65,28 +62,41 @@
         </a>
         <ul class="menu-sub">
           <li class="menu-item">
-            <a href="author_management.php" class="menu-link">
+            <a href="authorManagement.php" class="menu-link">
               <div>Author Management</div>
             </a>
           </li>
           <li class="menu-item">
-            <a href="genre_management.php" class="menu-link">
+            <a href="genreManagement.php" class="menu-link">
               <div>Genre Management</div>
             </a>
           </li>
           <li class="menu-item">
-            <a href="add_book.php" class="menu-link">
+            <a href="addBook.php" class="menu-link">
               <div>Add Book</div>
             </a>
           </li>
           <li class="menu-item">
-            <a href="edit_delete_book.php" class="menu-link">
-              <div>Edit/Delete</div>
+            <a href="bookManagement.php" class="menu-link">
+              <div>Book Management</div>
             </a>
           </li>
         </ul>
       </li>
     </ul>
   </aside>
+  
+  <!-- JS Helpers -->
+  <script src="../assets/vendor/js/helpers.js"></script>
+  <script src="../assets/js/config.js"></script>
+  <script src="../assets/vendor/libs/jquery/jquery.js"></script>
+  <script src="../assets/vendor/libs/popper/popper.js"></script>
+  <script src="../assets/vendor/js/bootstrap.js"></script>
+  <script src="../assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
+
+  <script src="../assets/vendor/js/menu.js"></script> 
+
+  <!-- Main JS -->
+  <script src="../assets/js/main.js"></script>
 </body>
 </html>
