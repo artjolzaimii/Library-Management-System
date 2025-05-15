@@ -206,32 +206,33 @@
                                 </div>
                                 <div class="categories-list">
                                     <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
-                                        <!-- Display all genres-->
+                                        <!-- All Books -->
                                         <li class="nav-item" role="presentation">
-                                            <button class="nav-link" id="pills-arts-all" data-bs-toggle="pill"
-                                                data-bs-target="#pills-all" type="button" role="tab"
-                                                aria-controls="pills-all" aria-selected="false">All Books</button>
+                                            <a class="nav-link <?php if (!isset($_GET['genre'])) echo 'active'; ?>" 
+                                               href="shopList.php?page=1">All Books</a>
                                         </li>
-                                        
+                                        <!--All Genres -->
                                         <?php 
-                                            $query="SELECT `id`,`name` FROM genres";
-                                            $genreResult=mysqli_query($conn, $query);
-                                            
-                                            while($genre=mysqli_fetch_assoc($genreResult)){
+                                            $query = "SELECT `id`, `name` FROM genres";
+                                            $genreResult = mysqli_query($conn, $query);
+                                            $currentGenreId = isset($_GET['genre']) ? intval($_GET['genre']) : null;
+                                        
+                                            while ($genre = mysqli_fetch_assoc($genreResult)) {
                                                 $genreName = htmlspecialchars($genre['name']); 
-                                                $id = strtolower(str_replace(' ', '-', $genreName));
-                                            
+                                                $genreId = $genre['id'];
+                                                $urlId = strtolower(str_replace(' ', '-', $genreName));
+                                                
+                                                $isActive = ($currentGenreId == $genreId) ? 'active' : '';
+                                        
                                                 echo "<li class=\"nav-item\" role=\"presentation\">
-                                                        <button class=\"nav-link\" id=\"pills-{$id}-tab\" data-bs-toggle=\"pill\"
-                                                            data-bs-target=\"#pills-{$id}\" type=\"button\" role=\"tab\"
-                                                            aria-controls=\"pills-{$id}\" aria-selected=\"false\">
-                                                            {$genreName}    
-                                                        </button>
-                                                    </li>";  
-
+                                                        <a class=\"nav-link $isActive\" 
+                                                           href=\"shopList.php?genre=$genreId&page=1\">
+                                                           {$genreName}
+                                                        </a>
+                                                      </li>";  
                                             }
                                         ?>
-                                        
+
                                         
                                     </ul>
                                 </div>
@@ -420,11 +421,18 @@
                     </div>
                     <div class="col-xl-9 col-lg-8 order-1 order-md-2">
                         <div class="tab-content" id="pills-tabContent">
+                        <?php
+                            $currentGenreId = isset($_GET['genre']) ? intval($_GET['genre']) : null;
+                            $currentPage = isset($_GET['page']) ? intval($_GET['page']) : 1;
+                        ?>
+
                         <?php 
                             global $nrPages;
                             global $page;
+                            
                             // ----- ALL BOOKS TAB -----
-                            echo '<div class="tab-pane fade show active" id="pills-all" role="tabpanel"
+                            $isAllActive = (!isset($_GET['genre'])) ? 'show active' : '';
+                            echo '<div class="tab-pane fade '.$isAllActive.'" id="pills-all" role="tabpanel"
                                     aria-labelledby="pills-all-tab" tabindex="0">
                                     <div class="row">';
                                     
@@ -536,117 +544,100 @@
                         ?>
                         <?php
                             // ----- GENRE-SPECIFIC TABS -----
-                            $genreResult = mysqli_query($conn, "SELECT id, name FROM genres");
-                        
+                            $query = "SELECT `id`, `name` FROM genres";
+                            $genreResult = mysqli_query($conn, $query);
                             while($genre = mysqli_fetch_assoc($genreResult)){
                                 $genreName = htmlspecialchars($genre['name']);
                                 $genreId = strtolower(str_replace(' ', '-', $genreName));
                                 $genreDbId = $genre['id'];
-                            
-                                echo '<div class="tab-pane fade" id="pills-'.$genreId.'" role="tabpanel"
-                                        aria-labelledby="pills-'.$genreId.'-tab" tabindex="0">
-                                        <div class="row">';
-                                
-                                if(isset($_POST['search'])){
-                                    $search=mysqli_real_escape_string($conn, $_POST['search']);
-                                    $bookQuery = "SELECT  b.*, sb.price 
-                                              FROM book b
-                                              JOIN book_genre bg ON b.book_id = bg.book_id
-                                              LEFT JOIN sale_book sb ON b.book_id = sb.book_id
-                                              WHERE bg.genre_id = $genreDbId AND b.format='For Sale' AND b.title LIKE '%$search%'
-                                              ";
-                                }
-                                else{
-                                    $bookQuery = "SELECT  b.*, sb.price 
-                                              FROM book b
-                                              JOIN book_genre bg ON b.book_id = bg.book_id
-                                              LEFT JOIN sale_book sb ON b.book_id = sb.book_id
-                                              WHERE bg.genre_id = $genreDbId AND b.format='For Sale'
-                                              ";
-                                }
-                                
-                                $bookResult = mysqli_query($conn, $bookQuery);
-                                
-                                $genreNrBooks = $bookResult->num_rows;
-                                $genrePerPage = 1;
-                                $genreNrPages = ceil($genreNrBooks / $genrePerPage);
-                                
-                                if (isset($_GET['page']) && is_numeric($_GET['page'])) {
-                                    $genrePage = mysqli_real_escape_string($conn, $_GET['page']);
+                                $isActive = ($currentGenreId == $genreDbId) ? 'show active' : '';
+                                echo '<div class="tab-pane fade '.$isActive.'" id="pills-'.$genreId.'" role="tabpanel"
+                                      aria-labelledby="pills-'.$genreId.'-tab" tabindex="0">
+                                      <div class="row">';
+
+                                if ($currentGenreId == $genreDbId) {
+                                    $genrePerPage = 1;
+                                    $genrePage = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
                                     $genreStartPos = ($genrePage - 1) * $genrePerPage;
-                                } else {
-                                    $genrePage = 1;
-                                    $genreStartPos = 0;
-                                }
-                                
-                                if(isset($_POST['search'])){
-                                    $search=mysqli_real_escape_string($conn, $_POST['search']);
-                                    $bookQueryPerPage = "SELECT  b.*, sb.price 
-                                              FROM book b
-                                              JOIN book_genre bg ON b.book_id = bg.book_id
-                                              LEFT JOIN sale_book sb ON b.book_id = sb.book_id
-                                              WHERE bg.genre_id = $genreDbId AND b.format='For Sale' AND b.title LIKE '%$search%'
-                                              LIMIT $genreStartPos, $genrePerPage";
-                                }
-                                else{
-                                     $bookQueryperPage = "SELECT b.*, sb.price 
-                                              FROM book b
-                                              JOIN book_genre bg ON b.book_id = bg.book_id
-                                              LEFT JOIN sale_book sb ON b.book_id = sb.book_id
-                                              LIMIT $genreStartPos, $genrePerPage";
-                                }
-                               
-                                $perPageResult=mysqli_query($conn,$bookQueryPerPage);
-                                $timer = 1;
-                            
-                                while($book = mysqli_fetch_assoc($bookResult)){
-                                    echo '<div class="col-xl-3 col-lg-4 col-md-6 wow fadeInUp" data-wow-delay=".'.$timer.'s">
-                                            <div class="shop-box-items">
-                                                <div class="book-thumb center">
-                                                    <a href="shop-details.php?id='.$book['book_id'].'">
-                                                        <img src="'.htmlspecialchars("../../../uploads/images/".$book['image_path']).'" alt="img" style="height:213px; width:148px;">
-                                                    </a>
-                                                    <ul class="shop-icon d-grid justify-content-center align-items-center">
-                                                        <li><a href="#"><i class="far fa-heart"></i></a></li>
-                                                        <li><a href="bookDetails.php?isbn='.$book['isbn'].'"><i class="far fa-eye"></i></a></li>
-                                                    </ul>
-                                                </div>
-                                                <div class="shop-content">
-                                                    <h3><a href="shop-details.php?id='.$book['book_id'].'">'.htmlspecialchars($book['title']).'</a></h3>
-                                                    <ul class="price-list">
-                                                        <li>'.number_format($book['price'], 2).' ALL</li>
-                                                        <li><i class="fa-solid fa-star"></i> 3.4 (25)</li> 
-                                                    </ul>
-                                                    <div class="shop-button">
-                                                        <a href="shop-cart.php?add='.$book['book_id'].'" class="theme-btn">Add To Cart</a>
+
+                                    if (isset($_POST['search'])) {
+                                        $search = mysqli_real_escape_string($conn, $_POST['search']);
+                                        $bookQueryPerPage = "SELECT b.*, sb.price 
+                                            FROM book b
+                                            JOIN book_genre bg ON b.book_id = bg.book_id
+                                            LEFT JOIN sale_book sb ON b.book_id = sb.book_id
+                                            WHERE bg.genre_id = '$genreDbId' 
+                                            AND b.format='For Sale' 
+                                            AND b.title LIKE '%$search%'
+                                            LIMIT $genreStartPos, $genrePerPage";
+                                    } else {
+                                        $bookQueryPerPage = "SELECT b.*, sb.price 
+                                            FROM book b
+                                            JOIN book_genre bg ON b.book_id = bg.book_id
+                                            LEFT JOIN sale_book sb ON b.book_id = sb.book_id
+                                            WHERE bg.genre_id = '$genreDbId' 
+                                            AND b.format='For Sale'
+                                            LIMIT $genreStartPos, $genrePerPage";
+                                    }
+
+                                    $pagedResult = mysqli_query($conn, $bookQueryPerPage);
+                                    $timer = 1;
+                                    while($book = mysqli_fetch_assoc($pagedResult)){
+                                        echo '<div class="col-xl-3 col-lg-4 col-md-6 wow fadeInUp" data-wow-delay=".'.$timer.'s">
+                                                <div class="shop-box-items">
+                                                    <div class="book-thumb center">
+                                                        <a href="shop-details.php?id='.$book['book_id'].'">
+                                                            <img src="'.htmlspecialchars("../../../uploads/images/".$book['image_path']).'" alt="img" style="height:213px; width:148px;">
+                                                        </a>
+                                                        <ul class="shop-icon d-grid justify-content-center align-items-center">
+                                                            <li><a href="#"><i class="far fa-heart"></i></a></li>
+                                                            <li><a href="bookDetails.php?isbn='.$book['isbn'].'"><i class="far fa-eye"></i></a></li>
+                                                        </ul>
+                                                    </div>
+                                                    <div class="shop-content">
+                                                        <h3><a href="shop-details.php?id='.$book['book_id'].'">'.htmlspecialchars($book['title']).'</a></h3>
+                                                        <ul class="price-list">
+                                                            <li>'.number_format($book['price'], 2).' ALL</li>
+                                                            <li><i class="fa-solid fa-star"></i> 3.4 (25)</li> 
+                                                        </ul>
+                                                        <div class="shop-button">
+                                                            <a href="shop-cart.php?add='.$book['book_id'].'" class="theme-btn">Add To Cart</a>
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                          </div>';
-                                    $timer++;
-                                }
-                            ?>
-                            <div class="page-nav-wrap text-center">
-                                <ul>
-                                    <?php  
-                                    if ($genrePage > 1) {  
-                                        echo "<li><a class=\"previous\" href=\"shopList.php?page=" . ($genrePage - 1) . "\">Previous</a></li>";  
-                                    }  
-                            
-                                    for ($i = 1; $i <= $genreNrPages; $i++) {  
+                                              </div>';
+                                        $timer++;
+                                    }
+
+                                    // Pagination
+                                    $countQuery = "SELECT COUNT(*) as total 
+                                        FROM book b
+                                        JOIN book_genre bg ON b.book_id = bg.book_id
+                                        WHERE bg.genre_id = $genreDbId AND b.format='For Sale'";
+                                    $countResult = mysqli_query($conn, $countQuery);
+                                    $countRow = mysqli_fetch_assoc($countResult);
+                                    $genreNrPages = ceil($countRow['total'] / $genrePerPage);
+
+                                    echo '<div class="page-nav-wrap text-center"><ul>';
+                                    if ($genrePage > 1) {
+                                        echo "<li><a class=\"previous\" href=\"shopList.php?genre={$genreDbId}&page=" . ($genrePage - 1) . "\">Previous</a></li>";
+                                    }
+
+                                    for ($i = 1; $i <= $genreNrPages; $i++) {
                                         $activeClass = ($i == $genrePage) ? "active" : "";
-                                        echo "<li><a class=\"page-numbers $activeClass\" href=\"shopList.php?page={$i}\">$i</a></li>";  
-                                    }  
-                            
-                                    if ($genrePage < $genreNrPages) {  
-                                        echo "<li><a class=\"next\" href=\"shopList.php?page=" . ($genrePage + 1) . "\">Next</a></li>";  
-                                    }  
-                                    ?>
-                                </ul>
-                        </div>
-                        <?php
-                                echo '</div></div>'; // close row & tab-pane for genre
+                                        echo "<li><a class=\"page-numbers $activeClass\" href=\"shopList.php?genre={$genreDbId}&page={$i}\">$i</a></li>";
+                                    }
+
+                                    if ($genrePage < $genreNrPages) {
+                                        echo "<li><a class=\"next\" href=\"shopList.php?genre={$genreDbId}&page=" . ($genrePage + 1) . "\">Next</a></li>";
+                                    }
+
+                                    echo '</ul></div>'; // close pagination
+                                }
+
+                                echo '</div></div>'; 
                             }
+
                         ?>
 
                         </div>
