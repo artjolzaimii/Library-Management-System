@@ -432,60 +432,62 @@
                                 <div class="category-list">
                                     <ul>
                                         <li>
-                                            <span>ISBN:</span> <?php echo $isbn;?>
+                                            <span>ISBN:</span> <?php echo htmlspecialchars($row['isbn']); ?>
                                         </li>
                                         <li>
-                                            <span>Genres:</span>
+                                            <span>Genres:</span><br>
                                             <?php 
-                                                echo $genres;
+                                                $genreList = explode(',', $genres);
+                                                foreach($genreList as $genre){
+                                                    echo '<p>' . htmlspecialchars(trim($genre)) . '</p>';
+                                                }
                                             ?>
                                         </li>
                                     </ul>
                                     <ul>
                                         <li>
-                                            <span>Author:</span> 
+                                            <span>Authors:</span><br>
                                             <?php 
-                                                echo $authors;
+                                                $authorList = explode(',', $authors);
+                                                foreach($authorList as $author){
+                                                    echo '<p>' . htmlspecialchars(trim($author)) . '</p>';
+                                                }
                                             ?>
                                         </li>
                                         <li>
-                                            <span>Format:</span> <?php echo $row['format']?>
+                                            <span>Format:</span> <?php echo htmlspecialchars($row['format']); ?>
                                         </li>
                                     </ul>
                                     <ul>
                                         <li>
-                                            <span>Total page:</span> <?php echo $row['nr_pages']?>
+                                            <span>Total Pages:</span> <?php echo htmlspecialchars($row['nr_pages']); ?>
                                         </li>
                                         <li>
-                                            <span>Language:</span> <?php echo $row['language']?>
+                                            <span>Language:</span> <?php echo htmlspecialchars($row['language']); ?>
                                         </li>
                                     </ul>
                                     <ul>
                                         <li>
-                                            <span>Publish Years:</span> <?php echo $row['publication_year']?>
+                                            <span>Publication Year:</span> <?php echo htmlspecialchars($row['publication_year']); ?>
                                         </li>
                                         <li>
-                                            <span>Century:</span> United States
+                                            <span>Publisher:</span> <?php echo htmlspecialchars($row['publisher']); ?>
                                         </li>
                                     </ul>
                                 </div>
                             </div>
+
+
                             <div class="box-check">
                                 <div class="check-list">
                                     <ul>
                                         <li>
                                             <i class="fa-solid fa-check"></i>
-                                            Free shipping orders from $150
+                                            Free shipping orders from 5000 All
                                         </li>
                                         <li>
                                             <i class="fa-solid fa-check"></i>
                                             30 days exchange & return
-                                        </li>
-                                    </ul>
-                                    <ul>
-                                        <li>
-                                            <i class="fa-solid fa-check"></i>
-                                            Mamaya Flash Discount: Starting at 30% Off
                                         </li>
                                         <li>
                                             <i class="fa-solid fa-check"></i>
@@ -537,65 +539,67 @@
                                             <td class="text-1">Availability</td>
                                             <td class="text-2">
                                                 <?php 
-                                                    if($row['format']=='For Sale'){
-                                                        if($saleRow['inventory']>0){
+                                                    if($row['format'] == 'For Sale'){
+                                                        if($saleRow['inventory'] > 0){
                                                             echo "Available";
-                                                        }
-                                                        else{
+                                                        } else {
                                                             echo "Out of Stock";
                                                         }
+                                                    } else {
+                                                        echo "Not for Sale";
                                                     }
                                                 ?>
                                             </td>
                                         </tr>
                                         <tr>
+                                            <td class="text-1">ISBN</td>
+                                            <td class="text-2"><?php echo $row['isbn']; ?></td>
+                                        </tr>
+                                        <tr>
                                             <td class="text-1">Authors</td>
-                                            <td class="text-2">
-                                                <?php 
-                                                    echo $authors;
-                                            ?>
-                                            </td>
+                                            <td class="text-2"><?php echo $authors; ?></td>
                                         </tr>
                                         <tr>
                                             <td class="text-1">Genres</td>
-                                            <td class="text-2">
-                                                <?php 
-                                                echo $genres;
-                                            ?>
-                                            </td> 
+                                            <td class="text-2"><?php echo $genres; ?></td> 
                                         </tr>
                                         <tr>
                                             <td class="text-1">Publish Year</td>
-                                            <td class="text-2"><?php echo $row['publication_year']?></td>
+                                            <td class="text-2"><?php echo $row['publication_year']; ?></td>
                                         </tr>
                                         <tr>
-                                            <td class="text-1">Total Page</td>
-                                            <td class="text-2"><?php echo $row['nr_pages']?></td>
+                                            <td class="text-1">Publisher</td>
+                                            <td class="text-2"><?php echo $row['publisher']; ?></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-1">Total Pages</td>
+                                            <td class="text-2"><?php echo $row['nr_pages']; ?></td>
                                         </tr>
                                         <tr>
                                             <td class="text-1">Format</td>
-                                            <td class="text-2"><?php echo $row['format']?></td>
-                                        </tr>
-                                        <tr>
-                                            <td class="text-1">Country</td>
-                                            <td class="text-2">United States</td>
+                                            <td class="text-2"><?php echo $row['format']; ?></td>
                                         </tr>
                                         <tr>
                                             <td class="text-1">Language</td>
-                                            <td class="text-2"><?php echo $row['language']?></td>
+                                            <td class="text-2"><?php echo $row['language']; ?></td>
                                         </tr>
                                         <tr>
-                                            <td class="text-1">Dimensions</td>
-                                            <td class="text-2">30 × 32 × 46 Inches</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="text-1">Weight</td>
-                                            <td class="text-2">2.5 Pounds</td>
+                                            <td class="text-1">Price</td>
+                                            <td class="text-2">
+                                                <?php 
+                                                    if(isset($saleRow['price'])) {
+                                                        echo number_format($saleRow['price'], 2)." All";
+                                                    } else {
+                                                        echo 'N/A';
+                                                    }
+                                                ?>
+                                            </td>
                                         </tr>
                                     </tbody>
                                 </table>
                             </div>
                         </div>
+
                         <div id="review" class="tab-pane fade" role="tabpanel">
                             <div class="review-items">
                                 <div class="review-wrap-area d-flex gap-4">
