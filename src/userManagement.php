@@ -297,6 +297,6 @@ $result = $conn->query($query);
 </html>
 
 <?php
-// Close the connection
+
 $conn->close();
 ?>
