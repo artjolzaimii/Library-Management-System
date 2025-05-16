@@ -1,13 +1,19 @@
+<?php 
+    ob_start();
+    if (session_status() === PHP_SESSION_NONE) session_start();
+    require_once("../../../utilities/config.php");
+?>
+
 <header id="header-sticky" class="header-1">
         <div class="container-fluid">
             <div class="mega-menu-wrapper">
                 <div class="header-main">
                     <div class="logo">
-                        <a href="index.html" class="header-logo">
-                            <img src="../assets/img/logo/logo.png" alt="logo-img">
+                        <a href="mainPage.php" class="header-logo">
+                            <img src="../assets/img/logo/logo2.png" alt="logo-img" style="width: 200px; height: auto;">
                         </a>
-                        <a href="index.html" class="header-logo-2 d-none">
-                            <img src="../assets/img/logo/logo.png" alt="logo-img">
+                        <a href="mainPage.php" class="header-logo-2 d-none">
+                            <img src="../assets/img/logo/logo2.png" alt="logo-img" style="width: 200px; height: auto;">
                         </a>
                     </div>
                     <div class="mean__menu-wrapper">
@@ -15,7 +21,7 @@
                             <nav id="mobile-menu" style="display: block;">
                                 <ul>
                                     <li>
-                                        <a href="index.html">
+                                        <a href="mainPage.php">
                                             Home
                                             <i class="fas fa-angle-down"></i>
                                         </a>
@@ -137,13 +143,32 @@
                             </div>
                         </div>
                         <div class="content">
-                        <button id="openButton" class="account-text d-flex align-items-center gap-2">
-                            <i class="fa-regular fa-user"></i>
-                            Log in
-                        </button>
-                    </div>
+                            <?php if (isset($_SESSION['username'])): ?>
+                                <div class="dropdown profile-dropdown d-inline-block">
+                                    <button class="account-text d-flex align-items-center gap-2 dropdown-toggle" type="button" id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false" style="background:none; border:none;">
+                                        <i class="fa-regular fa-user"></i>
+                                        <?php echo htmlspecialchars($_SESSION['username']); ?>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+                                        <li><a class="dropdown-item" href="myProfile.php"><i class="fa fa-user me-2"></i>My Profile</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li>
+                                            <form action="logout.php" method="post" style="margin:0;">
+                                                <button type="submit" class="dropdown-item"><i class="fa fa-sign-out-alt me-2"></i>Logout</button>
+                                            </form>
+                                        </li>
+                                    </ul>
+                                </div>
+                            <?php else: ?>
+                                <button id="openButton" class="account-text d-flex align-items-center gap-2">
+                                    <i class="fa-regular fa-user"></i>
+                                    Log in
+                                </button>
+                            <?php endif; ?>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </header>
+    <script src="../assets/js/bootstrap.bundle.min.js"></script>

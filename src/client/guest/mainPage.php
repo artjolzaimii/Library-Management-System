@@ -1,3 +1,7 @@
+<?php 
+    include("clientMenu.php");
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <!--<< Header Area >>-->
@@ -124,194 +128,12 @@
         </div>
     </div>
     <div class="offcanvas__overlay"></div>
-
     <!-- Header Section Start -->
-    <header id="header-sticky" class="header-1">
-        <div class="container-fluid">
-            <div class="mega-menu-wrapper">
-                <div class="header-main">
-                    <div class="logo">
-                        <a href="index.html" class="header-logo">
-                            <img src="../assets/img/logo/logo.png" alt="logo-img">
-                        </a>
-                        <a href="index.html" class="header-logo-2 d-none">
-                            <img src="../assets/img/logo/logo.png" alt="logo-img">
-                        </a>
-                    </div>
-                    <div class="mean__menu-wrapper">
-                        <div class="main-menu">
-                            <nav id="mobile-menu" style="display: block;">
-                                <ul>
-                                    <li>
-                                        <a href="index.html">
-                                            Home
-                                            <i class="fas fa-angle-down"></i>
-                                        </a>
-                                        <ul class="submenu">
-                                            <li><a href="index.html">Home 01</a></li>
-                                            <li><a href="index-2.html">Home 02</a></li>
-                                        </ul>
-                                    </li>
-                                    <li>
-                                        <a href="shop.html">
-                                            Shop
-                                            <i class="fas fa-angle-down"></i>
-                                        </a>
-                                        <ul class="submenu">
-                                            <li><a href="shop.html">Shop Default</a></li>
-                                            <li><a href="shop-list.html">Shop List</a></li>
-                                            <li><a href="shop-details.html">Shop Details</a></li>
-                                            <li><a href="shop-cart.html">Shop Cart</a></li>
-                                            <li><a href="wishlist.html">Wishlist</a></li>
-                                            <li><a href="checkout.html">Checkout</a></li>
-                                        </ul>
-                                    </li>
-                                    <li class="has-dropdown">
-                                        <a href="about.html">
-                                            Pages
-                                            <i class="fas fa-angle-down"></i>
-                                        </a>
-                                        <ul class="submenu">
-                                            <li><a href="about.html">About Us</a></li>
-                                            <li class="has-dropdown">
-                                                <a href="team.html">
-                                                    Author
-                                                    <i class="fas fa-angle-down"></i>
-                                                </a>
-                                                <ul class="submenu">
-                                                    <li><a href="team.html">Author</a></li>
-                                                    <li><a href="team-details.html">Author Profile</a></li>
-                                                </ul>
-                                            </li>
-                                            <li><a href="faq.html">Faq's</a></li>
-                                            <li><a href="404.html">404 Page</a></li>
-                                        </ul>
-                                    </li>
-                                    <li>
-                                        <a href="news.html">
-                                            Blog
-                                            <i class="fas fa-angle-down"></i>
-                                        </a>
-                                        <ul class="submenu">
-                                            <li><a href="news-grid.html">Blog Grid</a></li>
-                                            <li><a href="news.html">Blog List</a></li>
-                                            <li><a href="news-details.html">Blog Details</a></li>
-                                        </ul>
-                                    </li>
-                                    <li>
-                                        <a href="contact.html">Contact</a>
-                                    </li>
-                                </ul>
-                            </nav>
-                        </div>
-                    </div>
-                    <div class="header-right d-flex justify-content-end align-items-center">
-                        <div class="search-widget">
-                            <form action="#">
-                                <input type="text" placeholder="Search for Products...">
-                                <button type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
-                            </form>
-                        </div>
-                        <a href="#0" class="search-trigger search-icon style-2"><i
-                                class="fa-regular fa-magnifying-glass"></i></a>
-                        <ul class="header-icon">
-                            <li>
-                                <a href="#"><i class="fa-regular fa-heart"></i><span class="number">4</span></a>
-                            </li>
-                        </ul>
-                        <div class="menu-cart">
-                            <div class="cart-box">
-                                <ul>
-                                    <li>
-                                        <img src="../assets/img/shop-cart/01.png" alt="image">
-                                        <div class="cart-product">
-                                            <div class="cart-ctx">
-                                                <a href="#">Sky Freedom</a>
-                                                <span>100$</span>
-                                            </div>
-                                            <i class="fa-solid fa-xmark"></i>
-                                        </div>
-                                    </li>
-                                </ul>
-                                <ul>
-                                    <li class="border-none">
-                                        <img src="../assets/img/shop-cart/02.png" alt="image">
-                                        <div class="cart-product">
-                                            <div class="cart-ctx">
-                                                <a href="#">The Sky</a>
-                                                <span>98$</span>
-                                            </div>
-                                            <i class="fa-solid fa-xmark"></i>
-                                        </div>
-                                    </li>
-                                </ul>
-                                <div class="shopping-items">
-                                    <span>Total :</span>
-                                    <span>$198.00</span>
-                                </div>
-                                <div class="cart-button mb-4">
-                                    <a href="shop-cart.html" class="theme-btn">
-                                        View Cart
-                                    </a>
-                                </div>
-                            </div>
-                            <a href="shop-cart.html" class="cart-icon">
-                                <i class="fa-sharp fa-regular fa-bag-shopping"></i>
-                            </a>
-                        </div>
-                        <div class="header__hamburger d-xl-none my-auto">
-                            <div class="sidebar__toggle">
-                                <i class="fas fa-bars"></i>
-                            </div>
-                        </div>
-                        <div class="content">
-                            <button id="openButton" class="account-text d-flex align-items-center gap-2">
-                                <i class="fa-regular fa-user"></i>
-                                Log in
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </header>
 
     <!-- Sidebar Area Here -Log in page- -->
-    <div id="targetElement" class="side_bar slideInRight side_bar_hidden">
-        <div class="side_bar_overlay"></div>
-        <div class="cart-title mb-50">
-            <h4>Log in</h4>
-        </div>
-        <div class="login-sidebar">
-            <form action="#" id="contact-form" method="POST">
-                <div class="row g-4">
-                    <div class="col-lg-12">
-                        <div class="form-clt">
-                            <span>Username or email address *</span>
-                            <input type="text" name="name15" id="name15" placeholder="">
-                        </div>
-                    </div>
-                    <div class="col-lg-12">
-                        <div class="form-clt">
-                            <span>Password *</span>
-                            <input id="password" type="password" placeholder="">
-                            <div class="icon"><i class="fa-regular fa-eye"></i></div>
-                        </div>
-                    </div>
-                    <div class="col-lg-12">
-                        <button class="theme-btn" type="submit"><span>Log In</span></button>
-                    </div>
-                </div>
-            </form>
-            <p class="text">Or</p>
-            <div class="user-icon-box">
-                <img src="../assets/img/user.png" alt="img">
-                <p>No account yet?</p>
-                <a href="account.html">Create an Account</a>
-            </div>
-        </div>
-        <button id="closeButton" class="x-mark-icon"><i class="fas fa-times"></i></button>
-    </div>
+    <?php 
+        require("logInSidebar.php");
+    ?>
 
     <!-- Hero Section start  -->
     <div class="hero-section hero-2 fix bg-cover" style="background-image: url(../assets/img/hero/hero-bg-2.jpg);">
@@ -341,11 +163,11 @@
                             </p>
 
                             <div class="form-clt wow fadeInUp" data-wow-delay=".9s">
-                                <button type="submit" class="theme-btn">
+                                <button type="button" class="theme-btn" onclick="window.location.href='shopList.php';">
                                     Shop Now <i class="fa-solid fa-arrow-right-long"></i>
                                 </button>
-                                <button type="submit" class="theme-btn style-2">
-                                    view all books <i class="fa-solid fa-arrow-right-long"></i>
+                                <button type="button" class="theme-btn style-2" onclick="window.location.href='shopList.php';">
+                                    View All Books <i class="fa-solid fa-arrow-right-long"></i>
                                 </button>
                             </div>
                         </div>
@@ -1779,143 +1601,9 @@
     </section>
 
     <!-- Footer Section start  -->
-    <footer class="footer-section fix">
-        <div class="container">
-            <div class="footer-widget-wrapper">
-                <div class="row">
-                    <div class="col-xl-3 col-lg-4 col-md-4 wow fadeInUp" data-wow-delay=".2s">
-                        <div class="single-footer-widget">
-                            <div class="widget-head"><a href="index.html" class="footer-logo">
-                                    <img src="../assets/img/logo/logo.svg" alt="logo-img">
-                                </a>
-                            </div>
-                            <div class="footer-content">
-                                <div class="text">
-                                    <p>Got Questions? Call us</p>
-                                    <a href="tel:+67041390762">+670 413 90 762</a>
-                                </div>
-                                <ul class="contact-list">
-                                    <li>
-                                        <i class="fa-regular fa-envelope"></i>
-                                        <a href="mailto:readit@gmail.com">readit@gmail.com</a>
-                                    </li>
-                                    <li>
-                                        <i class="fa-regular fa-location-dot"></i>
-                                        79 Sleepy Hollow St.<br>
-                                        Jamaica, New York 1432
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-xl-3 col-lg-4 col-md-4 ps-lg-5 wow fadeInUp" data-wow-delay=".4s">
-                        <div class="single-footer-widget">
-                            <div class="widget-head">
-                                <h3>Costumers Support</h3>
-                            </div>
-                            <ul class="list-items">
-                                <li>
-                                    <a href="shop.html">
-                                        Store List
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="contact.html">
-                                        Opening Hours
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="contact.html">
-                                        Contact Us
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="contact.html">
-                                        Return Policy
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div class="col-xl-3 col-lg-4 col-md-4 ps-lg-5 wow fadeInUp" data-wow-delay=".6s">
-                        <div class="single-footer-widget">
-                            <div class="widget-head">
-                                <h3>Categories</h3>
-                            </div>
-                            <ul class="list-items">
-                                <li>
-                                    <a href="contact.html">
-                                        Novel Books
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="shop.html">
-                                        Poetry Books
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="contact.html">
-                                        Political Books
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="contact.html">
-                                        History Books
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div class="col-xl-3 col-lg-4 col-md-6 wow fadeInUp" data-wow-delay=".8s">
-                        <div class="single-footer-widget">
-                            <div class="widget-head">
-                                <h3>Subcribe.</h3>
-                            </div>
-                            <div class="footer-content">
-                                <p class="f-text">Our conversation is just getting started</p>
-                                <div class="footer-input">
-                                    <input type="email" id="email2" placeholder="Enter Your Email">
-                                    <button class="newsletter-btn" type="submit">
-                                        <span>Subscribe</span>
-                                    </button>
-                                </div>
-                                <div class="social-item">
-                                    <h6>Follow Us On</h6>
-                                    <div class="social-icon d-flex align-items-center">
-                                        <a href="#"><i class="fab fa-facebook-f"></i></a>
-                                        <a href="#"><i class="fab fa-twitter"></i></a>
-                                        <a href="#"><i class="fab fa-linkedin-in"></i></a>
-                                        <a href="#"><i class="fa-brands fa-vimeo-v"></i></a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                <div class="footer-wrapper">
-                    <p class="wow fadeInUp" data-wow-delay=".3s">
-                        ©All Rights reserved 2025 by <span>Readit.</span>
-                    </p>
-                    <div class="bottom-list wow fadeInUp" data-wow-delay=".5s">
-                        <div class="app-image">
-                            <img src="../assets/img/footer/01.png" alt="img">
-                        </div>
-                        <div class="app-image">
-                            <img src="../assets/img/footer/02.png" alt="img">
-                        </div>
-                        <div class="app-image">
-                            <img src="../assets/img/footer/03.png" alt="img">
-                        </div>
-                        <div class="app-image">
-                            <img src="../assets/img/footer/04.png" alt="img">
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </footer>
+    <?php 
+        require("footer.php");
+    ?>
 
     <!-- Newsletter Modal Area Start-->
     <div class="modal fade bd-example-modal-lg common-newsletter-modal" id="exampleModal" tabindex="-1" role="dialog"

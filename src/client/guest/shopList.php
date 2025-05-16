@@ -1,3 +1,7 @@
+<!-- Header Section Start -->
+<?php 
+    include("clientMenu.php");
+?>
 <!DOCTYPE html>
 <html lang="en">
 <!--<< Header Area >>-->
@@ -18,10 +22,6 @@
 </head>
 
 <body>
-    <?php 
-        require_once("../../../utilities/config.php");
-    ?>
-    
     <!-- Cursor follower -->
     <div class="cursor-follower"></div>
 
@@ -113,10 +113,6 @@
     </div>
     <div class="offcanvas__overlay"></div>
 
-    <!-- Header Section Start -->
-    <?php 
-        include("clientmenu.php");
-    ?>
 
     <!-- Sidebar Area Here -->
     <?php 
