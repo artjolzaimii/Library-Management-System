@@ -173,9 +173,7 @@
                                       </div>
                                     </div>
                                   </div>";
-                        endwhile;
-
-                          
+                        endwhile;                         
                         ?>
                         
                       </tbody>
@@ -184,8 +182,6 @@
                 </div>
 
                 <div class="tab-pane fade" id="viewLow" role="tabpanel">
-                  <!-- You can implement logic to display books with low stock here -->
-                  <p class="text-muted">Low stock books will be shown here.</p>
                  <!-- View Low Stock -->
                   <div class="table-responsive text-nowrap">
                     <table class="table table-hover">
@@ -216,7 +212,7 @@
                        LEFT JOIN 
                          borrow_book ON book.book_id = borrow_book.book_id
                        WHERE
-                         (book.format = 'For Sale' AND COALESCE(sale_book.inventory, 0) <= 10)
+                         (book.format = 'For Sale' AND COALESCE(sale_book.inventory, 0) <= 5)
                          OR (book.format = 'For Borrow' AND COALESCE(borrow_book.inventory, 0) <= 2)";
          
                           $low_result = mysqli_query($conn, $low_query);
