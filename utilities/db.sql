@@ -5,15 +5,17 @@ CREATE TABLE genres (
 
 CREATE TABLE users (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id VARCHAR(50) UNIQUE,
-    full_name VARCHAR(100),
-    email VARCHAR(100),
+    user_id VARCHAR(50) UNIQUE NOT NULL,
+    full_name VARCHAR(100) NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
     phone VARCHAR(20),
     address TEXT,
-    username VARCHAR(50),
-    password TEXT,
-    image_path VARCHAR(255),
-    role VARCHAR(20)
+    username VARCHAR(50) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL, t
+    role varchar(20)  NOT NULL,
+    gender varchar(20) NOT NULL,
+    birthday DATE,
+    image_path VARCHAR(255)
 );
 
 CREATE TABLE book(
@@ -76,3 +78,19 @@ CREATE TABLE borrow_book(
     book_condition varchar(20),
     FOREIGN KEY (book_id) REFERENCES book(book_id)
 )
+CREATE TABLE shopping_cart(
+	cart_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE cart_book(
+	item_id INT AUTO_INCREMENT PRIMARY KEY,
+    cart_id INT NOT NULL,
+    book_id INT NOT NULL ,
+    quantity INT DEFAULT 1,
+    
+    FOREIGN KEY (cart_id) REFERENCES shopping_cart(cart_id) ON DELETE CASCADE,
+    FOREIGN KEY (book_id) REFERENCES book(book_id) ON DELETE CASCADE
+ );
