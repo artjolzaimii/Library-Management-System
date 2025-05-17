@@ -1,7 +1,6 @@
 <?php 
     ob_start();
     if (session_status() === PHP_SESSION_NONE) session_start();
-    require_once("../../../utilities/config.php");
 ?>
 
 <header id="header-sticky" class="header-1">
@@ -97,46 +96,11 @@
                                 <a href="#"><i class="fa-regular fa-heart"></i><span class="number">4</span></a>
                             </li>
                         </ul>
-                        <div class="menu-cart">
-                            <div class="cart-box">
-                                <ul>
-                                    <li>
-                                        <img src="../assets/img/shop-cart/01.png" alt="image">
-                                        <div class="cart-product">
-                                            <div class="cart-ctx">
-                                                <a href="#">Sky Freedom</a>
-                                                <span>100$</span>
-                                            </div>
-                                            <i class="fa-solid fa-xmark"></i>
-                                        </div>
-                                    </li>
-                                </ul>
-                                <ul>
-                                    <li class="border-none">
-                                        <img src="../assets/img/shop-cart/02.png" alt="image">
-                                        <div class="cart-product">
-                                            <div class="cart-ctx">
-                                                <a href="#">The Sky</a>
-                                                <span>98$</span>
-                                            </div>
-                                            <i class="fa-solid fa-xmark"></i>
-                                        </div>
-                                    </li>
-                                </ul>
-                                <div class="shopping-items">
-                                    <span>Total :</span>
-                                    <span>$198.00</span>
-                                </div>
-                                <div class="cart-button mb-4">
-                                    <a href="shop-cart.html" class="theme-btn">
-                                        View Cart
-                                    </a>
-                                </div>
-                            </div>
-                            <a href="shop-cart.html" class="cart-icon">
-                                <i class="fa-sharp fa-regular fa-bag-shopping"></i>
-                            </a>
-                        </div>
+                        
+                        <!-- Shopping cart -->
+                        <?php 
+                            include(__DIR__."/ShoppingCart/basket.php");
+                        ?>
                         <div class="header__hamburger d-xl-none my-auto">
                             <div class="sidebar__toggle">
                                 <i class="fas fa-bars"></i>
