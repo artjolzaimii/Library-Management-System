@@ -1,5 +1,8 @@
-<?php 
+<?php
+    require_once("clientMenu.php");
     require_once("../../../utilities/config.php");
+    require_once("./ShoppingCart/shoppingCartFunctionalities.php");
+    $cartId=getShopCartId($conn);
     
 function clean_input($conn, $key) {
     return isset($_POST[$key]) ? mysqli_real_escape_string($conn, htmlspecialchars(trim($_POST[$key]))) : '';
@@ -38,10 +41,48 @@ if (!empty($errors)) {
     foreach ($errors as $error) {
         echo "<div class='alert alert-danger'>$error</div>";
     }
+    exit;
 }
 
-$query=
-"
-    INSERT INTO orders
-";
+//Query for fetching all book in shopping cart
+$stmt = $conn->prepare("SELECT book_id, quantity FROM cart_book WHERE cart_id = ?");
+$stmt->bind_param("i", $cartId);
+$stmt->execute();
+$allBooks = $stmt->get_result();
+
+if ($allBooks->num_rows == 0) {
+
+    echo "<div class='alert alert-warning'>Your cart is empty.</div>";
+    exit;
+}
+
+//Query for insertion IN ORDERS
+$insertOrder="INSERT INTO orders(first_name,last_name,address,city,country,phone,email,notes,cart_id) values (?,?,?,?,?,?,?,?,?);";
+$stm=$conn->prepare($insertOrder);
+$stm->bind_param("ssssssssi",$firstName,$lastName,$address,$city,$country,$phone,$email,$notes,$cartId);
+$stm->execute();
+
+$orderId=$conn->insert_id;
+
+//Query for insertion into orders book
+$insertBookQuery=
+"INSERT INTO order_book VALUES(?,?,?);";
+
+$insertStm=$conn->prepare($insertBookQuery);
+//Query for deleting from cart_book
+
+$remodeFromCartQuery=
+" DELETE FROM cart_book WHERE cart_id=? AND book_id=?;";
+
+$removeStm=$conn->prepare($remodeFromCartQuery);
+
+while($book = $allBooks->fetch_assoc()){
+    $insertStm->bind_param("iii", $orderId, $book['book_id'], $book['quantity']);
+    $insertStm->execute();
+
+    $removeStm->bind_param("ii", $cartId, $book['book_id']);
+    $removeStm->execute();
+}
+
+echo "<script>window.location.href=\"orderSentSuccessfullyPage.php\"</script>";
 ?>

@@ -1,4 +1,7 @@
     <footer class="footer-section fix">
+        <?php 
+                require("styleAndScripts.php");
+        ?>
         <div class="container">
             <div class="footer-widget-wrapper">
                 <div class="row">

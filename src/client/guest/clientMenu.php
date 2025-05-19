@@ -1,9 +1,13 @@
 <?php 
     ob_start();
     if (session_status() === PHP_SESSION_NONE) session_start();
+    
 ?>
 
 <header id="header-sticky" class="header-1">
+        <?php 
+                require("styleAndScripts.php");
+        ?>
         <div class="container-fluid">
             <div class="mega-menu-wrapper">
                 <div class="header-main">

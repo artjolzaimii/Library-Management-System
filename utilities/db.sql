@@ -106,6 +106,7 @@ CREATE TABLE cart_book(
     email VARCHAR(127) NOT NULL,
     notes VARCHAR(511),
     cart_id INT,
+    order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     FOREIGN KEY (cart_id) REFERENCES shopping_cart(cart_id)
 );
 

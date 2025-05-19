@@ -205,7 +205,7 @@
                                             <span class="quantity-basket">
                                                 <span class="qty">
                                                     <button class="qtyminus" aria-hidden="true">−</button>
-                                                    <input type="number" name="quantity" class="qty-input" min="1" max="10" step="1"
+                                                    <input type="number" name="quantity" class="qty-input" min="1" max="199" step="1"
                                                         value="<?php echo $book['quantity']?>" data-book-id="<?php echo $book['book_id']; ?>">
                                                     <button class="qtyplus" aria-hidden="true">+</button>
                                                 </span>

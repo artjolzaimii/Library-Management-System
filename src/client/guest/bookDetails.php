@@ -344,7 +344,7 @@
                                                 }
                                             ?>
                                         >−</button>
-                                        <input type="number" name="quantity" id="qty2" min="1" max="10" step="1" value="1"
+                                        <input type="number" name="quantity" id="qty2" min="1" max="199" step="1" value="1"
                                             <?php 
                                                 if($row['format']=='For Sale'){
                                                     if($saleRow['inventory']<0){

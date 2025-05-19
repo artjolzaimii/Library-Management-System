@@ -147,7 +147,7 @@
         <div class="container">
             <div class="row g-5">
                 <div class="col-lg-9">
-                    <form action="" method="post">
+                    <form action="checkout-handler.php" method="POST">
                         <div class="checkout-single-wrapper">
                             <div class="checkout-single boxshado-single">
                                 <h4>Billing Details</h4>
@@ -157,7 +157,7 @@
                                             <div class="input-single">
                                                 <span>First Name*</span>
                                                 <input type="text" id="userFirstName" required=""
-                                                    placeholder="First Name" name="firstname">
+                                                    placeholder="First Name" name="firstName">
                                             </div>
                                         </div>
                                         <div class="col-lg-6">
@@ -212,8 +212,24 @@
                                 </div>
                             </div>
                         </div>
-                    </form>
+                    
                 </div>
+                
+                <!-- Displaying all books in cart -->
+                <?php 
+                    $cartId=getShopCartId($conn);
+                
+                    $query=
+                    "
+                        SELECT book.title, price, quantity
+                        FROM cart_book INNER  JOIN book ON book.book_id=cart_book.book_id
+                        INNER JOIN sale_book ON sale_book.book_id=book.book_id
+                        where cart_book.cart_id= $cartId
+                    ";
+                    
+                    $result=mysqli_query( $conn, $query);
+
+                ?>
                 <div class="col-lg-3">
                     <div class="checkout-order-area">
                         <h3>Your Order</h3>
@@ -222,10 +238,18 @@
                                 <p>Product</p>
                                 <p>Subtotal</p>
                             </div>
+                            <?php
+                                $total=0;
+                                while($book= $result->fetch_assoc()):
+                                    $total+=$book['price']*$book['quantity'];
+                            ?>
                             <div class="checkout-item d-flex align-items-center justify-content-between">
-                                <p>Fashion Women’s 1</p>
-                                <p>$29.00</p>
+                                <p><?php echo $book['title']?></p>
+                                <p><?php echo $book['quantity']." x ".$book['price']." = ".$book['price']*$book['quantity']?> All</p>
                             </div>
+                            
+                            <?php endwhile;?>
+                            
                             <div class="checkout-item d-flex justify-content-between">
                                 <p>Shipping</p>
                                 <div class="shopping-items">
@@ -240,7 +264,7 @@
                             </div>
                             <div class="checkout-item d-flex align-items-center justify-content-between">
                                 <p>Total</p>
-                                <p>$55.00</p>
+                                <p><?php echo $total; ?> All</p>
                             </div>
                             <div class="checkout-item-2">
                                 
@@ -253,10 +277,12 @@
                                 </div>
                                 
                             </div>
+                            <button type="submit" class="theme-btn style-2">Order</button>
                         </div>
                     </div>
                 </div>
             </div>
+            </form>
         </div>
     </section>
 
