@@ -2,6 +2,9 @@
 <?php 
     include("clientMenu.php");
     include("../../../utilities/config.php");
+    if(!isset($_SESSION['username'])){
+        echo "<script>window.location.href =\"mainPage.php\"</script>";
+    }
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -141,6 +144,25 @@
     </div>
 
     <!-- Shop Cart Section Start -->
+    <?php 
+        $cartId=getShopCartId($conn);
+        
+        $query=
+        "
+        SELECT book.image_path, book.title, quantity, price, book.book_id
+        FROM book INNER JOIN sale_book ON sale_book.book_id=book.book_id
+        INNER JOIN cart_book ON cart_book.book_id=book.book_id
+        INNER JOIN shopping_cart ON shopping_cart.cart_id=cart_book.cart_id
+        WHERE cart_book.cart_id=?
+        ";
+        
+        $stm=$conn -> prepare($query);
+        $stm->bind_param("i",$cartId);
+        $stm->execute();
+        
+        $result=$stm->get_result();
+        
+    ?>
     <div class="cart-section section-padding pb-0">
         <div class="container">
             <div class="main-cart-wrapper">
@@ -157,112 +179,127 @@
                                     </tr>
                                 </thead>
                                 <tbody>
+                                <?php 
+                                    $total=0;
+                                    
+                                    //Start printing books in shopcart
+                                    while($book=$result ->fetch_assoc()):
+                                        $total+=$book['price']*$book['quantity'];
+                                        
+                                ?>
                                     <tr>
                                         <td>
-                                            <span class="d-flex gap-5 align-items-center">
-                                                <a href="shop-cart.html" class="remove-icon">
+                                            <span class="d-flex gap-3 align-items-center">
+                                                <a href="shopCart.php?id=<?php echo $book['book_id']?>" class="remove-icon">
                                                     <img src="../assets/img/icon/icon-9.svg" alt="img">
                                                 </a>
-                                                <span class="cart">
-                                                    <img src="../assets/img/shop-cart/01.png" alt="img">
-                                                </span>
+                                                <img src="<?php echo "../../../uploads/images/".$book['image_path']?>" alt="img" height="100px" width="70px">
                                                 <span class="cart-title">
-                                                    simple Things You To Save Book
+                                                    <?php echo $book['title'];?>
                                                 </span>
                                             </span>
-                                        </td>
                                         <td>
-                                            <span class="cart-price">$30.00</span>
+                                            <span class="cart-price"><?php echo $book['price']?> All</span>
                                         </td>
                                         <td>
                                             <span class="quantity-basket">
                                                 <span class="qty">
                                                     <button class="qtyminus" aria-hidden="true">−</button>
-                                                    <input type="number" name="qty" id="qty2" min="1" max="10" step="1"
-                                                        value="1">
+                                                    <input type="number" name="quantity" class="qty-input" min="1" max="10" step="1"
+                                                        value="<?php echo $book['quantity']?>" data-book-id="<?php echo $book['book_id']; ?>">
                                                     <button class="qtyplus" aria-hidden="true">+</button>
                                                 </span>
                                             </span>
                                         </td>
                                         <td>
-                                            <span class="subtotal-price">$120.00</span>
+                                            <span class="subtotal-price"><?php echo $book['quantity']* $book['price']?> All</span>
                                         </td>
                                     </tr>
-                                    <tr>
-                                        <td>
-                                            <span class="d-flex gap-5 align-items-center">
-                                                <a href="shop-cart.html" class="remove-icon">
-                                                    <img src="assets/img/icon/icon-9.svg" alt="img">
-                                                </a>
-                                                <span class="cart">
-                                                    <img src="assets/img/shop-cart/02.png" alt="img">
-                                                </span>
-                                                <span class="cart-title">
-                                                    Qple GPad With Retina Sisplay
-                                                </span>
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <span class="cart-price">$30.00</span>
-                                        </td>
-                                        <td>
-                                            <span class="quantity-basket">
-                                                <span class="qty">
-                                                    <button class="qtyminus" aria-hidden="true">−</button>
-                                                    <input type="number" name="qty" id="qty3" min="1" max="10" step="1"
-                                                        value="1">
-                                                    <button class="qtyplus" aria-hidden="true">+</button>
-                                                </span>
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <span class="subtotal-price">$120.00</span>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <span class="d-flex gap-5 align-items-center">
-                                                <a href="shop-cart.html" class="remove-icon">
-                                                    <img src="assets/img/icon/icon-9.svg" alt="img">
-                                                </a>
-                                                <span class="cart">
-                                                    <img src="assets/img/shop-cart/03.png" alt="img">
-                                                </span>
-                                                <span class="cart-title">
-                                                    Flovely and Unicom Erna
-                                                </span>
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <span class="cart-price">$30.00</span>
-                                        </td>
-                                        <td>
-                                            <span class="quantity-basket">
-                                                <span class="qty">
-                                                    <button class="qtyminus" aria-hidden="true">−</button>
-                                                    <input type="number" name="qty" id="qty" min="1" max="10" step="1"
-                                                        value="1">
-                                                    <button class="qtyplus" aria-hidden="true">+</button>
-                                                </span>
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <span class="subtotal-price">$120.00</span>
-                                        </td>
-                                    </tr>
+                                <?php endwhile;?>
+                                <!-- Delete query -->
+                                <?php 
+                                    if(isset($_GET['id'])){
+                                        $bookId=mysqli_real_escape_string($conn,$_GET['id']);
+                                        $cartId=getShopCartId($conn);
+                                        $query=
+                                        "
+                                            DELETE FROM cart_book WHERE book_id=? AND cart_id=?
+                                        ";
+                                        $stm=$conn->prepare($query);
+                                        $stm->bind_param("ii",$bookId,$cartId);
+                                        $stm->execute();
+                                        
+                                        if($conn->affected_rows>0){
+                                            echo "<script>window.location.href=\"shopCart.php\"</script>";
+                                        }
+                                        
+                                    }
+                                ?>    
+                            
+                                <!-- Updating quantity script for AJAX-->
+                                <?php
+                                    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['book_id'], $_POST['quantity'])) {
+                                        $bookId = (int)$_POST['book_id'];
+                                        $quantity = (int)$_POST['quantity'];
+                                        $cartId = getShopCartId($conn);
+                                        $stmt = $conn->prepare("UPDATE cart_book SET quantity = ? WHERE book_id = ? AND cart_id=?");
+                                        $stmt->bind_param("iii", $quantity, $bookId, $cartId);
+                                        $stmt->execute();
+
+                                    }
+                                    ?>
+    
+                                <script>
+                                    //plus/minus
+                                    document.querySelectorAll('.qtyminus').forEach(btn => {
+                                        btn.addEventListener('click', function(e) {
+                                            e.preventDefault();
+                                            const input = this.nextElementSibling;
+                                            let value = parseInt(input.value, 10);
+                                            if (value > parseInt(input.min, 10)) {
+                                                input.value = value - 1;
+                                                input.dispatchEvent(new Event('change'));
+                                            }
+                                        });
+                                    });
+                                    
+                                    document.querySelectorAll('.qtyplus').forEach(btn => {
+                                        btn.addEventListener('click', function(e) {
+                                            e.preventDefault();
+                                            const input = this.previousElementSibling;
+                                            let value = parseInt(input.value, 10);
+                                            if (value < parseInt(input.max, 10)) {
+                                                input.value = value + 1;
+                                                input.dispatchEvent(new Event('change'));
+                                            }
+                                        });
+                                    });
+                                
+                                    document.querySelectorAll('.qty-input').forEach(input => {
+                                        input.addEventListener('change', function () {
+                                            const bookId = this.dataset.bookId;
+                                            const quantity = this.value;
+
+                                            fetch("", { 
+                                                method: "POST",
+                                                headers: {
+                                                    "Content-Type": "application/x-www-form-urlencoded"
+                                                },
+                                                body: "book_id=" + bookId + "&quantity=" + quantity
+                                            })
+                                            .then(res => {
+                                                window.location.href="shopCart.php"
+                                            })
+                                            
+                                        });
+                                    });
+                                </script>
+
                                 </tbody>
                             </table>
                         </div>
                         <div class="cart-wrapper-footer">
-                            <form action="shop-cart.html">
-                                <div class="input-area">
-                                    <input type="text" name="Coupon Code" id="CouponCode" placeholder="Coupon Code">
-                                    <button type="submit" class="theme-btn">
-                                        Apply
-                                    </button>
-                                </div>
-                            </form>
-                            <a href="shop-cart.html" class="theme-btn">
+                            <a href="shopList.php" class="theme-btn">
                                 Update Cart
                             </a>
                         </div>
@@ -280,7 +317,7 @@
                                         <td>
                                             <span class="d-flex gap-5 align-items-center justify-content-between">
                                                 <span class="sub-title">Subtotal:</span>
-                                                <span class="sub-price">$84.00</span>
+                                                <span class="sub-price"><?php echo $total?>All</span>
                                             </span>
                                         </td>
                                     </tr>
@@ -298,7 +335,7 @@
                                         <td>
                                             <span class="d-flex gap-5 align-items-center  justify-content-between">
                                                 <span class="sub-title">Total: </span>
-                                                <span class="sub-price sub-price-total">$84.00</span>
+                                                <span class="sub-price sub-price-total"><?php echo $total?>All</span>
                                             </span>
                                         </td>
                                     </tr>

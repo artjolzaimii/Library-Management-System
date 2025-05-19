@@ -7,7 +7,7 @@
             
             $cartId = getShopCartId($conn);
             $query = "
-                SELECT book.book_id, title, sale_book.price, image_path, quantity
+                SELECT book.book_id,isbn,title, sale_book.price, image_path, quantity
                 FROM cart_book INNER JOIN book ON cart_book.book_id=book.book_id
                 INNER JOIN sale_book ON book.book_id=sale_book.book_id 
                 WHERE cart_book.cart_id=?
@@ -32,7 +32,7 @@
                             <img src="../../../uploads/images/'.$book['image_path'].'" alt="image">
                             <div class="cart-product">
                                 <div class="cart-ctx">
-                                    <a href="#">'.$book['title'].'</a>
+                                    <a href="bookDetails.php?isbn='.$book['isbn'].'">'.$book['title'].'</a>
                                     <span>'.$book['quantity']." x ".$book['price'].' All</span>
                                 </div>
                                 <a href="shopList.php?bookId='.$book['book_id'].'"><i class="fa-solid fa-xmark"></i></a>

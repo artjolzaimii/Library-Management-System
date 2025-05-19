@@ -94,3 +94,26 @@ CREATE TABLE cart_book(
     FOREIGN KEY (cart_id) REFERENCES shopping_cart(cart_id) ON DELETE CASCADE,
     FOREIGN KEY (book_id) REFERENCES book(book_id) ON DELETE CASCADE
  );
+ 
+ CREATE TABLE orders(
+	order_id INT AUTO_INCREMENT PRIMARY KEY,
+    first_name VARCHAR(127) NOT NULL,
+    last_name VARCHAR(127) NOT NULL,
+    address VARCHAR(255) NOT NULL,
+    city VARCHAR(127) NOT NULL,
+    country VARCHAR(127) NOT NULL,
+    phone VARCHAR(20) NOT NULL,
+    email VARCHAR(127) NOT NULL,
+    notes VARCHAR(511),
+    cart_id INT,
+    FOREIGN KEY (cart_id) REFERENCES shopping_cart(cart_id)
+);
+
+CREATE TABLE order_book(
+	order_id INT NOT NULL,
+    book_id INT NOT NULL,
+    quantity INT NOT NULL,
+    PRIMARY KEY(order_id,book_id),
+    FOREIGN KEY (book_id) REFERENCES book(book_id),
+    FOREIGN KEY (order_id) REFERENCES orders(order_id)
+);
