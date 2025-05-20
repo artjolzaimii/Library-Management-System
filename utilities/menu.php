@@ -83,6 +83,13 @@
           </li>
         </ul>
       </li>
+       <!-- Orders Management -->
+      <li class="menu-item">
+        <a href="orders.php" class="menu-link">
+          <i class="menu-icon tf-icons bx bx-receipt"></i>
+          <div>Orders Management</div>
+        </a>
+      </li>
     </ul>
   </aside>
   

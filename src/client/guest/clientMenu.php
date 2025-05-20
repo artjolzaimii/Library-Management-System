@@ -36,12 +36,12 @@
                                             <i class="fas fa-angle-down"></i>
                                         </a>
                                         <ul class="submenu">
-                                            <li><a href="shop.html">Shop Default</a></li>
-                                            <li><a href="shop-list.html">Shop List</a></li>
-                                            <li><a href="shop-details.html">Shop Details</a></li>
-                                            <li><a href="shop-cart.html">Shop Cart</a></li>
-                                            <li><a href="wishlist.html">Wishlist</a></li>
-                                            <li><a href="checkout.html">Checkout</a></li>
+                                            <li><a href="shop.php">Shop Default</a></li>
+                                            <li><a href="shop-list.php">Shop List</a></li>
+                                            <li><a href="shop-details.php">Shop Details</a></li>
+                                            <li><a href="shop-cart.php">Shop Cart</a></li>
+                                            <li><a href="wishlist.php">Wishlist</a></li>
+                                            <li><a href="checkout.php">Checkout</a></li>
                                         </ul>
                                     </li>
                                     <li class="has-dropdown">
