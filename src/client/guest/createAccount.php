@@ -1,3 +1,8 @@
+<?php 
+    include("clientMenu.php"); 
+    require_once("../../../utilities/config.php");
+    ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -41,7 +46,8 @@
 
     <!-- Offcanvas/Menu Area start  -->
     <div class="fix-area">
-        <?php include("clientMenu.php"); ?>
+        
+        
     </div>
     <div class="offcanvas__overlay"></div>
 

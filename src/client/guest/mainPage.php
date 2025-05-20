@@ -1,5 +1,6 @@
 <?php 
     include("clientMenu.php");
+    require_once("../../../utilities/config.php");
 ?>
 
 <!DOCTYPE html>

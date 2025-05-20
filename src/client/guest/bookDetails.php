@@ -1,3 +1,10 @@
+<!-- Header Section Start -->
+<?php 
+    include("clientMenu.php");
+    require_once("../../../utilities/config.php");
+?>
+
+
 <!DOCTYPE html>
 <html lang="en">
 <!--<< Header Area >>-->
@@ -40,7 +47,7 @@
     
         $isbn=mysqli_real_escape_string($conn,$_GET['isbn']);
         
-        $query="SELECT `isbn`, `publication_year`, `publisher`, `language`, `nr_pages`, `description`, `format`, `image_path`, `title` FROM `book` WHERE `isbn`=?";
+        $query="SELECT `book_id`,`isbn`, `publication_year`, `publisher`, `language`, `nr_pages`, `description`, `format`, `image_path`, `title` FROM `book` WHERE `isbn`=?";
         
         $stm=$conn->prepare($query);
         
@@ -230,10 +237,6 @@
     </div>
     <div class="offcanvas__overlay"></div>
 
-    <!-- Header Section Start -->
-    <?php 
-        include("clientMenu.php")
-    ?>
 
     <!-- Sidebar Area Here -->
     <?php 
@@ -328,7 +331,8 @@
                             
                             ?>
                             <!--If an item is out of stock make buttons, inputs disabled -->
-                            <div class="cart-wrapper">
+                            <form action="" method="POST">
+                                <div class="cart-wrapper">
                                 <div class="quantity-basket">
                                     <p class="qty">
                                         <button class="qtyminus" aria-hidden="true"
@@ -340,7 +344,7 @@
                                                 }
                                             ?>
                                         >−</button>
-                                        <input type="number" name="qty" id="qty2" min="1" max="10" step="1" value="1"
+                                        <input type="number" name="quantity" id="qty2" min="1" max="199" step="1" value="1"
                                             <?php 
                                                 if($row['format']=='For Sale'){
                                                     if($saleRow['inventory']<0){
@@ -416,9 +420,8 @@
                                         </div>
                                     </div>
                                 </div>
-                                
-                                
-                                <a href="shop-details.html" class="theme-btn">Add To Cart</a>
+                                <!-- Submit button of form-->
+                                <button  type="submit" class="theme-btn">Add To Cart</button>
                                 <div class="icon-box">
                                     <a href="shop-details.html" class="icon">
                                         <i class="far fa-heart"></i>
@@ -428,6 +431,19 @@
                                     </a>
                                 </div>
                             </div>
+                            </form>
+                            
+                            <?php 
+                                //handle book add to cart
+                                if(isset($_POST['quantity'])){
+                                    $quantity=mysqli_real_escape_string($conn,$_POST['quantity']);
+                                    
+                                    require_once("./ShoppingCart/shoppingCartFunctionalities.php");
+                                    
+                                    addBookToBasket($conn,$row['book_id'],$quantity);
+                                }
+                            ?>
+                            
                             <div class="category-box">
                                 <div class="category-list">
                                     <ul>

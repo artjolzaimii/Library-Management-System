@@ -1,5 +1,5 @@
 <?php
-require_once("../../../utilities/config.php");
+require_once(__DIR__."/../../../utilities/config.php");
 $error = "";
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['username']) && isset($_POST['password'])) {
