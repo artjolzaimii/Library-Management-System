@@ -129,9 +129,6 @@ $books = mysqli_query($conn, "
                 var $container = $(
                     '<div class="book-option">' +
                         '<div class="book-info">' + book.text + '</div>' +
-                        '<div class="book-inventory">Available: ' + 
-                            $(book.element).attr('data-inventory') + 
-                        '</div>' +
                     '</div>'
                 );
                 return $container;
