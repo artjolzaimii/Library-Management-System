@@ -35,7 +35,7 @@ if (isset($_POST['return_book'])) {
 $query = "SELECT bb.*, b.title as book_title, b.isbn 
           FROM borrowed_books bb
           JOIN book b ON bb.book_id = b.book_id
-          ORDER BY bb.borrow_date DESC";
+          ORDER BY bb.id ASC";
 $result = $conn->query($query);
 ?>
 

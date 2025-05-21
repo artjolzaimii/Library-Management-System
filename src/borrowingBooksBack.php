@@ -21,7 +21,7 @@ if (mysqli_multi_query($conn, $sql)) {
     echo "Error: " . mysqli_error($conn);
 }
 
-header("Location: borrow_book.php");
+header("Location: trackBorrowedBooks.php");
 exit();
 
 ?>
