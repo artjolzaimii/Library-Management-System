@@ -54,10 +54,12 @@
                     </ul>
                     <div class="tab-content">
                     <?php
+                        $activeTab = isset($_GET['tab']) ? $_GET['tab'] : 'For Sale'; // default
                         $formats = ['For Sale' => 'for-sale', 'For Borrow' => 'for-borrow', 'E-Book' => 'ebooks'];
+
     
                         foreach ($formats as $formatName => $tabId): ?>
-                          <div class="tab-pane fade <?php echo $tabId == 'for-sale' ? 'active show' : '' ?>" id="<?php echo $tabId; ?>" role="tabpanel">
+                        <div class="tab-pane fade <?php echo $formatName == $activeTab ? 'active show' : '' ?>" id="<?php echo $tabId; ?>" role="tabpanel">
                             <div class="table-responsive text-nowrap">
                               <table class="table table-hover">
                                 <thead>
@@ -147,22 +149,31 @@
                                       }
                                       echo "</td>";
                         
-                                      // Format
-                                      echo "<td><span class='badge rounded-pill bg-label-primary'>{$formatName}</span></td>";
-                        
-                                      // Actions
-                                      echo "<td>
-                                      <button type='button' class='btn rounded-pill btn-icon btn-outline-primary'>
-                                        <span class='bx bx-show'></span>
-                                      </button>
-                                      <button type='button' class='btn rounded-pill btn-icon btn-outline-warning'>
-                                        <span class='bx bx-pencil'></span>
-                                      </button>
-                                      <button type='button' class='btn rounded-pill btn-icon btn-outline-danger'>
-                                        <span class='bx bx-trash'></span>
-                                      </button>
-                                    </td>
-                                    </tr>";
+                                     // Format
+                                     echo "<td><span class='badge rounded-pill bg-label-primary'>{$formatName}</span></td>";
+
+                                     // Actions
+                                     echo "<td>
+                                     <button type='button' class='btn rounded-pill btn-icon btn-outline-primary' data-bs-toggle='modal' data-bs-target='#viewBookModal{$row['book_id']}'>
+                                       <span class='bx bx-show'></span>
+                                     </button>
+
+                                     <button type='button' class='btn rounded-pill btn-icon btn-outline-warning' data-bs-toggle='modal' data-bs-target='#editBookModal{$row['book_id']}'>
+                                      <i class='bx bx-pencil'></i>
+                                     </button>
+
+                                     <a href='deleteBook.php?id={$row['book_id']}' class='btn rounded-pill btn-icon btn-outline-danger' onclick=\"return confirm('Are you sure you want to delete this book?');\">
+                                        <i class='bx bx-trash'></i>
+                                     </a>
+                                         </td>
+                                           </tr>";
+
+
+                                     include('viewBook.php');
+                                     include('editBook.php');
+                                   
+
+                                    
                                     endwhile;
                                   ?>
                                 </tbody>
@@ -183,7 +194,7 @@
                                           <a class="page-link" href="bookManagement.php?page=<?php echo max(1, $currentPage - 1); ?>"><i class="tf-icon bx bx-chevron-left"></i></a>
                                         </li>
                                         <?php 
-                                          
+                                     $currentPage=0;     
                                           for($i=1;$i<=$nrPages;$i++){
                                             echo "<li class='page-item " . ($currentPage == $i ? "active" : "") . "'>
                                                     <a class='page-link' href='bookManagement.php?page=$i'>$i</a>
