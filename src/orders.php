@@ -1,4 +1,4 @@
-<?php 
+<?php
 require_once("../utilities/config.php");
 ?>
 <!DOCTYPE html>
@@ -30,8 +30,7 @@ require_once("../utilities/config.php");
                   <tr>
                     <th>Order ID</th>
                     <th>Customer</th>
-                    <th>Book Title</th>
-                    <th>Quantity</th>
+                    <th>Books</th>
                     <th>Total</th>
                     <th>Status</th>
                     <th>Date</th>
@@ -39,118 +38,134 @@ require_once("../utilities/config.php");
                   </tr>
                 </thead>
                 <tbody>
-                  <?php
-                    $perPage = 5;
-                    $currentPage = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-                    $offset = ($currentPage - 1) * $perPage;
+<?php
+$perPage = 5;
+$currentPage = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+$offset = ($currentPage - 1) * $perPage;
 
-                    $countRes = $conn->query("SELECT COUNT(*) as total FROM orders");
-                    $totalOrders = $countRes->fetch_assoc()['total'];
-                    $totalPages = ceil($totalOrders / $perPage);
+$countRes = $conn->query("SELECT COUNT(*) AS total FROM orders");
+$totalOrders = $countRes->fetch_assoc()['total'];
+$totalPages = ceil($totalOrders / $perPage);
 
-                    $query = "SELECT o.*, u.full_name, b.title 
-                              FROM orders o 
-                              JOIN users u ON o.user_id = u.id 
-                              JOIN book b ON o.book_id = b.book_id 
-                              ORDER BY o.order_date DESC
-                              LIMIT $offset, $perPage";
-                    $result = mysqli_query($conn, $query);
+$query = "
+  SELECT o.*, u.full_name 
+  FROM orders o
+  JOIN shopping_cart sc ON o.cart_id = sc.cart_id
+  JOIN users u ON sc.user_id = u.id
+  ORDER BY o.order_date DESC
+  LIMIT ?, ?
+";
 
-                    while ($row = mysqli_fetch_assoc($result)) {
-                      $order_id = $row['order_id'];
-                      $billingQuery = $conn->prepare("SELECT * FROM order_billing_details WHERE order_id = ?");
-                      $billingQuery->bind_param("i", $order_id);
-                      $billingQuery->execute();
-                      $billing = $billingQuery->get_result()->fetch_assoc();
+$stmt = $conn->prepare($query);
+$stmt->bind_param("ii", $offset, $perPage);
+$stmt->execute();
+$orderResult = $stmt->get_result();
 
-                      echo "<tr>
-                              <td>{$row['order_id']}</td>
-                              <td>{$row['full_name']}</td>
-                              <td>{$row['title']}</td>
-                              <td>{$row['quantity']}</td>
-                              <td>€{$row['total_price']}</td>
-                              <td>
-                                <select class='form-select form-select-sm' onchange='updateStatus({$row['order_id']}, this.value)'>
-                                  <option value='Pending'" . ($row['status'] === 'Pending' ? ' selected' : '') . ">Pending</option>
-                                  <option value='Shipped'" . ($row['status'] === 'Shipped' ? ' selected' : '') . ">Shipped</option>
-                                  <option value='Completed'" . ($row['status'] === 'Completed' ? ' selected' : '') . ">Completed</option>
-                                  <option value='Canceled'" . ($row['status'] === 'Canceled' ? ' selected' : '') . ">Canceled</option>
-                                </select>
-                              </td>
-                              <td>{$row['order_date']}</td>
-                              <td>
-                                <button type='button' class='btn btn-outline-primary btn-sm' data-bs-toggle='modal' data-bs-target='#viewBillingModal{$row['order_id']}'>
-                                  <i class='bx bx-show'></i>
-                                </button>
-                              </td>
-                            </tr>";
+while ($order = $orderResult->fetch_assoc()):
+  $order_id = $order['order_id'];
 
-                      echo "<div class='modal fade' id='viewBillingModal{$row['order_id']}' tabindex='-1' aria-labelledby='billingModalLabel{$row['order_id']}' aria-hidden='true'>
-                      
-                              <div class='modal-dialog modal-lg'>
-                                <div class='modal-content'>
-                                  <div class='modal-header'>
-                                    <h5 class='modal-title'>Billing Details - Order #{$row['order_id']}</h5>
-                                    <button type='button' class='btn-close' data-bs-dismiss='modal'></button>
-                                  </div>
-                                  <div class='modal-body'>
-                                  
-                                    <p><strong>First Name:</strong> {$billing['first_name']}</p>
-                                    <p><strong>Last Name:</strong> {$billing['last_name']}</p>
-                                    <p><strong>Company:</strong> {$billing['company_name']}</p>
-                                    <p><strong>Country:</strong> {$billing['country']}</p>
-                                    <p><strong>Address:</strong> {$billing['street_address']} {$billing['apartment_suite']}</p>
-                                    <p><strong>City:</strong> {$billing['city']}</p>
-                                    <p><strong>Phone:</strong> {$billing['phone']}</p>
-                                    <p><strong>Email:</strong> {$billing['email']}</p>
-                                    <p><strong>Order Notes:</strong><br>" . nl2br($billing['order_notes']) . "</p>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>";
-                    }
-                  ?>
+  // Get books in the order
+  $bookItems = [];
+  $bookStmt = $conn->prepare("
+    SELECT b.title, ob.quantity 
+    FROM order_book ob 
+    JOIN book b ON ob.book_id = b.book_id 
+    WHERE ob.order_id = ?
+  ");
+  $bookStmt->bind_param("i", $order_id);
+  $bookStmt->execute();
+  $bookRes = $bookStmt->get_result();
+  while ($b = $bookRes->fetch_assoc()) {
+    $bookItems[] = "{$b['title']} (x{$b['quantity']})";
+  }
+
+echo "<tr>
+        <td>{$order['order_id']}</td>
+        <td>{$order['full_name']}</td>
+      <td>" . implode("<br>", $bookItems) . "</td>";
+
+$totalPrice = 0;
+$priceStmt = $conn->prepare("
+  SELECT ob.quantity,
+         COALESCE(sb.price, 0) AS sale_price
+  FROM order_book ob
+  LEFT JOIN sale_book sb ON ob.book_id = sb.book_id
+  WHERE ob.order_id = ?
+");
+$priceStmt->bind_param("i", $order_id);
+$priceStmt->execute();
+$priceRes = $priceStmt->get_result();
+while ($row = $priceRes->fetch_assoc()) {
+    $totalPrice += $row['quantity'] * $row['sale_price'];
+}
+
+echo "<td>€" . number_format($totalPrice, 2) . "</td>";
+
+
+echo "<td>
+          <select class='form-select form-select-sm' onchange='updateStatus({$order['order_id']}, this.value)'>
+            <option value='Pending'" . ($order['status'] === 'Pending' ? ' selected' : '') . ">Pending</option>
+            <option value='Shipped'" . ($order['status'] === 'Shipped' ? ' selected' : '') . ">Shipped</option>
+            <option value='Completed'" . ($order['status'] === 'Completed' ? ' selected' : '') . ">Completed</option>
+            <option value='Canceled'" . ($order['status'] === 'Canceled' ? ' selected' : '') . ">Canceled</option>
+          </select>
+        </td>
+        <td>{$order['order_date']}</td>
+        <td>
+          <button class='btn btn-outline-primary btn-sm' data-bs-toggle='modal' data-bs-target='#viewBillingModal{$order_id}'>
+            <i class='bx bx-show'></i>
+          </button>
+        </td>
+      </tr>";
+
+  // Billing modal
+  echo "<div class='modal fade' id='viewBillingModal{$order_id}' tabindex='-1'>
+          <div class='modal-dialog modal-lg'>
+            <div class='modal-content'>
+              <div class='modal-header'>
+                <h5 class='modal-title'>Billing Details - Order #{$order_id}</h5>
+                <button type='button' class='btn-close' data-bs-dismiss='modal'></button>
+              </div>
+              <div class='modal-body'>
+                <p><strong>First Name:</strong> {$order['first_name']}</p>
+                <p><strong>Last Name:</strong> {$order['last_name']}</p>
+                <p><strong>Country:</strong> {$order['country']}</p>
+                <p><strong>Address:</strong> {$order['address']}, {$order['city']}</p>
+                <p><strong>Phone:</strong> {$order['phone']}</p>
+                <p><strong>Email:</strong> {$order['email']}</p>
+                <p><strong>Notes:</strong><br>" . nl2br($order['notes']) . "</p>
+              </div>
+            </div>
+          </div>
+        </div>";
+endwhile;
+?>
                 </tbody>
               </table>
-              <!-- Pagination -->
+
+<!-- Pagination -->
 <div class="card-body">
-  <div class="row">
-    <div class="col">
-      <div class="demo-inline-spacing">
-        <nav aria-label="Page navigation">
-          <ul class="pagination">
-            <li class="page-item first">
-              <a class="page-link" href="orders.php?page=1">
-                <i class="tf-icon bx bx-chevrons-left"></i>
-              </a>
-            </li>
-            <li class="page-item prev">
-              <a class="page-link" href="orders.php?page=<?= max(1, $currentPage - 1); ?>">
-                <i class="tf-icon bx bx-chevron-left"></i>
-              </a>
-            </li>
-            <?php 
-              for ($i = 1; $i <= $totalPages; $i++) {
-                echo "<li class='page-item " . ($currentPage == $i ? "active" : "") . "'>
-                        <a class='page-link' href='orders.php?page=$i'>$i</a>
-                      </li>";
-              }
-            ?>
-            <li class="page-item next">
-              <a class="page-link" href="orders.php?page=<?= min($totalPages, $currentPage + 1); ?>">
-                <i class="tf-icon bx bx-chevron-right"></i>
-              </a>
-            </li>
-            <li class="page-item last">
-              <a class="page-link" href="orders.php?page=<?= $totalPages; ?>">
-                <i class="tf-icon bx bx-chevrons-right"></i>
-              </a>
-            </li>
-          </ul>
-        </nav>
-      </div>
-    </div>
-  </div>
+  <nav>
+    <ul class="pagination justify-content-center">
+      <li class="page-item <?= $currentPage == 1 ? 'disabled' : '' ?>">
+        <a class="page-link" href="?page=1"><i class="bx bx-chevrons-left"></i></a>
+      </li>
+      <li class="page-item <?= $currentPage == 1 ? 'disabled' : '' ?>">
+        <a class="page-link" href="?page=<?= max(1, $currentPage - 1); ?>"><i class="bx bx-chevron-left"></i></a>
+      </li>
+      <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+        <li class="page-item <?= $i == $currentPage ? 'active' : '' ?>">
+          <a class="page-link" href="?page=<?= $i ?>"><?= $i ?></a>
+        </li>
+      <?php endfor; ?>
+      <li class="page-item <?= $currentPage == $totalPages ? 'disabled' : '' ?>">
+        <a class="page-link" href="?page=<?= min($totalPages, $currentPage + 1); ?>"><i class="bx bx-chevron-right"></i></a>
+      </li>
+      <li class="page-item <?= $currentPage == $totalPages ? 'disabled' : '' ?>">
+        <a class="page-link" href="?page=<?= $totalPages ?>"><i class="bx bx-chevrons-right"></i></a>
+      </li>
+    </ul>
+  </nav>
 </div>
 
             </div>
@@ -161,30 +176,28 @@ require_once("../utilities/config.php");
   </div>
 </div>
 
+<!-- Bootstrap + JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
 function updateStatus(orderId, newStatus) {
-  fetch('', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: `update_order_status=1&order_id=${orderId}&status=${encodeURIComponent(newStatus)}`
-  })
-  .then(response => response.text())
-  .then(data => console.log(data))
-  .catch(error => console.error('Error:', error));
+  fetch("", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: "update_order_status=1&order_id=" + orderId + "&status=" + encodeURIComponent(newStatus)
+  }).then(res => res.text())
+    .then(msg => console.log(msg))
+    .catch(err => console.error(err));
 }
 </script>
 
 <?php
-// Process status update via POST (AJAX)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_order_status'])) {
-    $order_id = intval($_POST['order_id']);
-    $status = $_POST['status'];
-
-    $stmt = $conn->prepare("UPDATE orders SET status = ? WHERE order_id = ?");
-    $stmt->bind_param("si", $status, $order_id);
-    $stmt->execute();
-    exit("Status updated");
+  $order_id = intval($_POST['order_id']);
+  $status = $_POST['status'];
+  $stmt = $conn->prepare("UPDATE orders SET status = ? WHERE order_id = ?");
+  $stmt->bind_param("si", $status, $order_id);
+  $stmt->execute();
+  exit("Status updated");
 }
 ?>
 

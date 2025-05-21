@@ -1,18 +1,32 @@
 <?php
+session_start();
 require_once("../../../utilities/config.php");
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
-    $book_id = $_POST['book_id'];
-    $name = $_POST['name'];
-    $email = $_POST['email'];
-    $rating = $_POST['rating'];
-    $message = $_POST['message'];
+    if (!isset($_SESSION['user_id'])) {
+        die("You must be logged in to submit a review.");
+    }
 
-    $stmt = $conn->prepare("INSERT INTO reviews (book_id, name, email, rating, message) VALUES (?, ?, ?, ?, ?)");
-    $stmt->bind_param("issis", $book_id, $name, $email, $rating, $message);
-    $stmt->execute();
+    $user_id = $_SESSION['user_id'];
+    $book_id = intval($_POST['book_id']);
+    $rating = intval($_POST['rating']);
+    $comment = trim($_POST['comment']);
 
-    header("Location: shop-details.php?book_id=$book_id&review=success");
-    exit();
+    $stmt = $conn->prepare("INSERT INTO review (book_id, user_id, rating, comment) VALUES (?, ?, ?, ?)");
+    $stmt->bind_param("siis", $book_id, $user_id, $rating, $comment); 
+
+
+    if ($stmt->execute()) {
+        // Redirect back to the book details page with the same ISBN
+        $isbn = $_POST['isbn'] ?? '';
+
+        header("Location: bookDetails.php?isbn=" . urlencode($isbn) . "&review=success");
+
+        exit();
+    } else {
+        echo "Error submitting review: " . $stmt->error;
+    }
+} else {
+    echo "Invalid access.";
 }
 ?>

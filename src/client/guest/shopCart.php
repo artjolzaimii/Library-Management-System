@@ -148,13 +148,11 @@
         $cartId=getShopCartId($conn);
         
         $query=
-        "
-        SELECT book.image_path, book.title, quantity, price, book.book_id
+        "SELECT book.image_path, book.title, quantity, sale_book.price, book.book_id
         FROM book INNER JOIN sale_book ON sale_book.book_id=book.book_id
         INNER JOIN cart_book ON cart_book.book_id=book.book_id
         INNER JOIN shopping_cart ON shopping_cart.cart_id=cart_book.cart_id
-        WHERE cart_book.cart_id=?
-        ";
+        WHERE cart_book.cart_id=?";
         
         $stm=$conn -> prepare($query);
         $stm->bind_param("i",$cartId);
