@@ -17,13 +17,48 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $birth_year = $_POST['birth_year'];
     $death_year = $_POST['death_year'];
 
+    $targetDir = "../uploads/authors";
+    if(!file_exists($targetDir)){
+        mkdir($targetDir, 0777, true);
+    }
+
+    $imagePath = null;
+    if(isset($_FILES["authorImage"]) && $_FILES["authorImage"]["error"] == 0){
+        $fileName = time() . '_' . basename($_FILES["authorImage"]["name"]);
+        $targetPath = $targetDir . '/' . $fileName;
+
+        if(getimagesize($_FILES["authorImage"]["tmp_name"]) !== false) {
+            if(move_uploaded_file($_FILES["authorImage"]["tmp_name"], $targetPath)) {
+                $imagePath = "uploads/authors/" . $fileName;
+            } else {
+                echo "<div class='alert alert-danger'>Failed to move uploaded file.</div>";
+                exit;
+            }
+        } else {
+            echo "<div class='alert alert-danger'>File is not an image.</div>";
+            exit;
+        }
+    }
+
     $update_query = "UPDATE author 
                     SET full_name = ?, bio = ?, nationality = ?, 
-                        birth_year = ?, death_year = ? 
-                    WHERE author_id = ?";
+                        birth_year = ?, death_year = ?";
+    
+    $params = array($full_name, $bio, $nationality, $birth_year, $death_year);
+    $types = "sssii";
+    
+    if ($imagePath) {
+        $update_query .= ", image_path = ?";
+        $params[] = $imagePath;
+        $types .= "s";
+    }
+    
+    $update_query .= " WHERE author_id = ?";
+    $params[] = $author_id;
+    $types .= "i";
     
     if ($stmt = $conn->prepare($update_query)) {
-        $stmt->bind_param("sssiii", $full_name, $bio, $nationality, $birth_year, $death_year, $author_id);
+        $stmt->bind_param($types, ...$params);
         
         if ($stmt->execute()) {
             echo "<div class='alert alert-success' role='alert'>
@@ -36,7 +71,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                   </script>";
         } else {
             echo "<script>
-                alert('Error deleting author: " . $conn->error . "');
+                alert('Error updating author: " . $conn->error . "');
                 window.location.href = 'authorManagement.php';
             </script>";
         }
@@ -145,7 +180,7 @@ if (isset($_GET['delete_id'])) {
                                                           <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
                                                       </div>
                                                       <div class='modal-body'>
-                                                          <form action='authorManagement.php' method='POST'>
+                                                          <form action='authorManagement.php' method='POST' enctype='multipart/form-data'>
                                                              
                                                                <!-- Author ID -->
                                                               <div class='mb-3'>
@@ -180,6 +215,17 @@ if (isset($_GET['delete_id'])) {
                                                                   <label for='death_year' class='form-label'>Death Year</label>
                                                                   <input type='text' class='form-control' id='death_year' name='death_year' value='" . $row['death_year'] . "' />
                                                               </div>
+                                                              
+                                                              <!-- Author Image -->
+                                                              <div class='mb-3'>
+                                                                  <label for='authorImage' class='form-label'>Author Image</label>
+                                                                  <div class='input-group'>
+                                                                      <span class='input-group-text'><i class='bx bx-image'></i></span>
+                                                                      <input type='file' class='form-control' name='authorImage' id='authorImage' accept='image/*'>
+                                                                  </div>
+                                                                  " . ($row['image_path'] ? "<small class='text-muted'>Current image: " . $row['image_path'] . "</small>" : "") . "
+                                                              </div>
+                                                              
                                                               <button type='submit' class='btn btn-primary'>Update Author</button>
                                                           </form>
                                                       </div>
