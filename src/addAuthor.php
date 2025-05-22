@@ -1,5 +1,5 @@
 <?php 
-    require_once("../utilities/config1.php");
+    require_once("../utilities/config.php");
 
     if($_SERVER["REQUEST_METHOD"] == "POST"){
         $name = $conn->real_escape_string(trim($_POST['full_name']));

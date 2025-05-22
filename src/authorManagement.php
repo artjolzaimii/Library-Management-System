@@ -1,5 +1,5 @@
 <?php
-require_once('../utilities/config1.php');
+require_once('../utilities/config.php');
 
 $query = "SELECT * FROM author";
 $result = $conn->query($query); 
