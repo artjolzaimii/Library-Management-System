@@ -19,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $imageName = basename($_FILES['profile_image']['name']);
         $imageExt = pathinfo($imageName, PATHINFO_EXTENSION);
         $uniqueImageName = uniqid('IMG_', true) . '.' . $imageExt;
-        $uploadDir = '../uploads/';
+        $uploadDir = '../uploads/users/staff/';
         $uploadPath = $uploadDir . $uniqueImageName;
 
         if (!file_exists($uploadDir)) {
@@ -34,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
     }
 
-    $query = "INSERT INTO users (user_id, full_name, email, phone, address, username, password, role, gender, birthday, image)
+    $query = "INSERT INTO users (user_id, full_name, email, phone, address, username, password, role, gender, birthday, image_path)
               VALUES ('$userId', '$fullName', '$email', '$phone', '$address', '$username', '$password', '$role', '$gender', '$birthday', '$profileImage')";
 
     if (mysqli_query($conn, $query)) {

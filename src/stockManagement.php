@@ -9,6 +9,7 @@
   <title>Stock Management</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
   <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet"/>
+  
 </head>
 <body>
 <div class="layout-container">
@@ -173,9 +174,7 @@
                                       </div>
                                     </div>
                                   </div>";
-                        endwhile;
-
-                          
+                        endwhile;                         
                         ?>
                         
                       </tbody>
@@ -184,8 +183,6 @@
                 </div>
 
                 <div class="tab-pane fade" id="viewLow" role="tabpanel">
-                  <!-- You can implement logic to display books with low stock here -->
-                  <p class="text-muted">Low stock books will be shown here.</p>
                  <!-- View Low Stock -->
                   <div class="table-responsive text-nowrap">
                     <table class="table table-hover">
@@ -216,7 +213,7 @@
                        LEFT JOIN 
                          borrow_book ON book.book_id = borrow_book.book_id
                        WHERE
-                         (book.format = 'For Sale' AND COALESCE(sale_book.inventory, 0) <= 10)
+                         (book.format = 'For Sale' AND COALESCE(sale_book.inventory, 0) <= 5)
                          OR (book.format = 'For Borrow' AND COALESCE(borrow_book.inventory, 0) <= 2)";
          
                           $low_result = mysqli_query($conn, $low_query);

@@ -5,15 +5,17 @@ CREATE TABLE genres (
 
 CREATE TABLE users (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id VARCHAR(50) UNIQUE,
-    full_name VARCHAR(100),
-    email VARCHAR(100),
+    user_id VARCHAR(50) UNIQUE NOT NULL,
+    full_name VARCHAR(100) NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
     phone VARCHAR(20),
     address TEXT,
-    username VARCHAR(50),
-    password TEXT,
-    image_path VARCHAR(255),
-    role VARCHAR(20)
+    username VARCHAR(50) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL, t
+    role varchar(20)  NOT NULL,
+    gender varchar(20) NOT NULL,
+    birthday DATE,
+    image_path VARCHAR(255)
 );
 
 CREATE TABLE book(
@@ -76,3 +78,56 @@ CREATE TABLE borrow_book(
     book_condition varchar(20),
     FOREIGN KEY (book_id) REFERENCES book(book_id)
 )
+CREATE TABLE shopping_cart(
+	cart_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE cart_book(
+	item_id INT AUTO_INCREMENT PRIMARY KEY,
+    cart_id INT NOT NULL,
+    book_id INT NOT NULL ,
+    quantity INT DEFAULT 1,
+    
+    FOREIGN KEY (cart_id) REFERENCES shopping_cart(cart_id) ON DELETE CASCADE,
+    FOREIGN KEY (book_id) REFERENCES book(book_id) ON DELETE CASCADE
+ );
+ 
+ CREATE TABLE orders(
+	order_id INT AUTO_INCREMENT PRIMARY KEY,
+    first_name VARCHAR(127) NOT NULL,
+    last_name VARCHAR(127) NOT NULL,
+    address VARCHAR(255) NOT NULL,
+    city VARCHAR(127) NOT NULL,
+    country VARCHAR(127) NOT NULL,
+    phone VARCHAR(20) NOT NULL,
+    email VARCHAR(127) NOT NULL,
+    notes VARCHAR(511),
+    cart_id INT,
+    order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    FOREIGN KEY (cart_id) REFERENCES shopping_cart(cart_id)
+);
+
+CREATE TABLE order_book(
+	order_id INT NOT NULL,
+    book_id INT NOT NULL,
+    quantity INT NOT NULL,
+    PRIMARY KEY(order_id,book_id),
+    FOREIGN KEY (book_id) REFERENCES book(book_id),
+    FOREIGN KEY (order_id) REFERENCES orders(order_id)
+);
+
+CREATE TABLE review (
+    review_id INT AUTO_INCREMENT PRIMARY KEY,
+    book_id INT NOT NULL,
+    user_id varchar(50) NOT NULL,
+    rating INT CHECK (rating BETWEEN 1 AND 5),
+    comment TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+
+  
+    CONSTRAINT fk_review_book FOREIGN KEY (book_id) REFERENCES book(book_id) ON DELETE CASCADE,
+    CONSTRAINT fk_review_user FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+);

@@ -165,7 +165,7 @@ $result = $conn->query($query);
                                                                <!-- Profile Image Display -->
                                                                   <div class='mb-3'>
                                                                       <label for='profile_image' class='form-label'>Profile Image</label><br>
-                                                                      <img src='" . $row['image'] . "' alt='Profile Image' style='height: 50px; border-radius: 50%;'>
+                                                                      <img src='" . $row['image_path'] . "' alt='Profile Image' style='height: 50px; border-radius: 50%;'>
                                                                       <input type='file' class='form-control mt-2' name='profile_image' accept='image/*' />
                                                                   </div>
 
@@ -228,31 +228,39 @@ $result = $conn->query($query);
                                           </div>
 
                                             ";
+                                        // View User Modal
+                                        
+                                        $imagePath = '';
+                                        if ($row['role'] == 'Client' || $row['role'] == 'User') {
+                                            $imagePath = '../uploads/users/' . $row['image_path'];
+                                        } else {
+                                            $imagePath = '../uploads/users/staff/' . $row['image_path'];
+                                        }
+                                        echo "
+                                        <div class='modal fade' id='viewUserModal{$row['id']}' tabindex='-1' aria-labelledby='viewUserModalLabel{$row['id']}' aria-hidden='true'>
+                                            <div class='modal-dialog'>
+                                                <div class='modal-content'>
+                                                    <div class='modal-header'>
+                                                        <h5 class='modal-title' id='viewUserModalLabel{$row['id']}'>View User</h5>
+                                                        <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
+                                                    </div>
+                                                    <div class='modal-body'>
+                                                        <p><strong>User ID:</strong> " . $row['user_id'] . "</p>
+                                                        <p><strong>Full Name:</strong> " . $row['full_name'] . "</p>
+                                                        <p><strong>Email:</strong> " . $row['email'] . "</p>
+                                                        <p><strong>Phone:</strong> " . $row['phone'] . "</p>
+                                                        <p><strong>Username:</strong> " . $row['username'] . "</p>
+                                                        <p><strong>Role:</strong> " . $row['role'] . "</p>
+                                                        <p><strong>Gender:</strong> " . $row['gender'] . "</p>
+                                                        <p><strong>Birthday:</strong> " . $row['birthday'] . "</p>
+                                                        <p><strong>Image:</strong><br>
+                                                            <img src='" .$imagePath. "' alt='User Image' class='img-fluid rounded' style='max-height: 200px; border: 1px solid #ccc; padding: 5px;'>
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>";
 
-                                             // View User Modal
-                                             echo "
-                                             <div class='modal fade' id='viewUserModal{$row['id']}' tabindex='-1' aria-labelledby='viewUserModalLabel{$row['id']}' aria-hidden='true'>
-                                                 <div class='modal-dialog'>
-                                                     <div class='modal-content'>
-                                                         <div class='modal-header'>
-                                                             <h5 class='modal-title' id='viewUserModalLabel{$row['id']}'>View User</h5>
-                                                             <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
-                                                         </div>
-                                                         <div class='modal-body'>
-                                                          <p><strong>User ID:</strong> " . $row['user_id'] . "</p>
-                                                             <p><strong>Full Name:</strong> " . $row['full_name'] . "</p>
-                                                             <p><strong>Email:</strong> " . $row['email'] . "</p>
-                                                             <p><strong>Phone:</strong> " . $row['phone'] . "</p>
-                                                             <p><strong>Username:</strong> " . $row['username'] . "</p>
-                                                             <p><strong>Role:</strong> " . $row['role'] . "</p>
-                                                             <p><strong>Gender:</strong> " . $row['gender'] . "</p>
-                                                             <p><strong>Birthday:</strong> " . $row['birthday'] . "</p>
-                                                              <p><strong>Image:</strong> " . $row['image'] . "</p>
-                                                            
-                                                         </div>
-                                                     </div>
-                                                 </div>
-                                             </div>";
                                         }
                                         ?>
                                     </tbody>
@@ -297,6 +305,6 @@ $result = $conn->query($query);
 </html>
 
 <?php
-// Close the connection
+
 $conn->close();
 ?>
