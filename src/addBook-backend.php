@@ -1,4 +1,5 @@
 <?php 
+    session_start();
     require_once("../utilities/config.php");
     
     if (!$conn) {
@@ -28,7 +29,7 @@
         $errors['nrPages'] = "Number of pages must be a number.";
     }
     
-    // Sanitize input fields
+    //Check for some injection
     $isbn = filterInput($conn, $_POST['isbn']);
     $title = filterInput($conn, $_POST['title']);
     $publicationYear = filterInput($conn, $_POST['publication_year']);
@@ -92,11 +93,36 @@
         }
     }
     
+    // Validate numeric fields
+    if (!empty($_POST['publication_year']) && (!ctype_digit($_POST['publication_year']) || intval($_POST['publication_year']) < 0)) {
+        $errors['publication_year'] = "Publication year must be a positive number.";
+    }
+    if (!empty($_POST['nrPages']) && (!ctype_digit($_POST['nrPages']) || intval($_POST['nrPages']) <= 0)) {
+        $errors['nrPages'] = "Number of pages must be a positive number.";
+    }
+    
+    
+    // Check for duplicate ISBN
+    if (!empty($isbn)) {
+        $isbnCheckQuery = "SELECT COUNT(*) FROM `book` WHERE `isbn` = ?";
+        $isbnStmt = $conn->prepare($isbnCheckQuery);
+        $isbnStmt->bind_param('s', $isbn);
+        $isbnStmt->execute();
+        $isbnStmt->bind_result($isbnCount);
+        $isbnStmt->fetch();
+        $isbnStmt->close();
+        if ($isbnCount > 0) {
+            $errors['isbn'] = "A book with this ISBN already exists.";
+        }
+    }
+    
     // Stop process if validation fails
-   // if (!empty($errors)) {
-    //    echo json_encode(["status" => "error", "errors" => $errors]);
-//exit;
-   // }
+    if (!empty($errors)) {
+        $_SESSION['add_book_errors'] = $errors;
+        $_SESSION['add_book_old'] = $_POST;
+        header("Location: addBook.php");
+        exit;
+    }
     
     // Insert into `book` table
     $query = "INSERT INTO `book` (`isbn`, `title`, `publication_year`, `publisher`, `language`, `nr_pages`, `description`, `format`, `image_path`) 
@@ -156,4 +182,16 @@
     else{
         header("Location: addBook.php");
     }    
+    
+    //If successful
+    if ($result) {
+        $_SESSION['add_book_success'] = "Book added successfully!";
+        header("Location: addBook.php");
+        exit;
+    } else {
+        $_SESSION['add_book_errors'] = ["db" => "Book insertion failed: " . mysqli_error($conn)];
+        $_SESSION['add_book_old'] = $_POST;
+        header("Location: addBook.php");
+        exit;
+    }
 ?>
