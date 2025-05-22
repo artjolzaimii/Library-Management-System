@@ -198,7 +198,37 @@
             </div>
         </div>
     </section>
-
+    
+    <!-- Author's books -->
+    <?php 
+        $forSale="SELECT b.book_id,isbn, title, image_path , price
+                FROM book b INNER JOIN book_author ba ON b.book_id=ba.book_id
+                INNER JOIN sale_book sa ON sa.book_id=b.book_id
+                WHERE ba.author_id=?";
+                
+        $stm=$conn->prepare($forSale);
+        $stm->bind_param("i",$authorId);
+        $stm->execute();
+        $forSaleResult=$stm->get_result();
+        
+        $forBorrow="SELECT b.book_id,isbn, title, image_path 
+                FROM book b INNER JOIN book_author ba ON b.book_id=ba.book_id
+                INNER JOIN borrow_book boa ON boa.book_id=b.book_id
+                WHERE ba.author_id=?";
+        $stm=$conn->prepare($forBorrow);
+        $stm->bind_param("i",$authorId);
+        $stm->execute();
+        $forBorrowResult=$stm->get_result();        
+                
+        $eBook="SELECT b.book_id,isbn, title, image_path 
+                FROM book b INNER JOIN book_author ba ON b.book_id=ba.book_id
+                INNER JOIN ebook e ON e.book_id=b.book_id
+                WHERE ba.author_id=?";
+        $stm=$conn->prepare($forBorrow);
+        $stm->bind_param("i",$authorId);
+        $stm->execute();
+        $eBookResult=$stm->get_result();        
+    ?>
     <!-- Shop Section Start -->
     <section class="shop-section fix">
         <div class="container">
@@ -207,18 +237,14 @@
             </div>
             <div class="swiper book-slider">
                 <div class="swiper-wrapper">
+                    <?php 
+                        while($book=$forSaleResult->fetch_assoc()):
+                    ?>
                     <div class="swiper-slide">
                         <div class="shop-box-items style-2">
                             <div class="book-thumb center">
-                                <a href="shop-details"><img src="assets/img/book/01.png" alt="img"></a>
-                                <ul class="post-box">
-                                    <li>
-                                        Hot
-                                    </li>
-                                    <li>
-                                        -30%
-                                    </li>
-                                </ul>
+                                <a href="shop-details"><img src="../../../uploads/images/<?php echo $book['image_path']?>" alt="img"></a>
+                                
                                 <ul class="shop-icon d-grid justify-content-center align-items-center">
                                     <li>
                                         <a href="shop-cart.html"><i class="far fa-heart"></i></a>
@@ -231,7 +257,7 @@
                                     <li>
                                         <a href="shop-cart.html">
 
-                                            <img class="icon" src="assets/img/icon/shuffle.svg" alt="svg-icon">
+                                            <img class="icon" src="../assets/img/icon/shuffle.svg" alt="svg-icon">
                                         </a>
                                     </li>
                                     <li>
@@ -240,20 +266,17 @@
                                 </ul>
                             </div>
                             <div class="shop-content">
-                                <h5> Design Low Book </h5>
-                                <h3><a href="shop-details.html">Simple Things You To <br> Save BOOK</a></h3>
+                                <h3><a href="bookDetails.php?isbn=<?php echo $book['isbn']?>"><?php echo $book['title']?></a></h3>
                                 <ul class="price-list">
-                                    <li>$30.00</li>
-                                    <li>
-                                        <del>$39.99</del>
-                                    </li>
+                                    <li><?php echo $book['price']?></li>
+                                
                                 </ul>
                                 <ul class="author-post">
                                     <li class="authot-list">
                                         <span class="thumb">
-                                            <img src="assets/img/testimonial/client-1.png" alt="img">
+                                            <img src="../../../<?php echo $author['image_path']?>" alt="img" width="30px" height="30px">
                                         </span>
-                                        <span class="content">Wilson</span>
+                                        <span class="content"><?php $author['full_name'];?></span>
                                     </li>
 
                                     <li class="star">
@@ -270,10 +293,21 @@
                             </div>
                         </div>
                     </div>
+                    <?php endwhile;?>
+                    
+                    <?php 
+                        while($book=$eBookResult->fetch_assoc()):
+                    ?>
                     <div class="swiper-slide">
                         <div class="shop-box-items style-2">
                             <div class="book-thumb center">
-                                <a href="shop-details"><img src="assets/img/book/02.png" alt="img"></a>
+                                <a href="shop-details"><img src="../../../uploads/images/<?php echo $book['image_path']?>" alt="img"></a>
+                                
+                                <ul class="shop-icon d-grid justify-content-center align-items-center">
+                                    <li>
+                                        <a href="shop-cart.html"><i class="far fa-heart"></i></a>
+                                    </li>
+                                </ul>
                                 <ul class="shop-icon d-grid justify-content-center align-items-center">
                                     <li>
                                         <a href="shop-cart.html"><i class="far fa-heart"></i></a>
@@ -281,7 +315,7 @@
                                     <li>
                                         <a href="shop-cart.html">
 
-                                            <img class="icon" src="assets/img/icon/shuffle.svg" alt="svg-icon">
+                                            <img class="icon" src="../assets/img/icon/shuffle.svg" alt="svg-icon">
                                         </a>
                                     </li>
                                     <li>
@@ -290,20 +324,17 @@
                                 </ul>
                             </div>
                             <div class="shop-content">
-                                <h5> Design Low Book </h5>
-                                <h3><a href="shop-details.html">How Deal With Very <br> Bad BOOK</a></h3>
+                                <h3><a href="bookDetails.php?isbn=<?php echo $book['isbn']?>"><?php echo $book['title']?></a></h3>
                                 <ul class="price-list">
-                                    <li>$30.00</li>
-                                    <li>
-                                        <del>$39.99</del>
-                                    </li>
+                                    <li><?php echo "\n"?></li>
+                                
                                 </ul>
                                 <ul class="author-post">
                                     <li class="authot-list">
                                         <span class="thumb">
-                                            <img src="assets/img/testimonial/client-2.png" alt="img">
+                                            <img src="../../../<?php echo $author['image_path']?>" alt="img" width="30px" height="30px">
                                         </span>
-                                        <span class="content">Alexander</span>
+                                        <span class="content"><?php $author['full_name'];?></span>
                                     </li>
 
                                     <li class="star">
@@ -320,10 +351,21 @@
                             </div>
                         </div>
                     </div>
+                    <?php endwhile;?>
+                    
+                    <?php 
+                        while($book=$forBorrowResult->fetch_assoc()):
+                    ?>
                     <div class="swiper-slide">
                         <div class="shop-box-items style-2">
                             <div class="book-thumb center">
-                                <a href="shop-details"><img src="assets/img/book/03.png" alt="img"></a>
+                                <a href="shop-details"><img src="../../../uploads/images/<?php echo $book['image_path']?>" alt="img"></a>
+                                
+                                <ul class="shop-icon d-grid justify-content-center align-items-center">
+                                    <li>
+                                        <a href="shop-cart.html"><i class="far fa-heart"></i></a>
+                                    </li>
+                                </ul>
                                 <ul class="shop-icon d-grid justify-content-center align-items-center">
                                     <li>
                                         <a href="shop-cart.html"><i class="far fa-heart"></i></a>
@@ -331,7 +373,7 @@
                                     <li>
                                         <a href="shop-cart.html">
 
-                                            <img class="icon" src="assets/img/icon/shuffle.svg" alt="svg-icon">
+                                            <img class="icon" src="../assets/img/icon/shuffle.svg" alt="svg-icon">
                                         </a>
                                     </li>
                                     <li>
@@ -340,20 +382,17 @@
                                 </ul>
                             </div>
                             <div class="shop-content">
-                                <h5> Design Low Book </h5>
-                                <h3><a href="shop-details.html">Qple GPad With Retina <br> Sisplay</a></h3>
+                                <h3><a href="bookDetails.php?isbn=<?php echo $book['isbn']?>"><?php echo $book['title']?></a></h3>
                                 <ul class="price-list">
-                                    <li>$30.00</li>
-                                    <li>
-                                        <del>$39.99</del>
-                                    </li>
+                                    <li> Borrow Pice!! All</li>
+                                
                                 </ul>
                                 <ul class="author-post">
                                     <li class="authot-list">
                                         <span class="thumb">
-                                            <img src="assets/img/testimonial/client-3.png" alt="img">
+                                            <img src="../../../<?php echo $author['image_path']?>" alt="img" width="30px" height="30px">
                                         </span>
-                                        <span class="content">Esther</span>
+                                        <span class="content"><?php $author['full_name'];?></span>
                                     </li>
 
                                     <li class="star">
@@ -370,280 +409,14 @@
                             </div>
                         </div>
                     </div>
-                    <div class="swiper-slide">
-                        <div class="shop-box-items style-2">
-                            <div class="book-thumb center">
-                                <a href="shop-details"><img src="assets/img/book/04.png" alt="img"></a>
-                                <ul class="post-box">
-                                    <li>
-                                        Hot
-                                    </li>
-                                </ul>
-                                <ul class="shop-icon d-grid justify-content-center align-items-center">
-                                    <li>
-                                        <a href="shop-cart.html"><i class="far fa-heart"></i></a>
-                                    </li>
-                                    <li>
-                                        <a href="shop-cart.html">
-
-                                            <img class="icon" src="assets/img/icon/shuffle.svg" alt="svg-icon">
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a href="shop-details.html"><i class="far fa-eye"></i></a>
-                                    </li>
-                                </ul>
-                            </div>
-                            <div class="shop-content">
-                                <h5> Design Low Book </h5>
-                                <h3><a href="shop-details.html">Qple GPad With Retina <br> Sisplay</a></h3>
-                                <ul class="price-list">
-                                    <li>$30.00</li>
-                                    <li>
-                                        <del>$39.99</del>
-                                    </li>
-                                </ul>
-                                <ul class="author-post">
-                                    <li class="authot-list">
-                                        <span class="thumb">
-                                            <img src="assets/img/testimonial/client-4.png" alt="img">
-                                        </span>
-                                        <span class="content">Hawkins</span>
-                                    </li>
-
-                                    <li class="star">
-                                        <i class="fa-solid fa-star"></i>
-                                        <i class="fa-solid fa-star"></i>
-                                        <i class="fa-solid fa-star"></i>
-                                        <i class="fa-solid fa-star"></i>
-                                        <i class="fa-regular fa-star"></i>
-                                    </li>
-                                </ul>
-                            </div>
-                            <div class="shop-button">
-                                <a href="shop-details.html" class="theme-btn">Add To Cart</a>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="swiper-slide">
-                        <div class="shop-box-items style-2">
-                            <div class="book-thumb center">
-                                <a href="shop-details"><img src="assets/img/book/05.png" alt="img"></a>
-                                <ul class="shop-icon d-grid justify-content-center align-items-center">
-                                    <li>
-                                        <a href="shop-cart.html"><i class="far fa-heart"></i></a>
-                                    </li>
-                                    <li>
-                                        <a href="shop-cart.html">
-
-                                            <img class="icon" src="assets/img/icon/shuffle.svg" alt="svg-icon">
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a href="shop-details.html"><i class="far fa-eye"></i></a>
-                                    </li>
-                                </ul>
-                            </div>
-                            <div class="shop-content">
-                                <h5> Design Low Book </h5>
-                                <h3><a href="shop-details.html">Simple Things You To <br> Save BOOK</a></h3>
-                                <ul class="price-list">
-                                    <li>$30.00</li>
-                                    <li>
-                                        <del>$39.99</del>
-                                    </li>
-                                </ul>
-                                <ul class="author-post">
-                                    <li class="authot-list">
-                                        <span class="thumb">
-                                            <img src="assets/img/testimonial/client-5.png" alt="img">
-                                        </span>
-                                        <span class="content">(Author) Albert</span>
-                                    </li>
-
-                                    <li class="star">
-                                        <i class="fa-solid fa-star"></i>
-                                        <i class="fa-solid fa-star"></i>
-                                        <i class="fa-solid fa-star"></i>
-                                        <i class="fa-solid fa-star"></i>
-                                        <i class="fa-regular fa-star"></i>
-                                    </li>
-                                </ul>
-                            </div>
-                            <div class="shop-button">
-                                <a href="shop-details.html" class="theme-btn">Add To Cart</a>
-                            </div>
-                        </div>
-                    </div>
+                    <?php endwhile;?>
                 </div>
             </div>
         </div>
     </section>
 
     <!-- Footer Section start  -->
-    <footer class="footer-section fix">
-        <div class="container">
-            <div class="footer-widget-wrapper">
-                <div class="row">
-                    <div class="col-xl-3 col-lg-4 col-md-4 wow fadeInUp" data-wow-delay=".2s">
-                        <div class="single-footer-widget">
-                            <div class="widget-head"><a href="index.html" class="footer-logo">
-                                    <img src="assets/img/logo/logo.svg" alt="logo-img">
-                                </a>
-                            </div>
-                            <div class="footer-content">
-                                <div class="text">
-                                    <p>Got Questions? Call us</p>
-                                    <a href="tel:+67041390762">+670 413 90 762</a>
-                                </div>
-                                <ul class="contact-list">
-                                    <li>
-                                        <i class="fa-regular fa-envelope"></i>
-                                        <a href="mailto:readit@gmail.com">readit@gmail.com</a>
-                                    </li>
-                                    <li>
-                                        <i class="fa-regular fa-location-dot"></i>
-                                        79 Sleepy Hollow St.<br>
-                                        Jamaica, New York 1432
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-xl-3 col-lg-4 col-md-4 ps-lg-5 wow fadeInUp" data-wow-delay=".4s">
-                        <div class="single-footer-widget">
-                            <div class="widget-head">
-                                <h3>Costumers Support</h3>
-                            </div>
-                            <ul class="list-items">
-                                <li>
-                                    <a href="shop.html">
-                                        Store List
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="contact.html">
-                                        Opening Hours
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="contact.html">
-                                        Contact Us
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="contact.html">
-                                        Return Policy
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div class="col-xl-3 col-lg-4 col-md-4 ps-lg-5 wow fadeInUp" data-wow-delay=".6s">
-                        <div class="single-footer-widget">
-                            <div class="widget-head">
-                                <h3>Categories</h3>
-                            </div>
-                            <ul class="list-items">
-                                <li>
-                                    <a href="contact.html">
-                                        Novel Books
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="shop.html">
-                                        Poetry Books
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="contact.html">
-                                        Political Books
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="contact.html">
-                                        History Books
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div class="col-xl-3 col-lg-4 col-md-6 wow fadeInUp" data-wow-delay=".8s">
-                        <div class="single-footer-widget">
-                            <div class="widget-head">
-                                <h3>Subcribe.</h3>
-                            </div>
-                            <div class="footer-content">
-                                <p class="f-text">Our conversation is just getting started</p>
-                                <div class="footer-input">
-                                    <input type="email" id="email2" placeholder="Enter Your Email">
-                                    <button class="newsletter-btn" type="submit">
-                                        <span>Subscribe</span>
-                                    </button>
-                                </div>
-                                <div class="social-item">
-                                    <h6>Follow Us On</h6>
-                                    <div class="social-icon d-flex align-items-center">
-                                        <a href="#"><i class="fab fa-facebook-f"></i></a>
-                                        <a href="#"><i class="fab fa-twitter"></i></a>
-                                        <a href="#"><i class="fab fa-linkedin-in"></i></a>
-                                        <a href="#"><i class="fa-brands fa-vimeo-v"></i></a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                <div class="footer-wrapper">
-                    <p class="wow fadeInUp" data-wow-delay=".3s">
-                        ©All Rights reserved 2025 by <span>Readit.</span>
-                    </p>
-                    <div class="bottom-list wow fadeInUp" data-wow-delay=".5s">
-                        <div class="app-image">
-                            <img src="assets/img/footer/01.png" alt="img">
-                        </div>
-                        <div class="app-image">
-                            <img src="assets/img/footer/02.png" alt="img">
-                        </div>
-                        <div class="app-image">
-                            <img src="assets/img/footer/03.png" alt="img">
-                        </div>
-                        <div class="app-image">
-                            <img src="assets/img/footer/04.png" alt="img">
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </footer>
-
-
-    <!--<< All JS Plugins >>-->
-    <script src="assets/js/jquery-3.7.1.min.js"></script>
-    <!--<< Viewport Js >>-->
-    <script src="assets/js/viewport.jquery.js"></script>
-    <!--<< Bootstrap Js >>-->
-    <script src="assets/js/bootstrap.bundle.min.js"></script>
-    <!--<< Nice Select Js >>-->
-    <script src="assets/js/jquery.nice-select.min.js"></script>
-    <!--<< Waypoints Js >>-->
-    <script src="assets/js/jquery.waypoints.js"></script>
-    <!--<< Counterup Js >>-->
-    <script src="assets/js/jquery.counterup.min.js"></script>
-    <!--<< Swiper Slider Js >>-->
-    <script src="assets/js/swiper-bundle.min.js"></script>
-    <!--<< MeanMenu Js >>-->
-    <script src="assets/js/jquery.meanmenu.min.js"></script>
-    <!--<< Magnific Popup Js >>-->
-    <script src="assets/js/jquery.magnific-popup.min.js"></script>
-    <!--<< Wow Animation Js >>-->
-    <script src="assets/js/wow.min.js"></script>
-    <!-- Gsap -->
-    <script src="assets/js/gsap.min.js"></script>
-    <!--<< Main.js >>-->
-    <script src="assets/js/main.js"></script>
+    <?php include("footer.php")?>
 </body>
 
 </html>

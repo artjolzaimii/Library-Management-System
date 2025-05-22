@@ -257,7 +257,7 @@
                 <?php 
                 if ($result && $result->num_rows > 0) {
                     while ($book = $result->fetch_assoc()) {
-                        $img = !empty($book['image_path']) ? $book['image_path'] : '../assets/img/book/default.png';
+                        $img = !empty($book['image_path']) ? $book['image_path'] : '../assets/img/book/01.png';
                         $author = "Author Unknown"; 
                         $price = "$20.00"; 
                         $old_price = "$30.00";
@@ -267,7 +267,7 @@
                                 <div class="shop-box-items style-2">
                                     <div class="book-thumb center">
                                         <a href="shop-details.php?book_id=' . $book['book_id'] . '">
-                                            <img src="' . htmlspecialchars($img) . '" alt="img">
+                                            <img src="../../../uploads/images/' . htmlspecialchars($img) . '" alt="img">
                                         </a>
                                         <ul class="shop-icon d-grid justify-content-center align-items-center">
                                             <li><a href="shop-cart.html"><i class="far fa-heart"></i></a></li>

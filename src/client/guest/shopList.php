@@ -11,7 +11,8 @@
     <?php require("styleAndScripts.php"); ?>
 </head>
 <body>
-    <?php include("loading.php"); ?>
+    
+    <?php include("loading.php"); include("./logInSidebar.php")?>
     <div class="breadcrumb-wrapper bg-cover section-padding"
         style="background-image: url(../assets/img/hero/breadcrumb-bg.jpg);">
         <div class="container">
@@ -21,7 +22,7 @@
                     <ul class="breadcrumb-items wow fadeInUp" data-wow-delay=".3s">
                         <li><a href="mainPage.php">Home</a></li>
                         <li><i class="fa-solid fa-chevron-right"></i></li>
-                        <li>Shop Default</li>
+                        <li>Shop List</li>
                     </ul>
                 </div>
             </div>
@@ -102,7 +103,6 @@
                                     </ul>
                                 </div>
                             </div>
-                            <!-- ...other sidebar widgets... -->
                         </div>
                     </div>
                     <!-- Main Content -->

@@ -6,7 +6,7 @@
 
 <header id="header-sticky" class="header-1">
         <?php 
-                require("styleAndScripts.php");
+                require_once("./styleAndScripts.php");
         ?>
         <div class="container-fluid">
             <div class="mega-menu-wrapper">
@@ -103,7 +103,7 @@
                         
                         <!-- Shopping cart -->
                         <?php 
-                            include(__DIR__."/ShoppingCart/basket.php");
+                            include("./ShoppingCart/basket.php");
                         ?>
                         <div class="header__hamburger d-xl-none my-auto">
                             <div class="sidebar__toggle">
@@ -117,11 +117,11 @@
                                         <i class="fa-regular fa-user"></i>
                                         <?php echo htmlspecialchars($_SESSION['username']); ?>
                                     </button>
-                                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+                                    <ul class="dropdown-menu dropdown-menu-end" id="dropdown" aria-labelledby="profileDropdown">
                                         <li><a class="dropdown-item" href="myProfile.php"><i class="fa fa-user me-2"></i>My Profile</a></li>
                                         <li><hr class="dropdown-divider"></li>
                                         <li>
-                                            <form action="logout.php" method="post" style="margin:0;">
+                                            <form action="logOut.php?token=<?= $_SESSION['token']?>" method="post" style="margin:0;">
                                                 <button type="submit" class="dropdown-item"><i class="fa fa-sign-out-alt me-2"></i>Logout</button>
                                             </form>
                                         </li>
@@ -139,4 +139,3 @@
             </div>
         </div>
     </header>
-    <script src="../assets/js/bootstrap.bundle.min.js"></script>

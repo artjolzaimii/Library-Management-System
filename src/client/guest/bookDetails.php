@@ -658,10 +658,10 @@
                                     </div>
                                     <?php endwhile; ?>
 
-   <?php
-session_start(); // again, make sure it's active
-echo "Logged in as: " . ($_SESSION['user_id'] ?? 'Not logged in');
-?>
+                                           <?php
+                                        
+                                        echo "Logged in as: " . ($_SESSION['user_id'] ?? 'Not logged in');
+                                        ?>
                                     <!-- Review Submission Form -->
                                     <div class="review-title mt-5 py-15 mb-30">
                                       <h4>Submit Your Review</h4>
