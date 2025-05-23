@@ -9,6 +9,34 @@ $book_query->execute();
 $book_result = $book_query->get_result();
 $book = $book_result->fetch_assoc();
 
+$author_result = $conn->query("
+  SELECT a.full_name 
+  FROM author a 
+  INNER JOIN book_author ba ON a.author_id = ba.author_id 
+  WHERE ba.book_id = $book_id
+");
+
+$author_names = [];
+while ($a = $author_result->fetch_assoc()) {
+    $author_names[] = $a['full_name'];
+}
+$authors_combined = implode(", ", $author_names);
+
+
+$genre_result = $conn->query("
+  SELECT g.name 
+  FROM genres g 
+  INNER JOIN book_genre bg ON g.id = bg.genre_id 
+  WHERE bg.book_id = $book_id
+");
+
+$genre_names = [];
+while ($g = $genre_result->fetch_assoc()) {
+    $genre_names[] = $g['name'];
+}
+$genres_combined = implode(", ", $genre_names);
+
+
 $price = $inventory = $condition = $ebook_path = "";
 $format = $book['format'];
 
@@ -66,6 +94,17 @@ if ($format === 'For Sale') {
             <div class="col-md-6">
               <label class="form-label">Publisher</label>
               <input type="text" class="form-control" name="publisher" value="<?= htmlspecialchars($book['publisher']) ?>">
+            </div>
+          </div>
+
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label class="form-label">Author</label>
+              <input type="text" class="form-control" name="author" value="<?= htmlspecialchars($authors_combined) ?>">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Genre</label>
+              <input type="text" class="form-control" name="genres" value="<?= htmlspecialchars($genres_combined) ?>">
             </div>
           </div>
 

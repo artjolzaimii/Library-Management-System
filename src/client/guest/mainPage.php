@@ -1,4 +1,4 @@
-<script?php 
+<?php 
     include("clientMenu.php");
     require_once("../../../utilities/config.php");
 ?>
@@ -20,6 +20,7 @@
     <?php 
         require_once("./styleAndScripts.php");
     ?>
+    
 </head>
 
 <body>
@@ -235,59 +236,6 @@
     </div>
     </section>
 
-<<<<<<< HEAD
-  <section class="shop-section section-padding fix pt-0">
-    <div class="container">
-        <div class="section-title-area d-flex justify-content-between align-items-center">
-            <div class="section-title">
-                <h2 class="wow fadeInUp" data-wow-delay=".3s">Top Rated Books</h2>
-            </div>
-            <a href="shop.php" class="theme-btn style-2 wow fadeInUp" data-wow-delay=".5s">
-                Explore More <i class="fa-solid fa-arrow-right-long"></i>
-            </a>
-        </div>
-
-        <div class="swiper book-slider">
-            <div class="swiper-wrapper">
-                <?php
-                require_once("../../../utilities/config.php");
-
-                $query = "
-                    SELECT 
-                        b.book_id,
-                        b.title,
-                        b.image_path,
-                        sb.price,
-                        a.full_name AS author_name,
-                        ROUND(AVG(r.rating), 1) AS avg_rating,
-                        COUNT(r.review_id) AS review_count
-                    FROM book b
-                    LEFT JOIN sale_book sb ON b.book_id = sb.book_id
-                    LEFT JOIN book_author ba ON b.book_id = ba.book_id
-                    LEFT JOIN author a ON ba.author_id = a.author_id
-                    LEFT JOIN review r ON b.book_id = r.book_id
-                    GROUP BY b.book_id
-                    ORDER BY avg_rating DESC
-                    LIMIT 6;
-                ";
-
-                $result = $conn->query($query);
-                while ($book = $result->fetch_assoc()):
-                    $book_url = "bookDetails.php?isbn=" . urlencode($book['book_id']);
-                    $cover_path = "../../../uploads/images/" . htmlspecialchars($book['image_path']);
-                ?>
-                <div class="swiper-slide">
-                    <div class="shop-box-items style-2">
-                        <div class="book-thumb center">
-                            <a href="<?= $book_url ?>">
-                                <img src="<?= $cover_path ?>" alt="Book Cover" style="height: 250px; object-fit: cover;">
-                            </a>
-                            <ul class="shop-icon d-grid justify-content-center align-items-center">
-                                <li><a href="#"><i class="far fa-heart"></i></a></li>
-                                <li><a href="#"><img class="icon" src="../assets/img/icon/shuffle.svg" alt="icon"></a></li>
-                                <li><a href="<?= $book_url ?>"><i class="far fa-eye"></i></a></li>
-                            </ul>
-=======
     
     <!-- Shop Section -->
     <?php 
@@ -419,85 +367,86 @@
 
 
     </script>
-   
-    <!-- Shop Section Start -->
-    <section class="shop-section section-padding fix pt-0">
-        <div class="container">
+
+ <!-- Top Ratting Book Section start  -->
+   <section class="top-ratting-book-section fix section-padding bg-cover" style="background-image: url(assets/img/ratting-bg.jpg);">
+    <div class="container">
+        <div class="top-ratting-book-wrapper">
             <div class="section-title-area">
                 <div class="section-title">
-                    <h2 class="wow fadeInUp" data-wow-delay=".3s">Top Category Books</h2>
+                    <h2 class="wow fadeInUp" data-wow-delay=".3s">Top Rating Books</h2>
                 </div>
-                <a href="shop.html" class="theme-btn style-2 wow fadeInUp" data-wow-delay=".5s">Explore More <i
-                        class="fa-solid fa-arrow-right-long"></i></a>
+                <a href="shopList.php" class="theme-btn wow fadeInUp" data-wow-delay=".5s">
+                    view more books <i class="fa-solid fa-arrow-right-long"></i>
+                </a>
             </div>
-            <div class="swiper book-slider">
-                <div class="swiper-wrapper">
-                    <div class="swiper-slide">
-                        <div class="shop-box-items style-2">
-                            <div class="book-thumb center">
-                                <a href="shop-details"><img src="../assets/img/book/01.png" alt="img"></a>
-                                <ul class="post-box">
-                                    <li>
-                                        Hot
-                                    </li>
-                                    <li class="style-2">
-                                        -30%
-                                    </li>
-                                </ul>
-                                <ul class="shop-icon d-grid justify-content-center align-items-center">
-                                    <li>
-                                 <a href="shop-cart.html"><i class="far fa-heart"></i></a>
-                                    </li>
-                                    <li>
-                                        <a href="shop-cart.html">
-                                            <img class="icon" src="../assets/img/icon/shuffle.svg" alt="svg-icon">
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a href="shop-details.html"><i class="far fa-eye"></i></a>
-                                    </li>
-                                </ul>
-                                <div class="shop-button">
-                                    <a href="shop-details.html" class="theme-btn">Add To Cart</a>
-                                </div>
-                            </div>
-                            <div class="shop-content">
-                                <h5> Design Low Book </h5>
-                                <h3><a href="shop-details.html">Simple Things You To <br> Save BOOK</a></h3>
-                                <ul class="price-list">
-                                    <li>$30.00</li>
-                                    <li>
-                                        <del>$39.99</del>
-                                    </li>
-                                </ul>
-                                <ul class="author-post">
-                                    <li class="authot-list">
-                                        <span class="thumb">
-                                            <img src="../assets/img/testimonial/client-1.png" alt="img">
-                                        </span>
-                                        <span class="content">Wilson</span>
-                                    </li>
-                                    <li>
-                                        <i class="fa-solid fa-star"></i>
-                                        3.4 (25)
-                                    </li>
-                                </ul>
-                            </div>
->>>>>>> 40434eb2019e3f048a80145cf22368bf28437db3
+            <div class="row">
+                <?php
+                require_once("../../../utilities/config.php");
+
+                $query = "
+                    SELECT 
+                        b.book_id, b.isbn, b.title, b.image_path, sb.price,
+                        AVG(r.rating) AS avg_rating, COUNT(r.review_id) AS review_count,
+                        (SELECT GROUP_CONCAT(a.full_name SEPARATOR ', ')
+                         FROM book_author ba 
+                         JOIN author a ON ba.author_id = a.author_id 
+                         WHERE ba.book_id = b.book_id) AS authors
+                    FROM book b
+                    LEFT JOIN review r ON b.book_id = r.book_id
+                    LEFT JOIN sale_book sb ON b.book_id = sb.book_id
+                    GROUP BY b.book_id
+                    ORDER BY avg_rating DESC
+                    LIMIT 6;
+                ";
+
+                $result = $conn->query($query);
+                while ($book = $result->fetch_assoc()):
+                    $book_url = "bookDetails.php?isbn=" . urlencode($book['isbn']);
+
+                    $image_path = "../../../uploads/images/" . htmlspecialchars($book['image_path']);
+                ?>
+                <div class="col-xl-6 wow fadeInUp" data-wow-delay=".3s">
+                    <div class="top-ratting-box-items">
+                        <div class="book-thumb">
+                            <a href="<?= $book_url ?>">
+                               <img src="<?= $image_path ?>" alt=img>
+
+                            </a>
                         </div>
-                        <div class="shop-content">
-                            <h5><?= htmlspecialchars($book['author_name'] ?? 'Unknown Author') ?></h5>
-                            <h3><a href="<?= $book_url ?>"><?= htmlspecialchars($book['title']) ?></a></h3>
-                            <ul class="price-list">
-                                <li><?= isset($book['price']) ? number_format($book['price'], 2) . " ALL" : 'N/A' ?></li>
-                            </ul>
+                        <div class="book-content">
+                            <div class="title-header d-flex justify-content-between">
+                                <div>
+                                    <h5><?= htmlspecialchars($book['authors'] ?? 'Unknown Author') ?></h5>
+                                    <h3><a href="<?= $book_url ?>"><?= htmlspecialchars($book['title']) ?></a></h3>
+                                </div>
+                                <ul class="shop-icon d-flex align-items-center">
+                                    <li><a href="#"><i class="far fa-heart"></i></a></li>
+                                    
+                                    <li><a href="<?= $book_url ?>"><i class="far fa-eye"></i></a></li>
+                                </ul>
+                            </div>
+                            <span class="mt-10"><?= isset($book['price']) ? number_format($book['price'], 2) . ' ALL' : 'N/A' ?></span>
                             <ul class="author-post">
-                                <li>
-                                    <i class="fa-solid fa-star"></i>
-                                    <?= $book['avg_rating'] ?: '0.0' ?> 
-                                    (<?= $book['review_count'] ?>)
+                                <li class="authot-list">
+                                    <span class="thumb">
+                                        <img src="assets/img/testimonial/client-2.png" alt="img">
+                                    </span>
+                                    <span class="content mt-10"><?= htmlspecialchars($book['authors'] ?? 'Unknown') ?></span>
                                 </li>
                             </ul>
+                            <div class="shop-btn">
+                                <div class="star">
+                                    <?php
+                                    $rating = round($book['avg_rating']);
+                                    for ($i = 1; $i <= 5; $i++) {
+                                        echo '<i class="fa-' . ($i <= $rating ? 'solid' : 'regular') . ' fa-star"></i>';
+                                    }
+                                    ?>
+                                    (<?= $book['review_count'] ?>)
+                                </div>
+                                <a href="<?= $book_url ?>" class="theme-btn">Add To Cart</a>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -506,6 +455,9 @@
         </div>
     </div>
 </section>
+
+
+
 
 
     <!-- Featured Books Section Start -->
@@ -1641,50 +1593,7 @@
         });
         </script>
 
-<<<<<<< HEAD
-    <!--<< All JS Plugins >>-->
-    <script src="../assets/js/jquery-3.7.1.min.js"></script>
-    <!--<< Viewport Js >>-->
-    <script src="../assets/js/viewport.jquery.js"></script>
-    <!--<< Bootstrap Js >>-->
-    <script src="../assets/js/bootstrap.bundle.min.js"></script>
-    <!--<< Nice Select Js >>-->
-    <script src="../assets/js/jquery.nice-select.min.js"></script>
-    <!--<< Waypoints Js >>-->
-    <script src="../assets/js/jquery.waypoints.js"></script>
-    <!--<< Counterup Js >>-->
-    <script src="../assets/js/jquery.counterup.min.js"></script>
-    <!--<< Swiper Slider Js >>-->
-    <script src="../assets/js/swiper-bundle.min.js"></script>
-    <!--<< MeanMenu Js >>-->
-    <script src="../assets/js/jquery.meanmenu.min.js"></script>
-    <!--<< Magnific Popup Js >>-->
-    <script src="../assets/js/jquery.magnific-popup.min.js"></script>
-    <!--<< Wow Animation Js >>-->
-    <script src="../assets/js/wow.min.js"></script>
-    <!-- Gsap -->
-    <script src="../assets/js/gsap.min.js"></script>
-    <!--<< Main.js >>-->
-    <script src="../assets/js/main.js"></script>
-    <script>
-                new Swiper('.book-slider', {
-                slidesPerView: 1,
-                spaceBetween: 20,
-                loop: true,
-                autoplay: {
-                    delay: 5000,
-                },
-                breakpoints: {
-                    576: { slidesPerView: 2 },
-                    768: { slidesPerView: 2 },
-                    992: { slidesPerView: 3 },
-                    1200: { slidesPerView: 4 }
-                }
-            });
-    </script>
-
-=======
->>>>>>> 40434eb2019e3f048a80145cf22368bf28437db3
 </body>
 
 </html>
+
