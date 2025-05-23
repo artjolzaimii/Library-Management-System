@@ -1,7 +1,7 @@
 <!--<< Favcion >>-->
-    <link rel="shortcut icon" href="../assets/img/favicon.png">
+    <link rel="shortcut icon" href="<?php echo "../assets/img/favicon.png"?>">
     <!--<< Bootstrap min.css >>-->
-    <link rel="stylesheet" href="../assets/css/bootstrap.min.css">
+    <link rel="stylesheet" href="<?php echo "../assets/css/bootstrap.min.css"?>">
     <!--<< All Min Css >>-->
     <link rel="stylesheet" href="../assets/css/all.min.css">
     <!--<< Animate.css >>-->
@@ -20,7 +20,7 @@
     <link rel="stylesheet" href="../assets/css/main.css">
     
     
-        <!--<< All JS Plugins >>-->
+    <!--<< All JS Plugins >>-->
     <script src="../assets/js/jquery-3.7.1.min.js"></script>
     <!--<< Viewport Js >>-->
     <script src="../assets/js/viewport.jquery.js"></script>

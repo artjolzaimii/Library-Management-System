@@ -1,5 +1,6 @@
 <?php 
     include("clientMenu.php");
+    require_once("../../../utilities/config.php");
 ?>
 
 <!DOCTYPE html>
@@ -15,26 +16,10 @@
     <meta name="description" content="EternaLibrary - Books Library eCommerce Store">
     <!-- ======== Page title ============ -->
     <title>Eterna Library - Books Library eCommerce Store</title>
-    <!--<< Favcion >>-->
-    <link rel="shortcut icon" href="../assets/img/favicon.png">
-    <!--<< Bootstrap min.css >>-->
-    <link rel="stylesheet" href="../assets/css/bootstrap.min.css">
-    <!--<< All Min Css >>-->
-    <link rel="stylesheet" href="../assets/css/all.min.css">
-    <!--<< Animate.css >>-->
-    <link rel="stylesheet" href="../assets/css/animate.css">
-    <!--<< Magnific Popup.css >>-->
-    <link rel="stylesheet" href="../assets/css/magnific-popup.css">
-    <!--<< MeanMenu.css >>-->
-    <link rel="stylesheet" href="../assets/css/meanmenu.css">
-    <!--<< Swiper Bundle.css >>-->
-    <link rel="stylesheet" href="../assets/css/swiper-bundle.min.css">
-    <!--<< Nice Select.css >>-->
-    <link rel="stylesheet" href="../assets/css/nice-select.css">
-    <!--<< Icomoon.css >>-->
-    <link rel="stylesheet" href="../assets/css/icomoon.css">
-    <!--<< Main.css >>-->
-    <link rel="stylesheet" href="../assets/css/main.css">
+    
+    <?php 
+        require_once("./styleAndScripts.php");
+    ?>
 </head>
 
 <body>
@@ -185,66 +170,203 @@
 
     <!-- Book Banner Section start  -->
     <section class="book-banner-section fix section-padding">
-        <div class="container">
-            <div class="row g-4">
-                <div class="col-xl-4 col-lg-6 col-md-6 wow fadeInUp" data-wow-delay=".3s">
-                    <div class="banner-book-card-items bg-cover"
-                        style="background-image: url('../assets/img/banner/book-banner-1.jpg');">
+    <div class="container">
+        <div class="swiper book-slider-genre">
+            <div class="swiper-wrapper">
+                <div class="swiper-slide">
+                    <div class="banner-book-card-items bg-cover" style="background-image: url('../assets/img/banner/book-banner-1.jpg');">
                         <div class="book-shape">
                             <img src="../assets/img/banner/book-1.png" alt="img">
                         </div>
                         <div class="banner-book-content">
                             <div class="banner-text">
                                 <span>25% off</span>
-                                <h2>romantic novels</h2>
-                                <p>Sed ac arcu sed felis vulputate <br> molestie. Nullam at urna</p>
+                                <h2>Romantic Novels</h2>
+                                <p>Fall in love with these classic stories</p>
                             </div>
-                            <a href="shop-details.html" class="banner-icons">
+                            <a href="#shop-section" class="banner-icons" onclick="loadBooksByGenre('drama'); return false;">
                                 <img src="../assets/img/icon/icon-25.svg" alt="icon">
                             </a>
                         </div>
                     </div>
                 </div>
-                <div class="col-xl-4 col-lg-6 col-md-6 wow fadeInUp" data-wow-delay=".3s">
-                    <div class="banner-book-card-items bg-cover"
-                        style="background-image: url('../assets/img/banner/book-banner-2.jpg');">
-                        <div class="book-shape-2">
+                
+                <div class="swiper-slide">
+                    <div class="banner-book-card-items bg-cover" style="background-image: url('../assets/img/banner/book-banner-1.jpg');">
+                        <div class="book-shape">
                             <img src="../assets/img/banner/book-2.png" alt="img">
                         </div>
                         <div class="banner-book-content">
                             <div class="banner-text">
                                 <span>25% off</span>
-                                <h2>Crime Fiction Books</h2>
-                                <p>Sed ac arcu sed felis vulputate <br> molestie. Nullam at urna</p>
+                                <h2>Drama Novels</h2>
+                                <p>Fall in love with these classic stories</p>
                             </div>
-                            <a href="shop-details.html" class="banner-icons">
+                            <a href="#shop-section" class="banner-icons" onclick="window.location.href='mainPage.php?genre=drama'">
                                 <img src="../assets/img/icon/icon-25.svg" alt="icon">
                             </a>
                         </div>
                     </div>
                 </div>
-                <div class="col-xl-4 col-lg-6 col-md-6 wow fadeInUp" data-wow-delay=".3s">
-                    <div class="banner-book-card-items bg-cover"
-                        style="background-image: url('../assets/img/banner/book-banner-3.jpg');">
-                        <div class="book-shape-3">
+                
+                <div class="swiper-slide">
+                    <div class="banner-book-card-items bg-cover" style="background-image: url('../assets/img/banner/book-banner-1.jpg');">
+                        <div class="book-shape">
                             <img src="../assets/img/banner/book-3.png" alt="img">
                         </div>
                         <div class="banner-book-content">
                             <div class="banner-text">
                                 <span>25% off</span>
-                                <h2>romantic novels</h2>
-                                <p>Sed ac arcu sed felis vulputate <br> molestie. Nullam at urna</p>
+                                <h2>Romantic Novels</h2>
+                                <p>Fall in love with these classic stories</p>
                             </div>
-                            <a href="shop-details.html" class="banner-icons">
+                            <a href="#shop-section" class="banner-icons" onclick="loadBooksByGenre('Romantic Novels'); return false;">
                                 <img src="../assets/img/icon/icon-25.svg" alt="icon">
                             </a>
                         </div>
                     </div>
                 </div>
+                
             </div>
+            <div class="swiper-pagination"></div>
+            <div class="swiper-button-next"></div>
+            <div class="swiper-button-prev"></div>
         </div>
+    </div>
     </section>
 
+    
+    <!-- Shop Section -->
+    <?php 
+        require_once("./fetchBooksByGenre.php");
+    ?>
+    <section id="shop-section" class="shop-section section-padding fix pt-0">
+    <div class="container">
+        <div class="section-title-area">
+            <div class="section-title">
+                <h2>
+                    <?php 
+                        echo $selected_genre ? "Books in Genre: " . htmlspecialchars($selected_genre) : "Top Category Books"; 
+                    ?>
+                </h2>
+            </div>
+            <a href="shop.html" class="theme-btn style-2">Explore More <i class="fa-solid fa-arrow-right-long"></i></a>
+        </div>
+        <div class="swiper book-slider-genre" id="shop-books-container">
+            <div class="swiper-wrapper">
+                <?php 
+                if ($result && $result->num_rows > 0) {
+                    while ($book = $result->fetch_assoc()) {
+                        $img = !empty($book['image_path']) ? $book['image_path'] : '../assets/img/book/01.png';
+                        $author = "Author Unknown"; 
+                        $price = "$20.00"; 
+                        $old_price = "$30.00";
+
+                        echo '
+                            <div class="swiper-slide">
+                                <div class="shop-box-items style-2">
+                                    <div class="book-thumb center">
+                                        <a href="shop-details.php?book_id=' . $book['book_id'] . '">
+                                            <img src="../../../uploads/images/' . htmlspecialchars($img) . '" alt="img">
+                                        </a>
+                                        <ul class="shop-icon d-grid justify-content-center align-items-center">
+                                            <li><a href="shop-cart.html"><i class="far fa-heart"></i></a></li>
+                                            <li><a href="shop-cart.html"><img class="icon" src="../assets/img/icon/shuffle.svg" alt="svg-icon"></a></li>
+                                            <li><a href="shop-details.php?book_id=' . $book['book_id'] . '"><i class="far fa-eye"></i></a></li>
+                                        </ul>
+                                        <div class="shop-button">
+                                            <a href="shop-details.php?book_id=' . $book['book_id'] . '" class="theme-btn">Add To Cart</a>
+                                        </div>
+                                    </div>
+                                    <div class="shop-content">
+                                        <h5>Design Low Book</h5>
+                                        <h3><a href="shop-details.php?book_id=' . $book['book_id'] . '">' . htmlspecialchars($book['title'] ?? 'No Title') . '</a></h3>
+                                        <ul class="price-list">
+                                            <li>$' . htmlspecialchars($book['price'] ?? '20.00') . '</li>
+                                            <li><del>$' . htmlspecialchars($book['old_price'] ?? '30.00') . '</del></li>
+                                        </ul>
+                                        <ul class="author-post">
+                                            <li class="authot-list">
+                                                <span class="thumb"><img src="../assets/img/testimonial/client-1.png" alt="img"></span>
+                                                <span class="content">' . htmlspecialchars($book['author'] ?? 'Author Unknown') . '</span>
+                                            </li>
+                                            <li><i class="fa-solid fa-star"></i>3.4 (25)</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>';
+
+                    }
+                } else {
+                    echo '<p>No books found for this genre.</p>';
+                }
+                ?>
+            </div>
+            <div class="swiper-pagination"></div>
+            <div class="swiper-button-next"></div>
+            <div class="swiper-button-prev"></div>
+        </div>
+    </div>
+    </section>
+    
+    <!-- JS for AJAX genre load -->
+    <script>
+        function loadBooksByGenre(genre) {
+            const container = document.getElementById('shop-books-container');
+        
+            // Change URL without reloading
+            const params = new URLSearchParams(window.location.search);
+            params.set('genre', genre);
+            history.pushState({}, '', window.location.pathname + '?' + params.toString());
+        
+            // Show loading spinner
+            container.innerHTML = '<div style="padding:2rem;text-align:center;">Loading...</div>';
+        
+            // AJAX call
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', 'mainPage.php?genre=' + encodeURIComponent(genre), true);
+            xhr.onload = function () {
+                if (xhr.status === 200) {
+                    container.innerHTML = xhr.responseText;
+        
+                    // Destroy old swiper
+                    if (window.genreSwiper) window.genreSwiper.destroy(true, true);
+        
+                    // Init new swiper
+                    window.genreSwiper = new Swiper('.book-slider-genre', {
+                        slidesPerView: 1,
+                        spaceBetween: 30,
+                        loop: true,
+                        pagination: {
+                            el: '.book-slider-genre .swiper-pagination',
+                            clickable: true,
+                        },
+                        navigation: {
+                            nextEl: '.book-slider-genre .swiper-button-next',
+                            prevEl: '.book-slider-genre .swiper-button-prev',
+                        },
+                        breakpoints: {
+                            768: { slidesPerView: 2 },
+                            1200: { slidesPerView: 3 }
+                        }
+                    });
+                } else {
+                    container.innerHTML = '<p class="text-danger">Error loading books.</p>';
+                }
+            };
+            xhr.onerror = function () {
+                container.innerHTML = '<p class="text-danger">Network error.</p>';
+            };
+            xhr.send();
+        
+            // Scroll into view
+            document.getElementById('shop-section').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+
+
+    </script>
+   
     <!-- Shop Section Start -->
     <section class="shop-section section-padding fix pt-0">
         <div class="container">
@@ -271,7 +393,7 @@
                                 </ul>
                                 <ul class="shop-icon d-grid justify-content-center align-items-center">
                                     <li>
-                                        <a href="shop-cart.html"><i class="far fa-heart"></i></a>
+                                 <a href="shop-cart.html"><i class="far fa-heart"></i></a>
                                     </li>
                                     <li>
                                         <a href="shop-cart.html">
@@ -1368,12 +1490,18 @@
     </section>
 
     <!-- Team Section Start -->
+    <?php 
+        $query="SELECT a.author_id, a.full_name, a.image_path, COUNT(ba.book_id) as nr_books
+                FROM author a LEFT JOIN book_author ba ON a.author_id=ba.author_id
+                GROUP BY a.author_id;";
+        $result=mysqli_query($conn,$query);
+    ?>
+    
     <section class="team-section fix section-padding pt-0 margin-bottom-30">
         <div class="container">
             <div class="section-title text-center">
                 <h2 class="mb-3 wow fadeInUp" data-wow-delay=".3s">Featured Author</h2>
-                <p class="wow fadeInUp" data-wow-delay=".5s">Interdum et malesuada fames ac ante ipsum primis in
-                    faucibus. <br> Donec at nulla nulla. Duis posuere ex lacus</p>
+                <p class="wow fadeInUp" data-wow-delay=".5s">Meet our featured authors—visionary storytellers shaping the literary world. Discover their best works and let their words inspire you."</p>
             </div>
             <div class="array-button">
                 <button class="array-prev"><i class="fal fa-arrow-left"></i></button>
@@ -1381,102 +1509,24 @@
             </div>
             <div class="swiper team-slider">
                 <div class="swiper-wrapper">
+                <?php while($author=$result->fetch_assoc()):?>
                     <div class="swiper-slide">
                         <div class="team-box-items">
                             <div class="team-image">
                                 <div class="thumb">
-                                    <img src="../assets/img/team/01.jpg" alt="img">
+                                    <img src="../../../<?php echo $author['image_path']?>" alt="img" height="104px" width="104px">
                                 </div>
                                 <div class="shape-img">
                                     <img src="../assets/img/team/shape-img.png" alt="img">
                                 </div>
                             </div>
                             <div class="team-content text-center">
-                                <h6><a href="team-details.html">Esther Howard</a></h6>
-                                <p>10 Published Books</p>
+                                <h6><a href="authorProfile.php?authorId=<?php echo $author['author_id']?>"><?php echo $author['full_name']?></a></h6>
+                                <p><?php echo $author['nr_books']?> Published Books</p>
                             </div>
                         </div>
                     </div>
-                    <div class="swiper-slide">
-                        <div class="team-box-items">
-                            <div class="team-image">
-                                <div class="thumb">
-                                    <img src="../assets/img/team/02.jpg" alt="img">
-                                </div>
-                                <div class="shape-img">
-                                    <img src="../assets/img/team/shape-img.png" alt="img">
-                                </div>
-                            </div>
-                            <div class="team-content text-center">
-                                <h6><a href="team-details.html">Shikhon Islam</a></h6>
-                                <p>07 Published Books</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="swiper-slide">
-                        <div class="team-box-items">
-                            <div class="team-image">
-                                <div class="thumb">
-                                    <img src="../assets/img/team/03.jpg" alt="img">
-                                </div>
-                                <div class="shape-img">
-                                    <img src="../assets/img/team/shape-img.png" alt="img">
-                                </div>
-                            </div>
-                            <div class="team-content text-center">
-                                <h6><a href="team-details.html">Kawser Ahmed</a></h6>
-                                <p>04 Published Books</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="swiper-slide">
-                        <div class="team-box-items">
-                            <div class="team-image">
-                                <div class="thumb">
-                                    <img src="../assets/img/team/04.jpg" alt="img">
-                                </div>
-                                <div class="shape-img">
-                                    <img src="../assets/img/team/shape-img.png" alt="img">
-                                </div>
-                            </div>
-                            <div class="team-content text-center">
-                                <h6><a href="team-details.html">Brooklyn Simmons</a></h6>
-                                <p>15 Published Books</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="swiper-slide">
-                        <div class="team-box-items">
-                            <div class="team-image">
-                                <div class="thumb">
-                                    <img src="../assets/img/team/05.jpg" alt="img">
-                                </div>
-                                <div class="shape-img">
-                                    <img src="../assets/img/team/shape-img.png" alt="img">
-                                </div>
-                            </div>
-                            <div class="team-content text-center">
-                                <h6><a href="team-details.html">Leslie Alexander</a></h6>
-                                <p>05 Published Books</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="swiper-slide">
-                        <div class="team-box-items">
-                            <div class="team-image">
-                                <div class="thumb">
-                                    <img src="../assets/img/team/06.jpg" alt="img">
-                                </div>
-                                <div class="shape-img">
-                                    <img src="../assets/img/team/shape-img.png" alt="img">
-                                </div>
-                            </div>
-                            <div class="team-content text-center">
-                                <h6><a href="team-details.html">Guy Hawkins</a></h6>
-                                <p>12 Published Books</p>
-                            </div>
-                        </div>
-                    </div>
+                <?php endwhile; ?>    
                 </div>
             </div>
         </div>
@@ -1651,31 +1701,50 @@
             </div>
         </div>
     </div>
+        
+    <!-- Slider fix -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Genre slider
+            var genreSwiper = new Swiper('.book-slider-genre', {
+                slidesPerView: 1,
+                spaceBetween: 30,
+                loop: true,
+                pagination: {
+                    el: '.book-slider-genre .swiper-pagination',
+                    clickable: true,
+                },
+                navigation: {
+                    nextEl: '.book-slider-genre .swiper-button-next',
+                    prevEl: '.book-slider-genre .swiper-button-prev',
+                },
+                breakpoints: {
+                    768: { slidesPerView: 2 },
+                    1200: { slidesPerView: 3 }
+                }
+            });
+        
+            // Main book slider (if present)
+            var mainSwiper = new Swiper('.book-slider-main', {
+                slidesPerView: 1,
+                spaceBetween: 30,
+                loop: true,
+                pagination: {
+                    el: '.book-slider-main .swiper-pagination',
+                    clickable: true,
+                },
+                navigation: {
+                    nextEl: '.book-slider-main .swiper-button-next',
+                    prevEl: '.book-slider-main .swiper-button-prev',
+                },
+                breakpoints: {
+                    768: { slidesPerView: 2 },
+                    1200: { slidesPerView: 3 }
+                }
+            });
+        });
+        </script>
 
-    <!--<< All JS Plugins >>-->
-    <script src="../assets/js/jquery-3.7.1.min.js"></script>
-    <!--<< Viewport Js >>-->
-    <script src="../assets/js/viewport.jquery.js"></script>
-    <!--<< Bootstrap Js >>-->
-    <script src="../assets/js/bootstrap.bundle.min.js"></script>
-    <!--<< Nice Select Js >>-->
-    <script src="../assets/js/jquery.nice-select.min.js"></script>
-    <!--<< Waypoints Js >>-->
-    <script src="../assets/js/jquery.waypoints.js"></script>
-    <!--<< Counterup Js >>-->
-    <script src="../assets/js/jquery.counterup.min.js"></script>
-    <!--<< Swiper Slider Js >>-->
-    <script src="../assets/js/swiper-bundle.min.js"></script>
-    <!--<< MeanMenu Js >>-->
-    <script src="../assets/js/jquery.meanmenu.min.js"></script>
-    <!--<< Magnific Popup Js >>-->
-    <script src="../assets/js/jquery.magnific-popup.min.js"></script>
-    <!--<< Wow Animation Js >>-->
-    <script src="../assets/js/wow.min.js"></script>
-    <!-- Gsap -->
-    <script src="../assets/js/gsap.min.js"></script>
-    <!--<< Main.js >>-->
-    <script src="../assets/js/main.js"></script>
 </body>
 
 </html>

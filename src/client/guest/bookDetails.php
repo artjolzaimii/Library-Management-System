@@ -1,3 +1,10 @@
+<!-- Header Section Start -->
+<?php 
+    include("clientMenu.php");
+    require_once("../../../utilities/config.php");
+?>
+
+
 <!DOCTYPE html>
 <html lang="en">
 <!--<< Header Area >>-->
@@ -40,7 +47,7 @@
     
         $isbn=mysqli_real_escape_string($conn,$_GET['isbn']);
         
-        $query="SELECT `isbn`, `publication_year`, `publisher`, `language`, `nr_pages`, `description`, `format`, `image_path`, `title` FROM `book` WHERE `isbn`=?";
+        $query="SELECT `book_id`,`isbn`, `publication_year`, `publisher`, `language`, `nr_pages`, `description`, `format`, `image_path`, `title` FROM `book` WHERE `isbn`=?";
         
         $stm=$conn->prepare($query);
         
@@ -135,6 +142,7 @@
         else{
             echo "The book with this id does not exist!";
             header("Location: mainPage.php");
+            
         }
     ?>
     
@@ -230,10 +238,6 @@
     </div>
     <div class="offcanvas__overlay"></div>
 
-    <!-- Header Section Start -->
-    <?php 
-        include("clientMenu.php")
-    ?>
 
     <!-- Sidebar Area Here -->
     <?php 
@@ -328,7 +332,8 @@
                             
                             ?>
                             <!--If an item is out of stock make buttons, inputs disabled -->
-                            <div class="cart-wrapper">
+                            <form action="" method="POST">
+                                <div class="cart-wrapper">
                                 <div class="quantity-basket">
                                     <p class="qty">
                                         <button class="qtyminus" aria-hidden="true"
@@ -340,7 +345,7 @@
                                                 }
                                             ?>
                                         >−</button>
-                                        <input type="number" name="qty" id="qty2" min="1" max="10" step="1" value="1"
+                                        <input type="number" name="quantity" id="qty2" min="1" max="199" step="1" value="1"
                                             <?php 
                                                 if($row['format']=='For Sale'){
                                                     if($saleRow['inventory']<0){
@@ -416,9 +421,8 @@
                                         </div>
                                     </div>
                                 </div>
-                                
-                                
-                                <a href="shop-details.html" class="theme-btn">Add To Cart</a>
+                                <!-- Submit button of form-->
+                                <button  type="submit" class="theme-btn">Add To Cart</button>
                                 <div class="icon-box">
                                     <a href="shop-details.html" class="icon">
                                         <i class="far fa-heart"></i>
@@ -428,6 +432,19 @@
                                     </a>
                                 </div>
                             </div>
+                            </form>
+                            
+                            <?php 
+                                //handle book add to cart
+                                if(isset($_POST['quantity'])){
+                                    $quantity=mysqli_real_escape_string($conn,$_POST['quantity']);
+                                    
+                                    require_once("./ShoppingCart/shoppingCartFunctionalities.php");
+                                    
+                                    addBookToBasket($conn,$row['book_id'],$quantity);
+                                }
+                            ?>
+                            
                             <div class="category-box">
                                 <div class="category-list">
                                     <ul>
@@ -599,88 +616,97 @@
                                 </table>
                             </div>
                         </div>
+                                 <div id="review" class="tab-pane fade" role="tabpanel">
+                                    <div class="review-items">
+                                    <?php
+                                           $book_id = isset($row['book_id']) ? $row['book_id'] : null;
 
-                        <div id="review" class="tab-pane fade" role="tabpanel">
-                            <div class="review-items">
-                                <div class="review-wrap-area d-flex gap-4">
-                                    <div class="review-thumb">
-                                        <img src="../assets/img/shop-details/review.png" alt="img">
-                                    </div>
-                                    <div class="review-content">
-                                        <div
-                                            class="head-area d-flex flex-wrap gap-2 align-items-center justify-content-between">
+                                            $reviewQuery = $conn->prepare("
+                                        SELECT r.*, u.username, u.email 
+                                        FROM review r 
+                                        JOIN users u ON r.user_id = u.id 
+                                        WHERE r.book_id = ?
+                                        ORDER BY r.created_at DESC
+                                        ");
+                                        $reviewQuery->bind_param("i", $book_id);
+                                        $reviewQuery->execute();
+                                        $reviews = $reviewQuery->get_result();
+
+                                        while ($r = $reviews->fetch_assoc()):
+                                        ?>
+                                        <div class="review-wrap-area d-flex gap-4">
+                                        <div class="review-thumb">
+                                            <img src="assets/img/shop-details/review.png" alt="img">
+                                        </div>
+
+                                        <div class="review-content">
+                                        <div class="head-area d-flex flex-wrap gap-2 align-items-center justify-content-between">
                                             <div class="cont">
-                                                <h5><a href="news-details.html">Leslie Alexander</a></h5>
-                                                <span>February 10, 2024 at 2:37 pm</span>
+                                            <h5><?= htmlspecialchars($r['username']) ?> (<?= htmlspecialchars($r['email']) ?>)</h5>
+                                            <span>
+                                                <?= isset($r['created_at']) ? date("F d, Y h:i a", strtotime($r['created_at'])) : 'Unknown date' ?>
+                                            </span>
                                             </div>
                                             <div class="star">
-                                                <i class="fa-solid fa-star"></i>
-                                                <i class="fa-solid fa-star"></i>
-                                                <i class="fa-solid fa-star"></i>
-                                                <i class="fa-solid fa-star"></i>
-                                                <i class="fa-regular fa-star"></i>
+                                            <?php for ($i = 1; $i <= 5; $i++): ?>
+                                                <i class="<?= $i <= $r['rating'] ? 'fa-solid' : 'fa-regular' ?> fa-star"></i>
+                                            <?php endfor; ?>
                                             </div>
                                         </div>
-                                        <p class="mt-30 mb-4">
-                                            Neque porro est qui dolorem ipsum quia quaed inventor veritatis et quasi
-                                            architecto var sed efficitur turpis gilla sed sit amet finibus eros. Lorem
-                                            Ipsum is <br> simply dummy
-                                        </p>
-                                    </div>
-                                </div>
-                                <div class="review-title mt-5 py-15 mb-30">
-                                    <h4>Your Rating*</h4>
-                                    <div class="rate-now d-flex align-items-center">
-                                        <p>Your Rating*</p>
-                                        <div class="star">
-                                            <i class="fa-light fa-star"></i>
-                                            <i class="fa-light fa-star"></i>
-                                            <i class="fa-light fa-star"></i>
-                                            <i class="fa-light fa-star"></i>
-                                            <i class="fa-light fa-star"></i>
+                                        <p class="mt-30 mb-4"><?= nl2br(htmlspecialchars($r['comment'])) ?></p>
                                         </div>
                                     </div>
-                                </div>
-                                <div class="review-form">
-                                    <form action="#" id="contact-form2" method="POST">
-                                        <div class="row g-4">
-                                            <div class="col-lg-6">
-                                                <div class="form-clt">
-                                                    <span>Your Name*</span>
-                                                    <input type="text" name="name" id="name" placeholder="Your Name">
-                                                </div>
+                                    <?php endwhile; ?>
+
+                                           <?php
+                                        
+                                        echo "Logged in as: " . ($_SESSION['user_id'] ?? 'Not logged in');
+                                        ?>
+                                    <!-- Review Submission Form -->
+                                    <div class="review-title mt-5 py-15 mb-30">
+                                      <h4>Submit Your Review</h4>
+                                    </div>
+                                    <div class="review-form">
+                                     
+
+                                    <form action="submit-review.php" method="POST">
+                                            <input type="hidden" name="book_id" value="<?= $book_id ?>">
+                                            <input type="hidden" name="isbn" value="<?= htmlspecialchars($_GET['isbn'] ?? '') ?>">
+
+                                            <!-- COMMENT -->
+                                            <div class="mb-3">
+                                                <textarea name="comment" class="form-control" placeholder="Write Message" required></textarea>
                                             </div>
-                                            <div class="col-lg-6">
-                                                <div class="form-clt">
-                                                    <span>Your Email*</span>
-                                                    <input type="text" name="email" id="email" placeholder="Your Email">
-                                                </div>
+
+                                            <!-- STAR RATING SYSTEM -->
+                                            <div class="mb-3 star-rating">
+                                                <input type="hidden" name="rating" id="ratingValue" value="0">
+                                                <?php for ($i = 1; $i <= 5; $i++): ?>
+                                                    <i class="fa-regular fa-star fa-2x star" data-value="<?= $i ?>" style="cursor: pointer;"></i>
+                                                <?php endfor; ?>
                                             </div>
-                                            <div class="col-lg-12 wow fadeInUp animated" data-wow-delay=".8">
-                                                <div class="form-clt">
-                                                    <span>Message*</span>
-                                                    <textarea name="message" id="message"
-                                                        placeholder="Write Message"></textarea>
-                                                </div>
+
+                                            <!-- Optional fallback dropdown -->
+                                            <div class="mb-3">
+                                                <select id="ratingSelect" class="form-select">
+                                                    <option value="">Select Rating (optional)</option>
+                                                    <option value="1">★☆☆☆☆</option>
+                                                    <option value="2">★★☆☆☆</option>
+                                                    <option value="3">★★★☆☆</option>
+                                                    <option value="4">★★★★☆</option>
+                                                    <option value="5">★★★★★</option>
+                                                </select>
                                             </div>
-                                            <div class="col-lg-12 wow fadeInUp animated" data-wow-delay=".9">
-                                                <div class="form-check d-flex gap-2 from-customradio">
-                                                    <input type="checkbox" class="form-check-input"
-                                                        name="flexRadioDefault" id="flexRadioDefault12">
-                                                    <label class="form-check-label" for="flexRadioDefault12">
-                                                        i accept your terms & conditions
-                                                    </label>
-                                                </div>
-                                                <button type="submit" class="theme-btn style-2">
-                                                    Submit now
-                                                </button>
-                                            </div>
+
+                                            <button type="submit" class="btn btn-primary">Submit Review</button>
+                                        </form>
+
                                         </div>
-                                    </form>
+
+                                    </div>
                                 </div>
-                            </div>
-                        </div>
-                    </div>
+
+                      </div>
                 </div>
             </div>
         </div>
@@ -1001,6 +1027,62 @@
     <script src="../assets/js/gsap.min.js"></script>
     <!--<< Main.js >>-->
     <script src="../assets/js/main.js"></script>
+
+    
+
 </body>
 
 </html>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const stars = document.querySelectorAll(".star-rating .star");
+    const ratingValue = document.getElementById("ratingValue");
+    const ratingSelect = document.getElementById("ratingSelect");
+
+    // Star click handler
+    stars.forEach(star => {
+        star.addEventListener("click", function () {
+            const selected = parseInt(this.getAttribute("data-value"));
+            ratingValue.value = selected;
+
+            // Set solid stars up to selected
+            stars.forEach(s => {
+                const val = parseInt(s.getAttribute("data-value"));
+                if (val <= selected) {
+                    s.classList.remove("fa-regular");
+                    s.classList.add("fa-solid");
+                } else {
+                    s.classList.remove("fa-solid");
+                    s.classList.add("fa-regular");
+                }
+            });
+
+            // Sync select dropdown if used
+            if (ratingSelect) {
+                ratingSelect.value = selected;
+            }
+        });
+    });
+
+    // Optional: Sync dropdown with stars
+    if (ratingSelect) {
+        ratingSelect.addEventListener("change", function () {
+            const selected = parseInt(this.value);
+            if (!isNaN(selected)) {
+                ratingValue.value = selected;
+
+                stars.forEach(s => {
+                    const val = parseInt(s.getAttribute("data-value"));
+                    if (val <= selected) {
+                        s.classList.remove("fa-regular");
+                        s.classList.add("fa-solid");
+                    } else {
+                        s.classList.remove("fa-solid");
+                        s.classList.add("fa-regular");
+                    }
+                });
+            }
+        });
+    }
+});
+</script>

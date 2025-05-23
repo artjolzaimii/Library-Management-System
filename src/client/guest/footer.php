@@ -1,11 +1,14 @@
     <footer class="footer-section fix">
+        <?php 
+                require("styleAndScripts.php");
+        ?>
         <div class="container">
             <div class="footer-widget-wrapper">
                 <div class="row">
                     <div class="col-xl-3 col-lg-4 col-md-4 wow fadeInUp" data-wow-delay=".2s">
                         <div class="single-footer-widget">
                             <div class="widget-head"><a href="index.html" class="footer-logo">
-                                    <img src="../assets/img/logo/logo.svg" alt="logo-img">
+                                    <img src="../assets/img/logo/logo.png" alt="logo-img">
                                 </a>
                             </div>
                             <div class="footer-content">
@@ -135,3 +138,4 @@
             </div>
         </div>
     </footer>
+    <?php ob_end_flush();?>

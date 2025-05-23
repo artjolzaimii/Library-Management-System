@@ -1,10 +1,13 @@
 <?php 
     ob_start();
     if (session_status() === PHP_SESSION_NONE) session_start();
-    require_once("../../../utilities/config.php");
+    
 ?>
 
 <header id="header-sticky" class="header-1">
+        <?php 
+                require_once("./styleAndScripts.php");
+        ?>
         <div class="container-fluid">
             <div class="mega-menu-wrapper">
                 <div class="header-main">
@@ -36,12 +39,12 @@
                                             <i class="fas fa-angle-down"></i>
                                         </a>
                                         <ul class="submenu">
-                                            <li><a href="shop.html">Shop Default</a></li>
-                                            <li><a href="shop-list.html">Shop List</a></li>
-                                            <li><a href="shop-details.html">Shop Details</a></li>
-                                            <li><a href="shop-cart.html">Shop Cart</a></li>
-                                            <li><a href="wishlist.html">Wishlist</a></li>
-                                            <li><a href="checkout.html">Checkout</a></li>
+                                            <li><a href="shop.php">Shop Default</a></li>
+                                            <li><a href="shop-list.php">Shop List</a></li>
+                                            <li><a href="shop-details.php">Shop Details</a></li>
+                                            <li><a href="shop-cart.php">Shop Cart</a></li>
+                                            <li><a href="wishlist.php">Wishlist</a></li>
+                                            <li><a href="checkout.php">Checkout</a></li>
                                         </ul>
                                     </li>
                                     <li class="has-dropdown">
@@ -97,46 +100,11 @@
                                 <a href="#"><i class="fa-regular fa-heart"></i><span class="number">4</span></a>
                             </li>
                         </ul>
-                        <div class="menu-cart">
-                            <div class="cart-box">
-                                <ul>
-                                    <li>
-                                        <img src="../assets/img/shop-cart/01.png" alt="image">
-                                        <div class="cart-product">
-                                            <div class="cart-ctx">
-                                                <a href="#">Sky Freedom</a>
-                                                <span>100$</span>
-                                            </div>
-                                            <i class="fa-solid fa-xmark"></i>
-                                        </div>
-                                    </li>
-                                </ul>
-                                <ul>
-                                    <li class="border-none">
-                                        <img src="../assets/img/shop-cart/02.png" alt="image">
-                                        <div class="cart-product">
-                                            <div class="cart-ctx">
-                                                <a href="#">The Sky</a>
-                                                <span>98$</span>
-                                            </div>
-                                            <i class="fa-solid fa-xmark"></i>
-                                        </div>
-                                    </li>
-                                </ul>
-                                <div class="shopping-items">
-                                    <span>Total :</span>
-                                    <span>$198.00</span>
-                                </div>
-                                <div class="cart-button mb-4">
-                                    <a href="shop-cart.html" class="theme-btn">
-                                        View Cart
-                                    </a>
-                                </div>
-                            </div>
-                            <a href="shop-cart.html" class="cart-icon">
-                                <i class="fa-sharp fa-regular fa-bag-shopping"></i>
-                            </a>
-                        </div>
+                        
+                        <!-- Shopping cart -->
+                        <?php 
+                            include("./ShoppingCart/basket.php");
+                        ?>
                         <div class="header__hamburger d-xl-none my-auto">
                             <div class="sidebar__toggle">
                                 <i class="fas fa-bars"></i>
@@ -149,11 +117,11 @@
                                         <i class="fa-regular fa-user"></i>
                                         <?php echo htmlspecialchars($_SESSION['username']); ?>
                                     </button>
-                                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+                                    <ul class="dropdown-menu dropdown-menu-end" id="dropdown" aria-labelledby="profileDropdown">
                                         <li><a class="dropdown-item" href="myProfile.php"><i class="fa fa-user me-2"></i>My Profile</a></li>
                                         <li><hr class="dropdown-divider"></li>
                                         <li>
-                                            <form action="logout.php" method="post" style="margin:0;">
+                                            <form action="logOut.php?token=<?= $_SESSION['token']?>" method="post" style="margin:0;">
                                                 <button type="submit" class="dropdown-item"><i class="fa fa-sign-out-alt me-2"></i>Logout</button>
                                             </form>
                                         </li>
@@ -171,4 +139,3 @@
             </div>
         </div>
     </header>
-    <script src="../assets/js/bootstrap.bundle.min.js"></script>
