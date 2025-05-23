@@ -7,7 +7,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         die("You must be logged in to submit a review.");
     }
 
-    $user_id = $_SESSION['user_id'];
+    $user_id = $_SESSION[''];
     $book_id = intval($_POST['book_id']);
     $rating = intval($_POST['rating']);
     $comment = trim($_POST['comment']);

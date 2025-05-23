@@ -23,7 +23,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['username']) && isset(
             $_SESSION['role'] = $user['role'];
             $_SESSION['token'] = bin2hex(random_bytes(32));
             
-            header("Location: mainPage.php");
+            if($user['role']=='Client'){
+                header("Location: mainPage.php");
+            }
+            else{
+                header("Location: ../../addBook.php");
+            }
+            
             exit();
         } else {
             $error = "Incorrect username or password!";

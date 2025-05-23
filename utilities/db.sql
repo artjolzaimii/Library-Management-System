@@ -36,8 +36,8 @@ CREATE TABLE author (
     bio TEXT,
     nationality VARCHAR(50),
     image_path varchar(255),
-    birth_year YEAR,
-    death_year YEAR
+    birth_year INT,
+    death_year INT
 );
 
 CREATE TABLE book_author (

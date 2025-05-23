@@ -326,7 +326,8 @@
                             <div class="shop-content">
                                 <h3><a href="bookDetails.php?isbn=<?php echo $book['isbn']?>"><?php echo $book['title']?></a></h3>
                                 <ul class="price-list">
-                                    <li><?php echo "\n"?></li>
+                                    <li><?php echo "E-Book
+                                    "?></li>
                                 
                                 </ul>
                                 <ul class="author-post">

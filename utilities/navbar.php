@@ -1,6 +1,40 @@
+<?php 
+  require_once("config.php");
+  
+  
+  
+  if(!isset($_SESSION['username']) || !isset($_SESSION['role']) || !isset($_SESSION['token'])){
+    if($_SESSION['role']=='Client'){
+      echo "<script>window.location.href='/Online-Library-Management-System/src/client/guest/mainPage.php'</script>";
+    }
+  }
+  else{
+    $username=mysqli_real_escape_string($conn,$_SESSION['username']);
+    $role=mysqli_real_escape_string($conn,$_SESSION['role']);
+    $token=mysqli_real_escape_string($conn,$_SESSION['token']);
+    
+    $query="SELECT full_name, image_path
+            FROM users
+            WHERE username=?";
+          
+    $stm=$conn->prepare($query);
+    $stm->bind_param("s",$username);
+    $stm->execute();
+    
+    $result=$stm->get_result();
+    
+    if($result->num_rows!=1){
+      echo "<script>window.location.href='../client/guest/mainPage.php'</script>";
+    }
+    $user=$result->fetch_assoc();
+  }
+
+?>
+
+
 <!-- Navbar -->
 <style>
-  /* FIX: Ensure navbar and dropdown are on top */
+  
   #layout-navbar {
     z-index: 1055 !important;
     position: relative;
@@ -49,12 +83,12 @@
               <div class="d-flex">
                 <div class="flex-shrink-0 me-3">
                   <div class="avatar avatar-online">
-                    <img src="../assets/img/avatars/1.png" alt class="w-px-40 h-auto rounded-circle" />
+                    <img src="../uploads/users/staff/<?php echo $user['image_path']?>" alt class="w-px-40 h-auto rounded-circle" />
                   </div>
                 </div>
                 <div class="flex-grow-1">
-                  <span class="fw-semibold d-block">John Doe</span>
-                  <small class="text-muted">Admin</small>
+                  <span class="fw-semibold d-block"><?php echo $user['full_name']?></span>
+                  <small class="text-muted"><?php echo $role?></small>
                 </div>
               </div>
             </a>
@@ -62,7 +96,7 @@
           <li><div class="dropdown-divider" ></div></li>
           <li><a class="dropdown-item" href="#"><i class="bx bx-user me-2"></i>My Profile</a></li>
           <li><div class="dropdown-divider"></div></li>
-          <li><a class="dropdown-item" href="auth-login-basic.html"><i class="bx bx-power-off me-2"></i>Log Out</a></li>
+          <li><a class="dropdown-item" href="../utilities/logOut.php?token=<?php echo $token?>"><i class="bx bx-power-off me-2"></i>Log Out</a></li>
         </ul>
       </li>
     </ul>
