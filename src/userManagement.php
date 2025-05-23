@@ -13,60 +13,82 @@ if (isset($_GET['delete_id'])) {
     }
 }
 
-// Edit user
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_id'])) {
-    $edit_id = $_POST['edit_id'];
+    require('../utilities/config.php');
+
+    $edit_id = (int) $_POST['edit_id'];
+    $user_id = $_POST['user_id'];
     $full_name = $_POST['full_name'];
     $email = $_POST['email'];
     $phone = $_POST['phone'];
+    $address = $_POST['address'];
     $username = $_POST['username'];
-    $password = !empty($_POST['password']) ? password_hash($_POST['password'], PASSWORD_DEFAULT) : null;
     $role = $_POST['role'];
+    $gender = $_POST['gender'];
+    $birthday = $_POST['birthday'];
+    $password = !empty($_POST['password']) ? password_hash($_POST['password'], PASSWORD_DEFAULT) : null;
 
-    // Prepare the update query
     $image_path = null;
     if (isset($_FILES['profile_image']) && $_FILES['profile_image']['error'] === UPLOAD_ERR_OK) {
         $target_dir = "../assets/images/users/";
+        if (!file_exists($target_dir)) {
+            mkdir($target_dir, 0755, true);
+        }
         $image_name = basename($_FILES["profile_image"]["name"]);
         $target_file = $target_dir . time() . "_" . $image_name;
         if (move_uploaded_file($_FILES["profile_image"]["tmp_name"], $target_file)) {
             $image_path = $target_file;
         }
     }
+   
 
-    // Prepare the update query
-    $update_query = "UPDATE users SET full_name=?, email=?, phone=?, username=?, role=?";
-    
+    $update_query = "UPDATE users SET user_id=?, full_name=?, email=?, phone=?, address=?, username=?, role=?, gender=?, birthday=?";
+    $params = [$user_id, $full_name, $email, $phone, $address, $username, $role, $gender, $birthday];
+    $types = "sssssssss";
+
     if ($password) {
         $update_query .= ", password=?";
+        $params[] = $password;
+        $types .= "s";
     }
 
     if ($image_path) {
-        $update_query .= ", image=?";
+        $update_query .= ", image_path=?";
+        $params[] = $image_path;
+        $types .= "s";
     }
 
     $update_query .= " WHERE id=?";
+    $params[] = $edit_id;
+    $types .= "i";
 
     $stmt = $conn->prepare($update_query);
-    
-    // Binding parameters with image and password
-    if ($password && $image_path) {
-        $stmt->bind_param("sssssssi", $full_name, $email, $phone, $username, $role, $password, $image_path, $edit_id);
-    } elseif ($password) {
-        $stmt->bind_param("sssssi", $full_name, $email, $phone, $username, $role, $password, $edit_id);
-    } elseif ($image_path) {
-        $stmt->bind_param("ssssssi", $full_name, $email, $phone, $username, $role, $image_path, $edit_id);
-    } else {
-        $stmt->bind_param("sssssi", $full_name, $email, $phone, $username, $role, $edit_id);
+    if ($stmt === false) {
+        die("Prepare failed: " . $conn->error);
     }
+
+    $stmt->bind_param($types, ...$params);
 
     if ($stmt->execute()) {
         header("Location: userManagement.php");
         exit;
+    } else {
+        echo "Error updating user: " . $stmt->error;
     }
 }
 
-$query = "SELECT * FROM users";
+
+$usersPerPage = 5;
+$page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
+$offset = ($page - 1) * $usersPerPage;
+
+
+$totalUsersQuery = "SELECT COUNT(*) AS total FROM users";
+$totalUsersResult = $conn->query($totalUsersQuery);
+$totalUsersRow = $totalUsersResult->fetch_assoc();
+$totalUsers = $totalUsersRow['total'];
+$totalPages = ceil($totalUsers / $usersPerPage);
+$query = "SELECT * FROM users LIMIT $usersPerPage OFFSET $offset";
 $result = $conn->query($query);
 ?>
 
@@ -139,7 +161,10 @@ $result = $conn->query($query);
                                                 </a>
                                             </td>";
                                             echo "</tr>";
+                                           
+                                
 
+                                            
                                             // Edit User Modal
                                             echo "
                                                <div class='modal fade' id='editUserModal{$row['id']}' tabindex='-1' aria-labelledby='editUserModalLabel{$row['id']}' aria-hidden='true'>
@@ -150,12 +175,14 @@ $result = $conn->query($query);
                                                           <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
                                                       </div>
                                                       <div class='modal-body'>
-                                                          <form action='userManagement.php' method='POST'>
-                                                             
+                                                         <form action='userManagement.php' method='POST' enctype='multipart/form-data'>
+                                                            <!-- Hidden field for edit_id -->
+                                                            <input type='hidden' name='edit_id' value='" . $row['id'] . "' />
+                                                                                                                    
                                                                <!-- User ID -->
                                                               <div class='mb-3'>
-                                                                  <label for='full_name' class='form-label'>User ID</label>
-                                                                  <input type='text' class='form-control' id='full_name' name='full_name' value='" . $row['user_id'] . "' required />
+                                                                  <label for='user_id' class='form-label'>User ID</label>
+                                                                  <input type='text' class='form-control' id='user_id' name='user_id' value='" . $row['user_id'] . "' required />
                                                               </div>
                                                               <!-- Full Name -->
                                                               <div class='mb-3'>
@@ -261,10 +288,54 @@ $result = $conn->query($query);
                                             </div>
                                         </div>";
 
+
+                                             // View User Modal
+                                        
+                                        $imagePath = '';
+                                        if ($row['role'] == 'Client' || $row['role'] == 'User') {
+                                            $imagePath = '../uploads/users/' . $row['image_path'];
+                                        } else {
+                                            $imagePath = '../uploads/users/staff/' . $row['image_path'];
+                                        }
+                                        echo "
+                                        <div class='modal fade' id='viewUserModal{$row['id']}' tabindex='-1' aria-labelledby='viewUserModalLabel{$row['id']}' aria-hidden='true'>
+                                            <div class='modal-dialog'>
+                                                <div class='modal-content'>
+                                                    <div class='modal-header'>
+                                                        <h5 class='modal-title' id='viewUserModalLabel{$row['id']}'>View User</h5>
+                                                        <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
+                                                    </div>
+                                                    <div class='modal-body'>
+                                                        <p><strong>User ID:</strong> " . $row['user_id'] . "</p>
+                                                        <p><strong>Full Name:</strong> " . $row['full_name'] . "</p>
+                                                        <p><strong>Email:</strong> " . $row['email'] . "</p>
+                                                        <p><strong>Phone:</strong> " . $row['phone'] . "</p>
+                                                        <p><strong>Username:</strong> " . $row['username'] . "</p>
+                                                        <p><strong>Role:</strong> " . $row['role'] . "</p>
+                                                        <p><strong>Gender:</strong> " . $row['gender'] . "</p>
+                                                        <p><strong>Birthday:</strong> " . $row['birthday'] . "</p>
+                                                        <p><strong>Image:</strong><br>
+                                                            <img src='" .$imagePath. "' alt='User Image' class='img-fluid rounded' style='max-height: 200px; border: 1px solid #ccc; padding: 5px;'>
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>";
+
+
                                         }
                                         ?>
                                     </tbody>
                                 </table>
+                                <nav class="mt-3">
+                                    <ul class="pagination justify-content-center">
+                                        <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                                            <li class="page-item <?= ($i == $page) ? 'active' : '' ?>">
+                                                <a class="page-link" href="?page=<?= $i ?>"><?= $i ?></a>
+                                            </li>
+                                        <?php endfor; ?>
+                                    </ul>
+                                </nav>
                             </div>
                         </div>
                     </div>
