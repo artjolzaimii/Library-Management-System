@@ -45,7 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $imageName = basename($_FILES['profile_image']['name']);
         $imageExt = pathinfo($imageName, PATHINFO_EXTENSION);
         $uniqueImageName = uniqid('IMG_', true) . '.' . $imageExt;
-        $uploadDir = '../uploads/';
+        $uploadDir = '../uploads/users/staff/';
         $uploadPath = $uploadDir . $uniqueImageName;
 
         if (!file_exists($uploadDir)) {
@@ -59,10 +59,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
     }
 
+
     if (empty($errors)) {
         $stmt = $conn->prepare("INSERT INTO users 
         (user_id, full_name, email, phone, address, username, password, role, gender, birthday, image_path) 
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+
 
         $stmt->bind_param("sssssssssss", $userId, $fullName, $email, $phone, $address, $username, $password, $role, $gender, $birthday, $profileImage);
 

@@ -55,12 +55,40 @@ while ($g = $genreResult->fetch_assoc()) {
             <p><strong>Publisher:</strong> <?= $book['publisher'] ?></p>
             <p><strong>Language:</strong> <?= $book['language'] ?></p>
             <p><strong>Pages:</strong> <?= $book['nr_pages'] ?></p>
-            <p><strong>Price:</strong> <?= $book['price'] ?> €</p>
-            <p><strong>Inventory:</strong> <?= $book['inventory'] ?></p>
+           
+
+
+            <?php
+$price = "N/A";
+$inventory = "N/A";
+
+if ($book['format'] === 'For Sale') {
+    $saleQuery = $conn->prepare("SELECT price, inventory FROM sale_book WHERE book_id = ?");
+    $saleQuery->bind_param("i", $bookId);
+    $saleQuery->execute();
+    $saleResult = $saleQuery->get_result()->fetch_assoc();
+    if ($saleResult) {
+        $price = $saleResult['price'] . ' €';
+        $inventory = $saleResult['inventory'];
+    }
+} elseif ($book['format'] === 'For Borrow') {
+    $borrowQuery = $conn->prepare("SELECT inventory FROM borrow_book WHERE book_id = ?");
+    $borrowQuery->bind_param("i", $bookId);
+    $borrowQuery->execute();
+    $borrowResult = $borrowQuery->get_result()->fetch_assoc();
+    if ($borrowResult) {
+        $inventory = $borrowResult['inventory'];
+    }
+}
+?>
+
+<p><strong>Price:</strong> <?= htmlspecialchars($price) ?></p>
+<p><strong>Inventory:</strong> <?= htmlspecialchars($inventory) ?></p>
+
             <p><strong>Format:</strong> <?= $book['format'] ?></p>
             <p><strong>Description:</strong><br><?= nl2br($book['description']) ?></p>
 
-            <p><strong>Format:</strong> <?= $book['format'] ?></p>
+        
 
 <?php if ($book['format'] === 'For Borrow'): 
     $condQuery = $conn->prepare("SELECT book_condition FROM borrow_book WHERE book_id = ?");
