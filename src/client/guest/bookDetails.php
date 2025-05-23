@@ -617,13 +617,15 @@
                                     <?php
                                            $book_id = isset($row['book_id']) ? $row['book_id'] : null;
 
-                                            $reviewQuery = $conn->prepare("
-                                        SELECT r.*, u.username, u.email 
-                                        FROM review r 
-                                        JOIN users u ON r.user_id = u.id 
-                                        WHERE r.book_id = ?
-                                        ORDER BY r.created_at DESC
-                                        ");
+                                           $reviewQuery = $conn->prepare("
+                                                SELECT r.*, u.username, u.email 
+                                                FROM review r 
+                                                JOIN users u ON r.username = u.username 
+                                                WHERE r.book_id = ?
+                                                ORDER BY r.created_at DESC
+                                            ");
+
+
                                         $reviewQuery->bind_param("i", $book_id);
                                         $reviewQuery->execute();
                                         $reviews = $reviewQuery->get_result();
@@ -654,10 +656,7 @@
                                     </div>
                                     <?php endwhile; ?>
 
-                                           <?php
-                                        
-                                        echo "Logged in as: " . ($_SESSION['user_id'] ?? 'Not logged in');
-                                        ?>
+
                                     <!-- Review Submission Form -->
                                     <div class="review-title mt-5 py-15 mb-30">
                                       <h4>Submit Your Review</h4>
@@ -682,19 +681,9 @@
                                                 <?php endfor; ?>
                                             </div>
 
-                                            <!-- Optional fallback dropdown -->
-                                            <div class="mb-3">
-                                                <select id="ratingSelect" class="form-select">
-                                                    <option value="">Select Rating (optional)</option>
-                                                    <option value="1">★☆☆☆☆</option>
-                                                    <option value="2">★★☆☆☆</option>
-                                                    <option value="3">★★★☆☆</option>
-                                                    <option value="4">★★★★☆</option>
-                                                    <option value="5">★★★★★</option>
-                                                </select>
-                                            </div>
+                                            
 
-                                            <button type="submit" class="btn btn-primary">Submit Review</button>
+                                            <button type="submit" class="theme-btn style-2">Submit Review</button>
                                         </form>
 
                                         </div>
