@@ -183,31 +183,55 @@
         </div>
     </div>
 
-    <!-- Book Banner Section start  -->
-    <section class="book-banner-section fix section-padding">
-        <div class="container">
-            <div class="row g-4">
-                <div class="col-xl-4 col-lg-6 col-md-6 wow fadeInUp" data-wow-delay=".3s">
-                    <div class="banner-book-card-items bg-cover"
-                        style="background-image: url('../assets/img/banner/book-banner-1.jpg');">
+    <?php
+require_once("../../../utilities/config.php");
+$selected_genre = isset($_GET['genre']) ? $_GET['genre'] : null;
+
+// Initial load of books by genre or default (used for non-AJAX first page load)
+if ($selected_genre) {
+    $sql = "
+        SELECT b.book_id, b.isbn, b.publication_year, b.publisher, b.language, b.nr_pages, b.description, b.format, b.image_path
+        FROM book b
+        JOIN book_genre bg ON b.book_id = bg.book_id
+        JOIN genres g ON bg.genre_id = g.id
+        WHERE g.name = ?
+    ";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("s", $selected_genre);
+    $stmt->execute();
+    $result = $stmt->get_result();
+} else {
+    $result = $conn->query("SELECT * FROM book LIMIT 10");
+}
+?>
+
+<!-- Book Banner Section -->
+<section class="book-banner-section fix section-padding">
+    <div class="container">
+        <div class="swiper book-slider">
+            <div class="swiper-wrapper">
+                <!-- Banner Slide 1 -->
+                <div class="swiper-slide">
+                    <div class="banner-book-card-items bg-cover" style="background-image: url('../assets/img/banner/grey.jpg');">
                         <div class="book-shape">
                             <img src="../assets/img/banner/book-1.png" alt="img">
                         </div>
                         <div class="banner-book-content">
                             <div class="banner-text">
                                 <span>25% off</span>
-                                <h2>romantic novels</h2>
-                                <p>Sed ac arcu sed felis vulputate <br> molestie. Nullam at urna</p>
+                                <h2>Romantic Novels</h2>
+                                <p>Fall in love with these classic stories</p>
                             </div>
-                            <a href="shop-details.html" class="banner-icons">
+                            <a href="?genre=Romantic Novels#shop-section" class="banner-icons genre-link">
                                 <img src="../assets/img/icon/icon-25.svg" alt="icon">
                             </a>
                         </div>
                     </div>
                 </div>
-                <div class="col-xl-4 col-lg-6 col-md-6 wow fadeInUp" data-wow-delay=".3s">
-                    <div class="banner-book-card-items bg-cover"
-                        style="background-image: url('../assets/img/banner/book-banner-2.jpg');">
+
+                <!-- Banner Slide 2 -->
+                <div class="swiper-slide">
+                    <div class="banner-book-card-items bg-cover" style="background-image: url('../assets/img/banner/grey.jpg');">
                         <div class="book-shape-2">
                             <img src="../assets/img/banner/book-2.png" alt="img">
                         </div>
@@ -215,27 +239,28 @@
                             <div class="banner-text">
                                 <span>25% off</span>
                                 <h2>Crime Fiction Books</h2>
-                                <p>Sed ac arcu sed felis vulputate <br> molestie. Nullam at urna</p>
+                                <p>Thrilling mysteries and investigations</p>
                             </div>
-                            <a href="shop-details.html" class="banner-icons">
+                            <a href="?genre=Crime Fiction Books#shop-section" class="banner-icons genre-link">
                                 <img src="../assets/img/icon/icon-25.svg" alt="icon">
                             </a>
                         </div>
                     </div>
                 </div>
-                <div class="col-xl-4 col-lg-6 col-md-6 wow fadeInUp" data-wow-delay=".3s">
-                    <div class="banner-book-card-items bg-cover"
-                        style="background-image: url('../assets/img/banner/book-banner-3.jpg');">
+
+                <!-- Banner Slide 3 -->
+                <div class="swiper-slide">
+                    <div class="banner-book-card-items bg-cover" style="background-image: url('../assets/img/banner/grey.jpg');">
                         <div class="book-shape-3">
                             <img src="../assets/img/banner/book-3.png" alt="img">
                         </div>
                         <div class="banner-book-content">
                             <div class="banner-text">
                                 <span>25% off</span>
-                                <h2>romantic novels</h2>
-                                <p>Sed ac arcu sed felis vulputate <br> molestie. Nullam at urna</p>
+                                <h2>Historic Books</h2>
+                                <p>Explore timeless events and cultures</p>
                             </div>
-                            <a href="shop-details.html" class="banner-icons">
+                            <a href="?genre=Historic Books#shop-section" class="banner-icons genre-link">
                                 <img src="../assets/img/icon/icon-25.svg" alt="icon">
                             </a>
                         </div>
@@ -243,252 +268,146 @@
                 </div>
             </div>
         </div>
-    </section>
+    </div>
+</section>
 
-    <!-- Shop Section Start -->
-    <section class="shop-section section-padding fix pt-0">
-        <div class="container">
-            <div class="section-title-area">
-                <div class="section-title">
-                    <h2 class="wow fadeInUp" data-wow-delay=".3s">Top Category Books</h2>
-                </div>
-                <a href="shop.html" class="theme-btn style-2 wow fadeInUp" data-wow-delay=".5s">Explore More <i
-                        class="fa-solid fa-arrow-right-long"></i></a>
+<!-- Shop Section -->
+<section id="shop-section" class="shop-section section-padding fix pt-0">
+    <div class="container">
+        <div class="section-title-area">
+            <div class="section-title">
+                <h2>
+                    <?php 
+                        echo $selected_genre ? "Books in Genre: " . htmlspecialchars($selected_genre) : "Top Category Books"; 
+                    ?>
+                </h2>
             </div>
-            <div class="swiper book-slider">
-                <div class="swiper-wrapper">
-                    <div class="swiper-slide">
-                        <div class="shop-box-items style-2">
-                            <div class="book-thumb center">
-                                <a href="shop-details"><img src="../assets/img/book/01.png" alt="img"></a>
-                                <ul class="post-box">
-                                    <li>
-                                        Hot
-                                    </li>
-                                    <li class="style-2">
-                                        -30%
-                                    </li>
-                                </ul>
-                                <ul class="shop-icon d-grid justify-content-center align-items-center">
-                                    <li>
-                                        <a href="shop-cart.html"><i class="far fa-heart"></i></a>
-                                    </li>
-                                    <li>
-                                        <a href="shop-cart.html">
-                                            <img class="icon" src="../assets/img/icon/shuffle.svg" alt="svg-icon">
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a href="shop-details.html"><i class="far fa-eye"></i></a>
-                                    </li>
-                                </ul>
-                                <div class="shop-button">
-                                    <a href="shop-details.html" class="theme-btn">Add To Cart</a>
+            <a href="shop.html" class="theme-btn style-2">Explore More <i class="fa-solid fa-arrow-right-long"></i></a>
+        </div>
+        <div class="swiper book-slider" id="shop-books-container">
+            <div class="swiper-wrapper">
+                <?php 
+                if ($result && $result->num_rows > 0) {
+                    while ($book = $result->fetch_assoc()) {
+                        $img = !empty($book['image_path']) ? $book['image_path'] : '../assets/img/book/default.png';
+                        $author = "Author Unknown"; 
+                        $price = "$20.00"; 
+                        $old_price = "$30.00";
+
+                        echo '
+                        <div class="swiper-slide">
+                            <div class="shop-box-items style-2">
+                                <div class="book-thumb center">
+                                    <a href="shop-details.php?book_id=' . $book['book_id'] . '"><img src="' . htmlspecialchars($img) . '" alt="img"></a>
+                                    <ul class="shop-icon d-grid justify-content-center align-items-center">
+                                        <li><a href="shop-cart.html"><i class="far fa-heart"></i></a></li>
+                                        <li><a href="shop-cart.html"><img class="icon" src="../assets/img/icon/shuffle.svg" alt="svg-icon"></a></li>
+                                        <li><a href="shop-details.php?book_id=' . $book['book_id'] . '"><i class="far fa-eye"></i></a></li>
+                                    </ul>
+                                    <div class="shop-button">
+                                        <a href="shop-details.php?book_id=' . $book['book_id'] . '" class="theme-btn">Add To Cart</a>
+                                    </div>
+                                </div>
+                                <div class="shop-content">
+                                    <h5>Design Low Book</h5>
+                                    <h3><a href="shop-details.php?book_id=' . $book['book_id'] . '">' . htmlspecialchars($book['description'] ?: "No Title") . '</a></h3>
+                                    <ul class="price-list">
+                                        <li>' . $price . '</li>
+                                        <li><del>' . $old_price . '</del></li>
+                                    </ul>
+                                    <ul class="author-post">
+                                        <li class="authot-list">
+                                            <span class="thumb"><img src="../assets/img/testimonial/client-1.png" alt="img"></span>
+                                            <span class="content">' . htmlspecialchars($author) . '</span>
+                                        </li>
+                                        <li><i class="fa-solid fa-star"></i>3.4 (25)</li>
+                                    </ul>
                                 </div>
                             </div>
-                            <div class="shop-content">
-                                <h5> Design Low Book </h5>
-                                <h3><a href="shop-details.html">Simple Things You To <br> Save BOOK</a></h3>
-                                <ul class="price-list">
-                                    <li>$30.00</li>
-                                    <li>
-                                        <del>$39.99</del>
-                                    </li>
-                                </ul>
-                                <ul class="author-post">
-                                    <li class="authot-list">
-                                        <span class="thumb">
-                                            <img src="../assets/img/testimonial/client-1.png" alt="img">
-                                        </span>
-                                        <span class="content">Wilson</span>
-                                    </li>
-                                    <li>
-                                        <i class="fa-solid fa-star"></i>
-                                        3.4 (25)
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="swiper-slide">
-                        <div class="shop-box-items style-2">
-                            <div class="book-thumb center">
-                                <a href="shop-details"><img src="../assets/img/book/02.png" alt="img"></a>
-                                <ul class="shop-icon d-grid justify-content-center align-items-center">
-                                    <li>
-                                        <a href="shop-cart.html"><i class="far fa-heart"></i></a>
-                                    </li>
-                                    <li>
-                                        <a href="shop-cart.html">
-                                            <img class="icon" src="../assets/img/icon/shuffle.svg" alt="svg-icon">
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a href="shop-details.html"><i class="far fa-eye"></i></a>
-                                    </li>
-                                </ul>
-                                <div class="shop-button">
-                                    <a href="shop-details.html" class="theme-btn">Add To Cart</a>
-                                </div>
-                            </div>
-                            <div class="shop-content">
-                                <h5> Design Low Book </h5>
-                                <h3><a href="shop-details.html">How Deal With Very <br> Bad BOOK</a></h3>
-                                <ul class="price-list">
-                                    <li>$39.00</li>
-                                </ul>
-                                <ul class="author-post">
-                                    <li class="authot-list">
-                                        <span class="thumb">
-                                            <img src="../assets/img/testimonial/client-2.png" alt="img">
-                                        </span>
-                                        <span class="content">Esther</span>
-                                    </li>
-                                    <li>
-                                        <i class="fa-solid fa-star"></i>
-                                        3.4 (25)
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="swiper-slide">
-                        <div class="shop-box-items style-2">
-                            <div class="book-thumb center">
-                                <a href="shop-details"><img src="../assets/img/book/03.png" alt="img"></a>
-                                <ul class="shop-icon d-grid justify-content-center align-items-center">
-                                    <li>
-                                        <a href="shop-cart.html"><i class="far fa-heart"></i></a>
-                                    </li>
-                                    <li>
-                                        <a href="shop-cart.html">
-                                            <img class="icon" src="../../assets/img/icon/shuffle.svg" alt="svg-icon">
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a href="shop-details.html"><i class="far fa-eye"></i></a>
-                                    </li>
-                                </ul>
-                                <div class="shop-button">
-                                    <a href="shop-details.html" class="theme-btn">Add To Cart</a>
-                                </div>
-                            </div>
-                            <div class="shop-content">
-                                <h5> Design Low Book </h5>
-                                <h3><a href="shop-details.html">The Hidden Mystery <br> Behind</a></h3>
-                                <ul class="price-list">
-                                    <li>
-                                        $29.00
-                                    </li>
-                                </ul>
-                                <ul class="author-post">
-                                    <li class="authot-list">
-                                        <span class="thumb">
-                                            <img src="../assets/img/testimonial/client-3.png" alt="img">
-                                        </span>
-                                        <span class="content">Hawkins</span>
-                                    </li>
-                                    <li>
-                                        <i class="fa-solid fa-star"></i>
-                                        3.4 (25)
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="swiper-slide">
-                        <div class="shop-box-items style-2">
-                            <div class="book-thumb center">
-                                <a href="shop-details"><img src="../assets/img/book/04.png" alt="img"></a>
-                                <ul class="post-box">
-                                    <li class="style-2">
-                                        -12%
-                                    </li>
-                                </ul>
-                                <ul class="shop-icon d-grid justify-content-center align-items-center">
-                                    <li>
-                                        <a href="shop-cart.html"><i class="far fa-heart"></i></a>
-                                    </li>
-                                    <li>
-                                        <a href="shop-cart.html">
-                                            <img class="icon" src="../assets/img/icon/shuffle.svg" alt="svg-icon">
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a href="shop-details.html"><i class="far fa-eye"></i></a>
-                                    </li>
-                                </ul>
-                                <div class="shop-button">
-                                    <a href="shop-details.html" class="theme-btn">Add To Cart</a>
-                                </div>
-                            </div>
-                            <div class="shop-content">
-                                <h5> Design Low Book </h5>
-                                <h3><a href="shop-details.html">Qple GPad With Retina <br> Sisplay</a></h3>
-                                <ul class="price-list">
-                                    <li>$19.00</li>
-                                </ul>
-                                <ul class="author-post">
-                                    <li class="authot-list">
-                                        <span class="thumb">
-                                            <img src="../assets/img/testimonial/client-4.png" alt="img">
-                                        </span>
-                                        <span class="content">(Author) Albert </span>
-                                    </li>
-                                    <li>
-                                        <i class="fa-solid fa-star"></i>
-                                        3.4 (25)
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="swiper-slide">
-                        <div class="shop-box-items style-2">
-                            <div class="book-thumb center">
-                                <a href="shop-details"><img src="../assets/img/book/05.png" alt="img"></a>
-                                <ul class="shop-icon d-grid justify-content-center align-items-center">
-                                    <li>
-                                        <a href="shop-cart.html"><i class="far fa-heart"></i></a>
-                                    </li>
-                                    <li>
-                                        <a href="shop-cart.html">
-                                            <img class="icon" src="../assets/img/icon/shuffle.svg" alt="svg-icon">
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a href="shop-details.html"><i class="far fa-eye"></i></a>
-                                    </li>
-                                </ul>
-                                <div class="shop-button">
-                                    <a href="shop-details.html" class="theme-btn">Add To Cart</a>
-                                </div>
-                            </div>
-                            <div class="shop-content">
-                                <h5> Design Low Book </h5>
-                                <h3><a href="shop-details.html">Flovely and Unicom <br> Erna</a></h3>
-                                <ul class="price-list">
-                                    <li>$30.00</li>
-                                </ul>
-                                <ul class="author-post">
-                                    <li class="authot-list">
-                                        <span class="thumb">
-                                            <img src="../assets/img/testimonial/client-5.png" alt="img">
-                                        </span>
-                                        <span class="content">Alexander</span>
-                                    </li>
-                                    <li>
-                                        <i class="fa-solid fa-star"></i>
-                                        3.4 (25)
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                        </div>';
+                    }
+                } else {
+                    echo '<p>No books found for this genre.</p>';
+                }
+                ?>
             </div>
         </div>
-    </section>
+    </div>
+</section>
+
+<!-- JS for AJAX genre load -->
+<script>
+   document.addEventListener("DOMContentLoaded", function () {
+    // Initialize Swiper once on page load
+    window.bookSwiper = new Swiper('.book-slider', {
+        slidesPerView: 3,
+        spaceBetween: 30,
+        loop: true,
+        autoplay: {
+            delay: 3000,
+            disableOnInteraction: false,
+        },
+    });
+
+    // Handle genre banner clicks
+    document.querySelectorAll('.genre-link').forEach(link => {
+        link.addEventListener('click', function (e) {
+            e.preventDefault();
+            const url = new URL(this.href);
+            const genre = url.searchParams.get('genre');
+            if (genre) {
+                loadBooksByGenre(genre);
+            }
+        });
+    });
+
+    // Load genre if in URL on page load
+    const params = new URLSearchParams(window.location.search);
+    const genre = params.get('genre');
+    if (genre) {
+        loadBooksByGenre(genre);
+    }
+});
+
+function loadBooksByGenre(genre) {
+    document.getElementById('shop-section').scrollIntoView({ behavior: 'smooth' });
+    history.pushState(null, '', '?genre=' + encodeURIComponent(genre) + '#shop-section');
+
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', 'fetch_books.php?genre=' + encodeURIComponent(genre), true);
+    xhr.onload = function () {
+        if (xhr.status === 200) {
+            const wrapper = document.querySelector('#shop-books-container .swiper-wrapper');
+
+            // Destroy old swiper before replacing content
+            if (window.bookSwiper) {
+                window.bookSwiper.destroy(true, true);
+            }
+
+            wrapper.innerHTML = xhr.responseText;
+
+            // Re-initialize Swiper
+            window.bookSwiper = new Swiper('.book-slider', {
+                slidesPerView: 3,
+                spaceBetween: 30,
+                loop: true,
+                autoplay: {
+                    delay: 3000,
+                    disableOnInteraction: false,
+                },
+            });
+        } else {
+            document.querySelector('#shop-books-container .swiper-wrapper').innerHTML = '<p>Failed to load books for genre: ' + genre + '</p>';
+        }
+    };
+    xhr.onerror = function () {
+        document.querySelector('#shop-books-container .swiper-wrapper').innerHTML = '<p>Network error while loading books.</p>';
+    };
+    xhr.send();
+}
+
+</script>
+
 
     <!-- Featured Books Section Start -->
     <section class="featured-books-section pt-100 pb-145 fix section-bg">
