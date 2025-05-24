@@ -19,12 +19,12 @@
     $stm->bind_param("s",$username);
     $stm->execute();
     
-    $result=$stm->get_result();
+    $r=$stm->get_result();
     
-    if($result->num_rows!=1){
+    if($r->num_rows!=1){
       echo "<script>window.location.href='../client/guest/mainPage.php'</script>";
     }
-    $user=$result->fetch_assoc();
+    $user=$r->fetch_assoc();
   }
 
 ?>

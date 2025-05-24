@@ -653,7 +653,10 @@
                      WHERE bg.book_id = b.book_id) AS genres
                 FROM book b LEFT JOIN review r ON b.book_id = r.book_id
                 INNER JOIN borrow_book bb ON bb.book_id=b.book_id 
-                WHERE b.format='For Borrow'";
+                WHERE b.format='For Borrow'
+                GROUP BY b.book_id
+                LIMIT 10"
+                ;
         $borrowBooks=mysqli_query($conn, $query);
         
     ?>
@@ -663,60 +666,90 @@
                 <div class="section-title wow fadeInUp" data-wow-delay=".3s">
                     <h2>Discover Some Books You Can Borrow for free</h2>
                 </div>
-                <a href="shopList.php?format=borrow" class="theme-btn style-2 wow fadeInUp" data-wow-delay=".5s">Explore More <i
-                        class="fa-solid fa-arrow-right-long"></i></a>
+                <a href="shopList.php?format=borrow" class="theme-btn style-2 wow fadeInUp" data-wow-delay=".5s">
+                    Explore More <i class="fa-solid fa-arrow-right-long"></i>
+                </a>
             </div>
-            <?php 
-                while($book=$borrowBooks->fetch_assoc()):
-            ?>
-            <div class="book-shop-wrapper">
-                <div class="shop-box-items style-2 wow fadeInUp" data-wow-delay=".2s">
-                    <div class="book-thumb center">
-                        <a href="shop-details"><img src="../../../uploads/images/<?php echo $book['image_path']?>" alt="img"></a>
-                        <ul class="shop-icon d-grid justify-content-center align-items-center">
-                            <li>
-                                <a href="shop-cart.html"><i class="far fa-heart"></i></a>
-                            </li>
-                        
-                            <li>
-                                <a href="bookDetails.php?isbn=<?php echo $book['isbn']?>"><i class="far fa-eye"></i></a>
-                            </li>
-                        </ul>
-                        <div class="shop-button">
-                            <button class="theme-btn" disabled>Borrow for free</button>
+            <div class="swiper borrow-books-slider">
+                <div class="swiper-wrapper">
+                    <?php while($book = $borrowBooks->fetch_assoc()): ?>
+                    <div class="swiper-slide">
+                        <div class="shop-box-items style-2 wow fadeInUp" data-wow-delay=".2s">
+                            <div class="book-thumb center">
+                                <a href="shop-details.php?isbn=<?php echo urlencode($book['isbn']); ?>">
+                                    <img src="../../../uploads/images/<?php echo htmlspecialchars($book['image_path']); ?>" alt="img">
+                            </a>
+                            <ul class="shop-icon d-grid justify-content-center align-items-center">
+                                <li>
+                                    <a href="shop-cart.html"><i class="far fa-heart"></i></a>
+                                </li>
+                                <li>
+                                    <a href="bookDetails.php?isbn=<?php echo urlencode($book['isbn']); ?>"><i class="far fa-eye"></i></a>
+                                </li>
+                            </ul>
+                            <div class="shop-button">
+                                <button class="theme-btn" disabled>Borrow for free</button>
+                            </div>
+                        </div>
+                        <div class="shop-content">
+                            <h5>Condition: <?php echo htmlspecialchars($book['book_condition']); ?></h5>
+                            <h3>
+                                <a href="shop-details.php?isbn=<?php echo urlencode($book['isbn']); ?>">
+                                    <?php echo htmlspecialchars($book['title']); ?>
+                                </a>
+                            </h3>
+                            <ul class="price-list">
+                                <li>Free</li>
+                            </ul>
+                            <ul class="author-post">
+                                <li class="authot-list">
+                                    <span class="thumb">
+                                        <img src="../assets/img/testimonial/client-4.png" alt="img">
+                                    </span>
+                                    <span class="content"><?php echo htmlspecialchars($book['authors']); ?></span>
+                                </li>
+                                <li>
+                                    <i class="fa-solid fa-star"></i>
+                                    <?php echo ($book['avg_rating'] == 0 ? 0 : round($book['avg_rating'])); ?> (<?php echo $book['review_count']; ?>)
+                                </li>
+                            </ul>
                         </div>
                     </div>
-                    <div class="shop-content">
-                        <h5> Condition: <?php $book['book_condition']?>  </h5>
-                        <h3><a href="shop-details.html"><?php echo $book['book_condition'] ?></a></h3>
-                        <ul class="price-list">
-                            <li>Free</li>
-                        </ul>
-                        <ul class="author-post">
-                            <li class="authot-list">
-                                <span class="thumb">
-                                    <img src="../assets/img/testimonial/client-4.png" alt="img">
-                                </span>
-                                <span class="content"><?php echo $book['authors']?></span>
-                            </li>
-                            <li>
-                                <i class="fa-solid fa-star"></i>
-                                <?php echo ($book['avg_rating']==0? 0: round($book['avg_rating']) )?> (<?php echo $book['review_count'] ?>)
-                            </li>
-                        </ul>
-                    </div>
                 </div>
-                <?php endwhile;?>
-                <div class="cta-shop-box">
-                    <div class="boy-shape">
-                        <img src="../assets/img/boy-shape.png" alt="shape-img">
-                    </div>
-                </div>
+                <?php endwhile; ?>
             </div>
-            
-            
+            <div class="swiper-pagination"></div>
+            <div class="swiper-button-next"></div>
+            <div class="swiper-button-prev"></div>
         </div>
-    </section>
+        <div class="cta-shop-box">
+            <div class="boy-shape">
+                <img src="../assets/img/boy-shape.png" alt="shape-img">
+            </div>
+        </div>
+    </div>
+</section>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var borrowSwiper = new Swiper('.borrow-books-slider', {
+        slidesPerView: 1,
+        spaceBetween: 30,
+        loop: true,
+        pagination: {
+            el: '.borrow-books-slider .swiper-pagination',
+            clickable: true,
+        },
+        navigation: {
+            nextEl: '.borrow-books-slider .swiper-button-next',
+            prevEl: '.borrow-books-slider .swiper-button-prev',
+        },
+        breakpoints: {
+            768: { slidesPerView: 2 },
+            1200: { slidesPerView: 3 }
+        }
+    });
+});
+</script>
 
     <!-- Cta Banner Section Start -->
     <section class="cta-banner-section fix section-padding pt-0">
