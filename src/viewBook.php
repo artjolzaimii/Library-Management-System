@@ -41,7 +41,8 @@ while ($g = $genreResult->fetch_assoc()) {
         <h5 class="modal-title" id="viewBookLabel<?= $bookId ?>">View Book - <?= htmlspecialchars($book['title']) ?></h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      <div class="modal-body">
+      <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+
         <div class="row">
           <div class="col-md-4">
             <img src="../uploads/images/<?= $book['image_path'] ?>" alt="Book Cover" class="img-fluid rounded">
@@ -86,7 +87,8 @@ if ($book['format'] === 'For Sale') {
 <p><strong>Inventory:</strong> <?= htmlspecialchars($inventory) ?></p>
 
             <p><strong>Format:</strong> <?= $book['format'] ?></p>
-            <p><strong>Description:</strong><br><?= nl2br($book['description']) ?></p>
+            <p style="white-space: pre-wrap; word-wrap: break-word;"><strong>Description:</strong><br><?= nl2br(htmlspecialchars($book['description'])) ?></p>
+
 
         
 

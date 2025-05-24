@@ -20,8 +20,9 @@ $language = clean($conn, $_POST['language']);
 $description = clean($conn, $_POST['description']);
 $format = clean($conn, $_POST['format']);
 
-$authors = isset($_POST['author']) ? explode(',', clean($conn, $_POST['author'])) : [];
-$genres = isset($_POST['genres']) ? explode(',', clean($conn, $_POST['genres'])) : [];
+$authors = isset($_POST['authors']) ? $_POST['authors'] : [];
+$genres = isset($_POST['genres']) ? $_POST['genres'] : [];
+
 
 $inventory = 0;
 $price = 0.00;
@@ -96,43 +97,20 @@ if ($format === 'For Sale') {
     $stmt->close();
 }
 
-foreach ($authors as $author_name) {
-    $author_name = trim($author_name);
-    $author_check = $conn->prepare("SELECT author_id FROM author WHERE full_name = ?");
-    $author_check->bind_param("s", $author_name);
-    $author_check->execute();
-    $author_result = $author_check->get_result();
-
-    if ($author_row = $author_result->fetch_assoc()) {
-        $author_id = $author_row['author_id'];
-    } else {
-        $insert_author = $conn->prepare("INSERT INTO author (full_name) VALUES (?)");
-        $insert_author->bind_param("s", $author_name);
-        $insert_author->execute();
-        $author_id = $insert_author->insert_id;
-        $insert_author->close();
-    }
-    $conn->query("INSERT INTO book_author (book_id, author_id) VALUES ($book_id, $author_id)");
+// Update book_author links
+$conn->query("DELETE FROM book_author WHERE book_id=$book_id");
+foreach ($authors as $author_id) {
+  $author_id = intval($author_id);
+  $conn->query("INSERT INTO book_author (book_id, author_id) VALUES ($book_id, $author_id)");
 }
 
-foreach ($genres as $genre_name) {
-    $genre_name = trim($genre_name);
-    $genre_check = $conn->prepare("SELECT id FROM genres WHERE name = ?");
-    $genre_check->bind_param("s", $genre_name);
-    $genre_check->execute();
-    $genre_result = $genre_check->get_result();
-
-    if ($genre_row = $genre_result->fetch_assoc()) {
-        $genre_id = $genre_row['id'];
-    } else {
-        $insert_genre = $conn->prepare("INSERT INTO genres (name) VALUES (?)");
-        $insert_genre->bind_param("s", $genre_name);
-        $insert_genre->execute();
-        $genre_id = $insert_genre->insert_id;
-        $insert_genre->close();
-    }
-    $conn->query("INSERT INTO book_genre (book_id, genre_id) VALUES ($book_id, $genre_id)");
+// Update book_genre links
+$conn->query("DELETE FROM book_genre WHERE book_id=$book_id");
+foreach ($genres as $genre_id) {
+  $genre_id = intval($genre_id);
+  $conn->query("INSERT INTO book_genre (book_id, genre_id) VALUES ($book_id, $genre_id)");
 }
+
 
 header("Location: bookManagement.php?tab=" . urlencode($format));
 exit();
