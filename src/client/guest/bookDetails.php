@@ -48,7 +48,11 @@
         $isbn = mysqli_real_escape_string($conn, $_GET['isbn']);
         
         // Main book data query
-        $query = "SELECT `book_id`, `isbn`, `publication_year`, `publisher`, `language`, `nr_pages`, `description`, `format`, `image_path`, `title` FROM `book` WHERE `isbn`=?";
+        $query = "SELECT b.book_id, `isbn`, `publication_year`, `publisher`, `language`, `nr_pages`, `description`, `format`, `image_path`, `title` ,AVG(r.rating) AS avg_rating, COUNT(r.review_id) AS review_count
+        FROM book b LEFT JOIN review r ON b.book_id = r.book_id
+        WHERE `isbn`=?
+        GROUP BY b.book_id"
+        ;
         $stm = $conn->prepare($query);
         $stm->bind_param("s", $isbn);
         $stm->execute();
@@ -121,9 +125,6 @@
             $genres[] = $genre['name'];
         }
         $genres = implode(", ", $genres);
-        
-        // Optional: Debug output or further processing
-        // var_dump($row, $formatRow, $authors, $genres);
         
         ?>
 
@@ -235,7 +236,7 @@
                 <div class="page-header">
                     <ul class="breadcrumb-items wow fadeInUp" data-wow-delay=".3s">
                         <li>
-                            <a href="index.html">
+                            <a href="mainPage.php">
                                 Home
                             </a>
                         </li>
@@ -293,13 +294,14 @@
                                 </h5>
                             </div>
                             <div class="star">
-                                <a href="shop-details.html"> <i class="fas fa-star"></i></a>
-                                <a href="shop-details.html"><i class="fas fa-star"></i></a>
-                                <a href="shop-details.html"> <i class="fas fa-star"></i></a>
-                                <a href="shop-details.html"><i class="fas fa-star"></i></a>
-                                <a href="shop-details.html"><i class="fa-regular fa-star"></i></a>
-                                <span>(1 Customer Reviews)</span>
-                            </div>
+                                    <?php
+                                    $rating = round($row['avg_rating']);
+                                    for ($i = 1; $i <= 5; $i++) {
+                                        echo '<i class="fa-' . ($i <= $rating ? 'solid' : 'regular') . ' fa-star"></i>';
+                                    }
+                                    ?>
+                                    (<?= $row['review_count']. " Customer Reviews" ?>)
+                                </div>
                             <p>
                                 <?php 
                                     echo $row['description'];
@@ -617,8 +619,7 @@
                                     <?php
                                            $book_id = isset($row['book_id']) ? $row['book_id'] : null;
 
-                                           $reviewQuery = $conn->prepare("
-                                                SELECT r.*, u.username, u.email 
+                                           $reviewQuery = $conn->prepare("SELECT r.*, u.username, u.email 
                                                 FROM review r 
                                                 JOIN users u ON r.username = u.username 
                                                 WHERE r.book_id = ?

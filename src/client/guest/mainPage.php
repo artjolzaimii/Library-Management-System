@@ -384,8 +384,7 @@
                 <?php
                 require_once("../../../utilities/config.php");
 
-                $query = "
-                    SELECT 
+                $query = "SELECT 
                         b.book_id, b.isbn, b.title, b.image_path, sb.price,
                         AVG(r.rating) AS avg_rating, COUNT(r.review_id) AS review_count,
                         (SELECT GROUP_CONCAT(a.full_name SEPARATOR ', ')
@@ -457,61 +456,101 @@
 </section>
 
 
+    <!-- Best Sellers -->
+    <?php 
+        //Get top10 sold books
+        $query = "SELECT 
+                    b.book_id, b.isbn, b.title, b.image_path, sb.price, sb.inventory,
+                    AVG(r.rating) AS avg_rating, COUNT(r.review_id) AS review_count,
+                    (SELECT GROUP_CONCAT(a.full_name SEPARATOR ', ') 
+                     FROM book_author ba  
+                     JOIN author a ON ba.author_id = a.author_id  
+                     WHERE ba.book_id = b.book_id) AS authors,
+                    (SELECT GROUP_CONCAT(g.name SEPARATOR ', ') 
+                     FROM book_genre bg  
+                     JOIN genres g ON bg.genre_id = g.id  
+                     WHERE bg.book_id = b.book_id) AS genres
+                FROM book b
+                LEFT JOIN order_book ob ON b.book_id = ob.book_id
+                LEFT JOIN review r ON b.book_id = r.book_id
+                INNER JOIN  sale_book sb ON b.book_id = sb.book_id
+                GROUP BY b.book_id
+                ORDER BY COUNT(ob.order_id) DESC
+                LIMIT 10
+            ";
 
-
-
-    <!-- Featured Books Section Start -->
+        $top10=mysqli_query($conn,$query);
+                                            
+        if(isset($_GET['add'])){
+            addBookToBasket($conn,$_GET['add'],1);
+        }
+                                    
+    ?>
     <section class="featured-books-section pt-100 pb-145 fix section-bg">
         <div class="container">
             <div class="section-title-area justify-content-center">
                 <div class="section-title wow fadeInUp" data-wow-delay=".3s">
-                    <h2>Featured Books</h2>
+                    <h2>Bestseller Books</h2>
                 </div>
             </div>
 
             <div class="swiper featured-books-slider">
                 <div class="swiper-wrapper">
+                    
+                    <?php 
+                        while($book=$top10->fetch_assoc()):
+                    ?>
                     <div class="swiper-slide">
                         <div class="shop-box-items style-4 wow fadeInUp" data-wow-delay=".2s">
                             <div class="book-thumb center">
-                                <a href="shop-details"><img src="../assets/img/book/07.png" alt="img"></a>
+                                <a href="bookDetails.php?isbn=<?php echo $book['isbn']?>"><img src="../../../uploads/images/<?php echo $book['image_path']?>" alt="img" width="168" height="275"></a>
                             </div>
                             <div class="shop-content">
                                 <ul class="book-category">
-                                    <li class="book-category-badge">Adventure</li>
+                                    <li class="book-category-badge"><?php echo $book['genres']?></li>
                                     <li>
-                                        <i class="fa-solid fa-star"></i>
-                                        <i class="fa-solid fa-star"></i>
-                                        <i class="fa-solid fa-star"></i>
-                                        <i class="fa-solid fa-star"></i>
-                                        <i class="fa-regular fa-star"></i>
-                                        (459)
+                                        <div class="star">
+                                            <?php
+                                            $rating = round($book['avg_rating']);
+                                            for ($i = 1; $i <= 5; $i++) {
+                                                echo '<i class="fa-' . ($i <= $rating ? 'solid' : 'regular') . ' fa-star"></i>';
+                                            }
+                                            ?>(<?= $book['review_count'] ?>)
+                                        </div>
                                     </li>
+                                        
                                 </ul>
-                                <h3><a href="shop-details.html">Qple GPad With Retina <br> Sisplay</a></h3>
+                                <h3><a href="bookDetails.php?isbn=<?php echo $book['isbn']?>"><?php echo $book['title']?></a></h3>
                                 <ul class="author-post">
                                     <li class="authot-list">
                                         <span class="thumb">
                                             <img src="../assets/img/testimonial/client-1.png" alt="img">
                                         </span>
-                                        <span class="content">Wilson</span>
+                                        <span class="content"><?php echo $book['authors'] ?></span>
                                     </li>
                                 </ul>
                                 <div class="book-availablity">
                                     <div class="details">
                                         <ul class="price-list">
-                                            <li>$30.00</li>
-                                            <li>
-                                                <del>$39.99</del>
-                                            </li>
+                                            <li><?php echo $book['price']?> All</li>
                                         </ul>
-                                        <div class="progress-line">
-
+                                        <div class="progress-container" style="width: 100%; height: 16px; background: #f3f3f3; border-radius: 8px; overflow: hidden; box-shadow: inset 0 1px 2px rgba(0,0,0,0.1); margin-top: 8px;">
+                                            <?php
+                                                $inventory = isset($book['inventory']) ? (int)$book['inventory'] : 0;
+                                                $barPercent = $inventory > 100 ? 100 : ($inventory < 0 ? 0 : $inventory);
+                                                $barColor = $inventory > 10 ? '#ff7b6b' : ($inventory > 0 ? '#ffc107' : '#f44336');
+                                            ?>
+                                            <div class="progress-line" id="progressLine"
+                                                 style="width: <?= $barPercent ?>%; height: 100%; background: <?= $barColor ?>; transition: width 0.4s ease;">
+                                            </div>
                                         </div>
-                                        <p>25 Books in stock</p>
+
+                                        
+                                        <p><?php echo $book['inventory']?> Books in stock</p>
                                     </div>
+
                                     <div class="shop-btn">
-                                        <a href="shop-cart.html">
+                                        <a href="mainPage.php?add=<?php echo $book['book_id']?>">
                                             <i class="fa-regular fa-basket-shopping"></i>
                                         </a>
                                     </div>
@@ -521,206 +560,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="swiper-slide">
-                        <div class="shop-box-items style-4 wow fadeInUp" data-wow-delay=".2s">
-                            <div class="book-thumb center">
-                                <a href="shop-details"><img src="../assets/img/book/11.png" alt="img"></a>
-                            </div>
-                            <div class="shop-content">
-                                <ul class="book-category">
-                                    <li class="book-category-badge">Adventure</li>
-                                    <li>
-                                        <i class="fa-solid fa-star"></i>
-                                        <i class="fa-solid fa-star"></i>
-                                        <i class="fa-solid fa-star"></i>
-                                        <i class="fa-solid fa-star"></i>
-                                        <i class="fa-regular fa-star"></i>
-                                        (459)
-                                    </li>
-                                </ul>
-                                <h3><a href="shop-details.html">Qple GPad With Retina <br> Sisplay</a></h3>
-                                <ul class="author-post">
-                                    <li class="authot-list">
-                                        <span class="thumb">
-                                            <img src="../assets/img/testimonial/client-2.png" alt="img">
-                                        </span>
-                                        <span class="content">Hawkins</span>
-                                    </li>
-                                </ul>
-                                <div class="book-availablity">
-                                    <div class="details">
-                                        <ul class="price-list">
-                                            <li>$30.00</li>
-                                            <li>
-                                                <del>$39.99</del>
-                                            </li>
-                                        </ul>
-                                        <div class="progress-line">
-
-                                        </div>
-                                        <p>25 Books in stock</p>
-                                    </div>
-                                    <div class="shop-btn">
-                                        <a href="shop-cart.html">
-                                            <i class="fa-regular fa-basket-shopping"></i>
-                                        </a>
-                                    </div>
-
-                                </div>
-
-                            </div>
-                        </div>
-                    </div>
-                    <div class="swiper-slide">
-                        <div class="shop-box-items style-4 wow fadeInUp" data-wow-delay=".2s">
-                            <div class="book-thumb center">
-                                <a href="shop-details"><img src="../assets/img/book/10.png" alt="img"></a>
-                            </div>
-                            <div class="shop-content">
-                                <ul class="book-category">
-                                    <li class="book-category-badge">Adventure</li>
-                                    <li>
-                                        <i class="fa-solid fa-star"></i>
-                                        <i class="fa-solid fa-star"></i>
-                                        <i class="fa-solid fa-star"></i>
-                                        <i class="fa-solid fa-star"></i>
-                                        <i class="fa-regular fa-star"></i>
-                                        (459)
-                                    </li>
-                                </ul>
-                                <h3><a href="shop-details.html">The Hidden Mystery <br> Behind</a></h3>
-                                <ul class="author-post">
-                                    <li class="authot-list">
-                                        <span class="thumb">
-                                            <img src="../assets/img/testimonial/client-3.png" alt="img">
-                                        </span>
-                                        <span class="content">Esther</span>
-                                    </li>
-                                </ul>
-                                <div class="book-availablity">
-                                    <div class="details">
-                                        <ul class="price-list">
-                                            <li>$30.00</li>
-                                            <li>
-                                                <del>$39.99</del>
-                                            </li>
-                                        </ul>
-                                        <div class="progress-line">
-
-                                        </div>
-                                        <p>25 Books in stock</p>
-                                    </div>
-                                    <div class="shop-btn">
-                                        <a href="shop-cart.html">
-                                            <i class="fa-regular fa-basket-shopping"></i>
-                                        </a>
-                                    </div>
-
-                                </div>
-
-                            </div>
-                        </div>
-                    </div>
-                    <div class="swiper-slide">
-                        <div class="shop-box-items style-4 wow fadeInUp" data-wow-delay=".2s">
-                            <div class="book-thumb center">
-                                <a href="shop-details"><img src="../assets/img/book/07.png" alt="img"></a>
-                            </div>
-                            <div class="shop-content">
-                                <ul class="book-category">
-                                    <li class="book-category-badge">Adventure</li>
-                                    <li>
-                                        <i class="fa-solid fa-star"></i>
-                                        <i class="fa-solid fa-star"></i>
-                                        <i class="fa-solid fa-star"></i>
-                                        <i class="fa-solid fa-star"></i>
-                                        <i class="fa-regular fa-star"></i>
-                                        (459)
-                                    </li>
-                                </ul>
-                                <h3><a href="shop-details.html">Qple GPad With Retina <br> Sisplay</a></h3>
-                                <ul class="author-post">
-                                    <li class="authot-list">
-                                        <span class="thumb">
-                                            <img src="../assets/img/testimonial/client-1.png" alt="img">
-                                        </span>
-                                        <span class="content">Wilson</span>
-                                    </li>
-                                </ul>
-                                <div class="book-availablity">
-                                    <div class="details">
-                                        <ul class="price-list">
-                                            <li>$30.00</li>
-                                            <li>
-                                                <del>$39.99</del>
-                                            </li>
-                                        </ul>
-                                        <div class="progress-line">
-
-                                        </div>
-                                        <p>25 Books in stock</p>
-                                    </div>
-                                    <div class="shop-btn">
-                                        <a href="shop-cart.html">
-                                            <i class="fa-regular fa-basket-shopping"></i>
-                                        </a>
-                                    </div>
-
-                                </div>
-
-                            </div>
-                        </div>
-                    </div>
-                    <div class="swiper-slide">
-                        <div class="shop-box-items style-4 wow fadeInUp" data-wow-delay=".2s">
-                            <div class="book-thumb center">
-                                <a href="shop-details"><img src="../assets/img/book/11.png" alt="img"></a>
-                            </div>
-                            <div class="shop-content">
-                                <ul class="book-category">
-                                    <li class="book-category-badge">Adventure</li>
-                                    <li>
-                                        <i class="fa-solid fa-star"></i>
-                                        <i class="fa-solid fa-star"></i>
-                                        <i class="fa-solid fa-star"></i>
-                                        <i class="fa-solid fa-star"></i>
-                                        <i class="fa-regular fa-star"></i>
-                                        (459)
-                                    </li>
-                                </ul>
-                                <h3><a href="shop-details.html">Qple GPad With Retina <br> Sisplay</a></h3>
-                                <ul class="author-post">
-                                    <li class="authot-list">
-                                        <span class="thumb">
-                                            <img src="../assets/img/testimonial/client-2.png" alt="img">
-                                        </span>
-                                        <span class="content">Hawkins</span>
-                                    </li>
-                                </ul>
-                                <div class="book-availablity">
-                                    <div class="details">
-                                        <ul class="price-list">
-                                            <li>$30.00</li>
-                                            <li>
-                                                <del>$39.99</del>
-                                            </li>
-                                        </ul>
-                                        <div class="progress-line">
-
-                                        </div>
-                                        <p>25 Books in stock</p>
-                                    </div>
-                                    <div class="shop-btn">
-                                        <a href="shop-cart.html">
-                                            <i class="fa-regular fa-basket-shopping"></i>
-                                        </a>
-                                    </div>
-
-                                </div>
-
-                            </div>
-                        </div>
-                    </div>
+                    <?php endwhile;?>
                 </div>
 
                 <div class="swiper-pagination"></div>

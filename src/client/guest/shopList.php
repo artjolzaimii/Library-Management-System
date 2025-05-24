@@ -120,21 +120,25 @@
                             // AUTHOR FILTER
                             if ($currentAuthorId) {
                                 if ($search) {
-                                    $bookQueryPerPage = "SELECT b.*, sb.price 
+                                    $bookQueryPerPage = "SELECT b.*, sb.price ,AVG(r.rating) AS avg_rating, COUNT(r.review_id) AS review_count
                                         FROM book b
                                         JOIN book_author ba ON b.book_id = ba.book_id
                                         LEFT JOIN sale_book sb ON b.book_id = sb.book_id
+                                        LEFT JOIN review r ON b.book_id = r.book_id
                                         WHERE ba.author_id = '$currentAuthorId' 
                                         AND b.format='For Sale'
                                         AND b.title LIKE '%$search%'
+                                        GROUP BY b.book_id
                                         LIMIT $startPos, $perPage";
                                 } else {
-                                    $bookQueryPerPage = "SELECT b.*, sb.price 
+                                    $bookQueryPerPage = "SELECT b.*, sb.price, AVG(r.rating) AS avg_rating, COUNT(r.review_id) AS review_count
                                         FROM book b
                                         JOIN book_author ba ON b.book_id = ba.book_id
                                         LEFT JOIN sale_book sb ON b.book_id = sb.book_id
+                                        LEFT JOIN review r ON b.book_id = r.book_id
                                         WHERE ba.author_id = '$currentAuthorId' 
                                         AND b.format='For Sale'
+                                        GROUP BY b.book_id
                                         LIMIT $startPos, $perPage";
                                 }
                                 $pagedResult = mysqli_query($conn, $bookQueryPerPage);
@@ -156,7 +160,7 @@
                                                     <h3><a href="bookDetails.php?isbn='.$book['isbn'].'">'.htmlspecialchars($book['title']).'</a></h3>
                                                     <ul class="price-list">
                                                         <li>'.number_format($book['price'], 2).' ALL</li>
-                                                        <li><i class="fa-solid fa-star"></i> 3.4 (25)</li> 
+                                                        <li><i class="fa-solid fa-star"></i> '.$book['avg_rating']."(".$book['review_count'].")" .' </li> 
                                                     </ul>
                                                     <div class="shop-button">
                                                         <a href="shopList.php?add='.$book['book_id'].'&author='.$currentAuthorId.'&page='.$currentPage.'" class="theme-btn">Add To Cart</a>
@@ -194,21 +198,25 @@
                                 $genrePage = $currentPage;
                                 $genreStartPos = $startPos;
                                 if ($search) {
-                                    $bookQueryPerPage = "SELECT b.*, sb.price 
+                                    $bookQueryPerPage = "SELECT b.*, sb.price ,AVG(r.rating) AS avg_rating, COUNT(r.review_id) AS review_count
                                         FROM book b
                                         JOIN book_genre bg ON b.book_id = bg.book_id
                                         LEFT JOIN sale_book sb ON b.book_id = sb.book_id
+                                        LEFT JOIN review r ON b.book_id = r.book_id
                                         WHERE bg.genre_id = '$currentGenreId' 
                                         AND b.format='For Sale' 
                                         AND b.title LIKE '%$search%'
+                                        GROUP BY b.book_id
                                         LIMIT $genreStartPos, $genrePerPage";
                                 } else {
-                                    $bookQueryPerPage = "SELECT b.*, sb.price 
+                                    $bookQueryPerPage = "SELECT b.*, sb.price, AVG(r.rating) AS avg_rating, COUNT(r.review_id) AS review_count
                                         FROM book b
                                         JOIN book_genre bg ON b.book_id = bg.book_id
                                         LEFT JOIN sale_book sb ON b.book_id = sb.book_id
+                                        LEFT JOIN review r ON b.book_id = r.book_id
                                         WHERE bg.genre_id = '$currentGenreId' 
                                         AND b.format='For Sale'
+                                        GROUP BY b.book_id
                                         LIMIT $genreStartPos, $genrePerPage";
                                 }
                                 $pagedResult = mysqli_query($conn, $bookQueryPerPage);
@@ -230,7 +238,7 @@
                                                     <h3><a href="bookDetails.php?isbn='.$book['isbn'].'">'.htmlspecialchars($book['title']).'</a></h3>
                                                     <ul class="price-list">
                                                         <li>'.number_format($book['price'], 2).' ALL</li>
-                                                        <li><i class="fa-solid fa-star"></i> 3.4 (25)</li> 
+                                                        <li><i class="fa-solid fa-star"></i> '.$book['avg_rating']."(".$book['review_count'].")" .' </li> 
                                                     </ul>
                                                     <div class="shop-button">
                                                         <a href="shopList.php?add='.$book['book_id'].'&genre='.$currentGenreId.'&page='.$genrePage.'" class="theme-btn">Add To Cart</a>
@@ -265,17 +273,19 @@
                             // ALL BOOKS
                             else {
                                 if ($search) {
-                                    $bookQuery = "SELECT b.*, sb.price 
+                                    $bookQuery = "SELECT b.*, sb.price ,AVG(r.rating) AS avg_rating, COUNT(r.review_id) AS review_count
                                             FROM book b
                                             JOIN book_genre bg ON b.book_id = bg.book_id
                                             LEFT JOIN sale_book sb ON b.book_id = sb.book_id
+                                            LEFT JOIN review r ON b.book_id = r.book_id
                                             WHERE b.format='For Sale' AND b.title LIKE '%$search%'
                                             GROUP BY b.book_id";
                                 } else {
-                                    $bookQuery = "SELECT b.*, sb.price 
+                                    $bookQuery = "SELECT b.*, sb.price ,AVG(r.rating) AS avg_rating, COUNT(r.review_id) AS review_count
                                             FROM book b
                                             JOIN book_genre bg ON b.book_id = bg.book_id
                                             LEFT JOIN sale_book sb ON b.book_id = sb.book_id
+                                            LEFT JOIN review r ON b.book_id = r.book_id
                                             WHERE b.format='For Sale'
                                             GROUP BY b.book_id";
                                 }
@@ -286,18 +296,20 @@
                                 $page = $currentPage;
                                 $startPos = ($page-1)*$perPage;
                                 if ($search) {
-                                    $bookQueryPerPage = "SELECT b.*, sb.price 
-                                            FROM book b
+                                    $bookQueryPerPage = "SELECT b.*, sb.price ,AVG(r.rating) AS avg_rating, COUNT(r.review_id) AS review_count
+                                            FROM book b, AVG(r.rating) AS avg_rating
                                             JOIN book_genre bg ON b.book_id = bg.book_id
                                             LEFT JOIN sale_book sb ON b.book_id = sb.book_id
+                                            LEFT JOIN review r ON b.book_id = r.book_id
                                             WHERE b.format='For Sale' AND b.title LIKE '%$search%'
                                             GROUP BY b.book_id
                                             LIMIT $startPos, $perPage";
                                 } else {
-                                    $bookQueryPerPage = "SELECT b.*, sb.price 
+                                    $bookQueryPerPage = "SELECT b.*, sb.price ,AVG(r.rating) AS avg_rating, COUNT(r.review_id) AS review_count
                                             FROM book b
                                             JOIN book_genre bg ON b.book_id = bg.book_id
                                             LEFT JOIN sale_book sb ON b.book_id = sb.book_id
+                                            LEFT JOIN review r ON b.book_id = r.book_id
                                             WHERE b.format='For Sale'
                                             GROUP BY b.book_id
                                             LIMIT $startPos, $perPage";
@@ -321,7 +333,7 @@
                                                     <h3><a href="bookDetails.php?isbn='.$book['isbn'].'">'.htmlspecialchars($book['title']).'</a></h3>
                                                     <ul class="price-list">
                                                         <li>'.number_format($book['price'], 2).' ALL</li>
-                                                        <li><i class="fa-solid fa-star"></i> 3.4 (25)</li> 
+                                                        <li><i class="fa-solid fa-star"></i> '.$book['avg_rating']."(".$book['review_count'].")" .' </li> 
                                                     </ul>
                                                     <div class="shop-button">
                                                         <a href="shopList.php?add='.$book['book_id'].'&page='.$page.'" class="theme-btn">Add To Cart</a>
@@ -346,7 +358,7 @@
                             }
                         ?>
                         <!-- Handling book add-->
-                        <?php 
+                        <?php  
                             if(isset($_GET['add'])){
                                 $book_id = mysqli_real_escape_string($conn, $_GET['add']);
                                 addBookToBasket($conn, $book_id, 1);

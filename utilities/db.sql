@@ -20,6 +20,7 @@ CREATE TABLE users (
 
 CREATE TABLE book(
 	book_id INT AUTO_INCREMENT PRIMARY KEY,
+	title varchar(127) NOT NULL,
     isbn varchar(30),
     publication_year INT, 
     publisher VARCHAR(30),
