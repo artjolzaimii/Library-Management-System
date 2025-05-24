@@ -1,6 +1,7 @@
 <?php 
     include("clientMenu.php");
-    require_once("../../../utilities/config.php");
+    require_once("../../../utilities/config1.php");
+    require_once("../../../src/client/guest/wishlistFunctionality.php");
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -303,8 +304,12 @@
                                 }
                                 $pagedResult = mysqli_query($conn, $bookQueryPerPage);
                                 $timer = 1;
+                                
+                                // Start the output block
                                 echo '<div class="tab-pane fade show active" id="pills-author" role="tabpanel"><div class="row">';
-                                while($book = mysqli_fetch_assoc($pagedResult)){
+                                
+                                while($book = mysqli_fetch_assoc($pagedResult)) {
+                                    // Book display HTML
                                     echo '<div class="col-xl-3 col-lg-4 col-md-6 wow fadeInUp" data-wow-delay=".'.$timer.'s">
                                             <div class="shop-box-items">
                                                 <div class="book-thumb center">
@@ -312,7 +317,26 @@
                                                         <img src="'.htmlspecialchars("../../../uploads/images/".$book['image_path']).'" alt="img" style="height:213px; width:148px;">
                                                     </a>
                                                     <ul class="shop-icon d-grid justify-content-center align-items-center">
-                                                        <li><a href="#"><i class="far fa-heart"></i></a></li>
+                                                        <li>';
+
+                                    //add and remove from wishlist
+                                                        if(isset($_SESSION['username'])) {
+                                        $userId = getUserId($_SESSION['username']);
+                                        if(isInWishlist($book['book_id'], $userId)) {
+                                            echo '<a href="wishlist.php?remove='.$book['book_id'].'" class="btn btn-link" title="Remove from wishlist">
+                                                    <i class="fas fa-heart"></i>
+                                                    </a>';
+                                        } else {
+                                            echo '<a href="wishlist.php?add='.$book['book_id'].'" class="btn btn-link" title="Add to wishlist">
+                                                    <i class="far fa-heart"></i>
+                                                    </a>';
+                                        }
+                                    } else {
+                                        echo '<a href="login.php" class="btn btn-link" title="Login to add to wishlist">
+                                                <i class="far fa-heart"></i>
+                                                </a>';
+                                    }
+                                                        echo '</li>
                                                         <li><a href="bookDetails.php?isbn='.$book['isbn'].'"><i class="far fa-eye"></i></a></li>
                                                     </ul>
                                                 </div>
@@ -330,27 +354,7 @@
                                           </div>';
                                     $timer++;
                                 }
-                                // Pagination for authors
-                                $countQuery = "SELECT COUNT(*) as total 
-                                    FROM book b
-                                    JOIN book_author ba ON b.book_id = ba.book_id
-                                    WHERE ba.author_id = $currentAuthorId AND b.format='For Sale'";
-                                $countResult = mysqli_query($conn, $countQuery);
-                                $countRow = mysqli_fetch_assoc($countResult);
-                                $authorNrPages = ceil($countRow['total'] / $perPage);
-
-                                echo '<div class="page-nav-wrap text-center"><ul>';
-                                if ($currentPage > 1) {
-                                    echo "<li><a class=\"previous\" href=\"shopList.php?author={$currentAuthorId}&page=" . ($currentPage - 1) . "\">Previous</a></li>";
-                                }
-                                for ($i = 1; $i <= $authorNrPages; $i++) {
-                                    $activeClass = ($i == $currentPage) ? "active" : "";
-                                    echo "<li><a class=\"page-numbers $activeClass\" href=\"shopList.php?author={$currentAuthorId}&page={$i}\">$i</a></li>";
-                                }
-                                if ($currentPage < $authorNrPages) {
-                                    echo "<li><a class=\"next\" href=\"shopList.php?author={$currentAuthorId}&page=" . ($currentPage + 1) . "\">Next</a></li>";
-                                }
-                                echo '</ul></div></div></div>';
+                                echo '</div></div>';
                             }
                             // GENRE FILTER
                             else if ($currentGenreId) {
@@ -390,7 +394,24 @@
                                                         <img src="'.htmlspecialchars("../../../uploads/images/".$book['image_path']).'" alt="img" style="height:213px; width:148px;">
                                                     </a>
                                                     <ul class="shop-icon d-grid justify-content-center align-items-center">
-                                                        <li><a href="#"><i class="far fa-heart"></i></a></li>
+                                                        <li>';
+                                                        if(isset($_SESSION['username'])) {
+                                                            $userId = getUserId($_SESSION['username']);
+                                                            if(isInWishlist($book['book_id'], $userId)) {
+                                                                echo '<a href="wishlist.php?remove='.$book['book_id'].'" class="btn btn-link" title="Remove from wishlist">
+                                                                        <i class="fas fa-heart"></i>
+                                                                      </a>';
+                                                            } else {
+                                                                echo '<a href="wishlist.php?add='.$book['book_id'].'" class="btn btn-link" title="Add to wishlist">
+                                                                        <i class="far fa-heart"></i>
+                                                                      </a>';
+                                                            }
+                                                        } else {
+                                                            echo '<a href="login.php" class="btn btn-link" title="Login to add to wishlist">
+                                                                    <i class="far fa-heart"></i>
+                                                                  </a>';
+                                                        }
+                                                        echo '</li>
                                                         <li><a href="bookDetails.php?isbn='.$book['isbn'].'"><i class="far fa-eye"></i></a></li>
                                                     </ul>
                                                 </div>
@@ -433,21 +454,21 @@
                             // ALL BOOKS
                             else {
                                 if ($search) {
-                                    $bookQuery = "SELECT b.*, sb.price ,AVG(r.rating) AS avg_rating, COUNT(r.review_id) AS review_count
+                                    $bookQuery = "SELECT b.*, MAX(sb.price) as price ,AVG(r.rating) AS avg_rating, COUNT(r.review_id) AS review_count
                                             FROM book b
-                                            JOIN book_genre bg ON b.book_id = bg.book_id
+                                            JOIN book_author ba ON b.book_id = ba.book_id
                                             LEFT JOIN sale_book sb ON b.book_id = sb.book_id
                                             LEFT JOIN review r ON b.book_id = r.book_id
                                             WHERE b.format='For Sale' AND b.title LIKE '%$search%'
-                                            GROUP BY b.book_id";
+                                            GROUP BY b.book_id, b.title, b.isbn, b.image_path, b.format, b.description, b.publication_year, b.publisher, b.language, b.nr_pages";
                                 } else {
-                                    $bookQuery = "SELECT b.*, sb.price ,AVG(r.rating) AS avg_rating, COUNT(r.review_id) AS review_count
+                                    $bookQuery = "SELECT b.*, sb.price 
                                             FROM book b
-                                            JOIN book_genre bg ON b.book_id = bg.book_id
+                                            JOIN book_author ba ON b.book_id = ba.book_id
                                             LEFT JOIN sale_book sb ON b.book_id = sb.book_id
                                             LEFT JOIN review r ON b.book_id = r.book_id
                                             WHERE b.format='For Sale'
-                                            GROUP BY b.book_id";
+                                            GROUP BY b.book_id, b.title, b.isbn, b.image_path, b.format, b.description, b.publication_year, b.publisher, b.language, b.nr_pages";
                                 }
                                 $bookResult = mysqli_query($conn, $bookQuery);  
                                 $nrBooks = $bookResult->num_rows;
@@ -456,22 +477,22 @@
                                 $page = $currentPage;
                                 $startPos = ($page-1)*$perPage;
                                 if ($search) {
-                                    $bookQueryPerPage = "SELECT b.*, sb.price ,AVG(r.rating) AS avg_rating, COUNT(r.review_id) AS review_count
-                                            FROM book b, AVG(r.rating) AS avg_rating
-                                            JOIN book_genre bg ON b.book_id = bg.book_id
-                                            LEFT JOIN sale_book sb ON b.book_id = sb.book_id
-                                            LEFT JOIN review r ON b.book_id = r.book_id
-                                            WHERE b.format='For Sale' AND b.title LIKE '%$search%'
-                                            GROUP BY b.book_id
-                                            LIMIT $startPos, $perPage";
-                                } else {
-                                    $bookQueryPerPage = "SELECT b.*, sb.price ,AVG(r.rating) AS avg_rating, COUNT(r.review_id) AS review_count
+                                    $bookQueryPerPage = "SELECT b.*, sb.price 
                                             FROM book b
                                             JOIN book_genre bg ON b.book_id = bg.book_id
                                             LEFT JOIN sale_book sb ON b.book_id = sb.book_id
                                             LEFT JOIN review r ON b.book_id = r.book_id
+                                            WHERE b.format='For Sale' AND b.title LIKE '%$search%'
+                                            GROUP BY b.book_id, b.title, b.isbn, b.image_path, b.format, b.description, b.publication_year, b.publisher, b.language, b.nr_pages
+                                            LIMIT $startPos, $perPage";
+                                } else {
+                                    $bookQueryPerPage = "SELECT b.*, sb.price 
+                                            FROM book b
+                                            JOIN book_author ba ON b.book_id = ba.book_id
+                                            LEFT JOIN sale_book sb ON b.book_id = sb.book_id
+                                            LEFT JOIN review r ON b.book_id = r.book_id
                                             WHERE b.format='For Sale'
-                                            GROUP BY b.book_id
+                                            GROUP BY b.book_id, b.title, b.isbn, b.image_path, b.format, b.description, b.publication_year, b.publisher, b.language, b.nr_pages
                                             LIMIT $startPos, $perPage";
                                 }
                                 $perPageResult = mysqli_query($conn, $bookQueryPerPage);
@@ -485,7 +506,24 @@
                                                         <img src="'.htmlspecialchars("../../../uploads/images/".$book['image_path']).'" alt="img" style="height:213px; width:148px;">
                                                     </a>
                                                     <ul class="shop-icon d-grid justify-content-center align-items-center">
-                                                        <li><a href="#"><i class="far fa-heart"></i></a></li>
+                                                        <li>';
+                                                        if(isset($_SESSION['username'])) {
+                                                            $userId = getUserId($_SESSION['username']);
+                                                            if(isInWishlist($book['book_id'], $userId)) {
+                                                                echo '<a href="wishlist.php?remove='.$book['book_id'].'" class="btn btn-link" title="Remove from wishlist">
+                                                                        <i class="fas fa-heart"></i>
+                                                                      </a>';
+                                                            } else {
+                                                                echo '<a href="wishlist.php?add='.$book['book_id'].'" class="btn btn-link" title="Add to wishlist">
+                                                                        <i class="far fa-heart"></i>
+                                                                      </a>';
+                                                            }
+                                                        } else {
+                                                            echo '<a href="login.php" class="btn btn-link" title="Login to add to wishlist">
+                                                                    <i class="far fa-heart"></i>
+                                                                  </a>';
+                                                        }
+                                                        echo '</li>
                                                         <li><a href="bookDetails.php?isbn='.$book['isbn'].'"><i class="far fa-eye"></i></a></li>
                                                     </ul>
                                                 </div>
@@ -500,19 +538,19 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                          </div>';
+                                        </div>';
                                     $timer++;
                                 }
                                 echo '<div class="page-nav-wrap text-center"><ul>';
                                 if ($page > 1) {  
-                                    echo "<li><a class=\"previous\" href=\"shopList.php?page=" . ($page - 1) . "\">Previous</a></li>";  
+                                    echo '<li><a class="previous" href="shopList.php?page='.($page - 1) .'">Previous</a></li>';  
                                 }  
                                 for ($i = 1; $i <= $nrPages; $i++) {  
-                                    $activeClass = ($i == $page) ? "active" : "";
-                                    echo "<li><a class=\"page-numbers $activeClass\" href=\"shopList.php?page={$i}\">$i</a></li>";  
+                                    $activeClass = ($i == $page) ? 'active' : '';
+                                    echo '<li><a class="page-numbers '.$activeClass.'" href="shopList.php?page='.$i.'">'.$i.'</a></li>';  
                                 }  
                                 if ($page < $nrPages) {  
-                                    echo "<li><a class=\"next\" href=\"shopList.php?page=" . ($page + 1) . "\">Next</a></li>";  
+                                    echo '<li><a class="next" href="shopList.php?page='.($page + 1) .'">Next</a></li>';  
                                 }  
                                 echo '</ul></div></div></div>';
                             }
