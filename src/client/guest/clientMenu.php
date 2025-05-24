@@ -74,7 +74,7 @@
                         
                         <!-- Shopping cart -->
                         <?php 
-                          //  include("./ShoppingCart/basket.php");
+                          include("./ShoppingCart/basket.php");
                         ?>
                         <div class="header__hamburger d-xl-none my-auto">
                             <div class="sidebar__toggle">
