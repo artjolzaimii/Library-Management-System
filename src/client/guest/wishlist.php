@@ -2,6 +2,7 @@
 <?php 
     include("clientMenu.php");
     include("../../../utilities/config1.php");
+    require_once("wishlistFunctionality.php");
     if(!isset($_SESSION['username'])){
         echo "<script>window.location.href =\"mainPage.php\"</script>";
     }
@@ -41,8 +42,8 @@
                 <div class="offcanvas__content">
                     <div class="offcanvas__top mb-5 d-flex justify-content-between align-items-center">
                         <div class="offcanvas__logo">
-                            <a href="index.html">
-                                <img src="assets/img/logo/logo.svg" alt="logo-img">
+                            <a href="mainPage.php">
+                                <img src="uploads/authors/1747584125_author.jpg" alt="logo-img">
                             </a>
                         </div>
                         <div class="offcanvas__close">
@@ -146,18 +147,28 @@
     <?php 
         $username = $_SESSION['username'];
         
-        $query = "SELECT book.image_path, book.title, sale_book.price, book.book_id, sale_book.inventory
-                 FROM book 
-                 INNER JOIN sale_book ON sale_book.book_id=book.book_id
-                 INNER JOIN wishlist ON wishlist.book_id=book.book_id
-                 INNER JOIN users ON users.id=wishlist.user_id
-                 WHERE users.username=?";
+        $userQuery = "SELECT id FROM users WHERE username = ?";
+        $userStmt = $conn->prepare($userQuery);
+        $userStmt->bind_param("s", $username);
+        $userStmt->execute();
+        $userId = $userStmt->get_result()->fetch_assoc()['id'];
+
+        $query = "SELECT b.*, sb.price, sb.inventory 
+             FROM book b
+             INNER JOIN sale_book sb ON b.book_id = sb.book_id
+             INNER JOIN wishlist w ON w.book_id = b.book_id
+             WHERE w.user_id = ?";
         
         $stm = $conn->prepare($query);
-        $stm->bind_param("s", $username);
+        $stm->bind_param("i", $userId);
         $stm->execute();
         
         $result = $stm->get_result();
+
+        // Wishlist empty
+        if ($result->num_rows === 0) {
+            echo '<div class="alert alert-info">Your wishlist is empty</div>';
+        }
     ?>
     <div class="cart-section section-padding pb-0">
         <div class="container">
@@ -184,7 +195,7 @@
                                         <td>
                                             <span class="d-flex gap-5 align-items-center">
                                                 <a href="wishlist.php?remove=<?php echo $book['book_id']?>" class="remove-icon">
-                                                    <img src="assets/img/icon/icon-9.svg" alt="img">
+                                                    <img src="../assets/img/icon/icon-9.svg" alt="img">
                                                 </a>
                                                 <span class="cart">
                                                     <img src="<?php echo "../../../uploads/images/".$book['image_path']?>" alt="img" style="height:100px; width:70px;">
@@ -223,19 +234,40 @@
     if(isset($_GET['remove'])){
         $bookId = mysqli_real_escape_string($conn, $_GET['remove']);
         $username = $_SESSION['username'];
+
+        $userId = getUserId($username);
         
         $query = "DELETE FROM wishlist 
-                 WHERE book_id=? AND user_id IN (
-                     SELECT id FROM users WHERE username=?
-                 )";
+                 WHERE book_id=? AND user_id=?";
         $stm = $conn->prepare($query);
-        $stm->bind_param("is", $bookId, $username);
+        $stm->bind_param("ii", $bookId, $userId);
         $stm->execute();
-        
+
         if($conn->affected_rows > 0){
-            echo "<script>window.location.href='wishlist.php'</script>";
+            $nrOfBooksRemaining = getWishlistCount($userId);
+            if($nrOfBooksRemaining > 0){
+                echo "<script>window.location.href='wishlist.php'</script>";
+            } else {
+                echo "<script>window.location.href='shopList.php'</script>";
+            }
         }
     }
+
+    if (isset($_GET['add'])) {
+    $book_id = intval($_GET['add']);
+    $username = $_SESSION['username'];
+
+    // Get User ID 
+    $user_id = getUserId($username);
+
+    $result = addToWishlist($book_id, $user_id);
+
+    if ($result['success']) {
+        echo "<script>alert('{$result['message']}'); window.location.href='shopList.php';</script>";
+    } else {
+        echo "<script>alert('{$result['message']}'); window.location.href='shopList.php';</script>";
+    }
+}
     ?>
 
     <!-- Footer Section start  -->

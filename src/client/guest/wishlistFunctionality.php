@@ -1,5 +1,5 @@
 <?php
-require_once('../utilities/config1.php');
+require_once('../../../utilities/config1.php');
 
 // Function to add a book to wishlist
 function addToWishlist($book_id, $user_id) {
@@ -20,7 +20,7 @@ function addToWishlist($book_id, $user_id) {
     }
     
     // Add book to wishlist
-    $insert_query = "INSERT INTO wishlist (book_id, user_id, date_added) VALUES (?, ?, NOW())";
+    $insert_query = "INSERT INTO wishlist (book_id, user_id, created_at) VALUES (?, ?, NOW())";
     $stmt = $conn->prepare($insert_query);
     $stmt->bind_param("ii", $book_id, $user_id);
     
@@ -92,4 +92,27 @@ function getUserWishlist($user_id) {
     }
     
     return $wishlist;
-}?>
+}
+
+function getWishlistCount($user_id) {
+    global $conn;
+
+    $query = "SELECT COUNT(*) as count FROM wishlist WHERE user_id = ?";
+    $stmt = $conn->prepare($query);
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    return $result->fetch_assoc()['count'];
+}
+
+function getUserId($username) {
+    global $conn;
+    $userQuery = "SELECT id FROM users WHERE username = ?";
+    $userStmt = $conn->prepare($userQuery);
+    $userStmt->bind_param("s", $username);
+    $userStmt->execute();
+    $userId = $userStmt->get_result()->fetch_assoc()['id'];
+    return $userId;
+}
+
+?>

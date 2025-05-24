@@ -36,8 +36,8 @@ CREATE TABLE author (
     bio TEXT,
     nationality VARCHAR(50),
     image_path varchar(255),
-    birth_year YEAR,
-    death_year YEAR
+    birth_year INT,
+    death_year INT
 );
 
 CREATE TABLE book_author (
@@ -131,3 +131,13 @@ CREATE TABLE review (
     CONSTRAINT fk_review_book FOREIGN KEY (book_id) REFERENCES book(book_id) ON DELETE CASCADE,
     CONSTRAINT fk_review_user FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
 );
+
+CREATE TABLE wishlist (
+    wishlist_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    book_id INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (book_id) REFERENCES book(book_id) ON DELETE CASCADE
+);
+

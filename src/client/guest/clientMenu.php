@@ -1,6 +1,8 @@
 <?php 
     ob_start();
     if (session_status() === PHP_SESSION_NONE) session_start();
+
+    require("wishlistFunctionality.php");
     
 ?>
 
@@ -40,7 +42,7 @@
                                         </a>
                                         <ul class="submenu">
                                             <li><a href="shop.php">Shop Default</a></li>
-                                            <li><a href="shop-list.php">Shop List</a></li>
+                                            <li><a href="shopList.php">Shop List</a></li>
                                             <li><a href="shop-details.php">Shop Details</a></li>
                                             <li><a href="shop-cart.php">Shop Cart</a></li>
                                             <li><a href="wishlist.php">Wishlist</a></li>
@@ -97,7 +99,7 @@
                                 class="fa-regular fa-magnifying-glass"></i></a>
                         <ul class="header-icon">
                             <li>
-                                <a href="#"><i class="fa-regular fa-heart"></i><span class="number">4</span></a>
+                                <a href="wishlist.php"><i class="fa-regular fa-heart"></i><span class="number"><?php echo getWishlistCount($_SESSION['user_id']); ?></span></a>
                             </li>
                         </ul>
                         

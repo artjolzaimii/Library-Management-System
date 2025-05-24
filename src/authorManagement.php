@@ -1,5 +1,5 @@
 <?php
-require_once('../utilities/config.php');
+require_once('../utilities/config1.php');
 
 $query = "SELECT * FROM author";
 $result = $conn->query($query); 
@@ -207,13 +207,13 @@ if (isset($_GET['delete_id'])) {
                                                               <!-- Birth year -->
                                                               <div class='mb-3'>
                                                                   <label for='birth_year' class='form-label'>Birth Year</label>
-                                                                  <input type='text' class='form-control' id='birth_year' name='birth_year' value='" . $row['birth_year'] . "' required />
+                                                                  <input type='number' class='form-control' id='birth_year' name='birth_year' value='" . $row['birth_year'] . "' min='0' max='9999' required />
                                                               </div>
 
                                                               <!-- Death year -->
                                                               <div class='mb-3'>
                                                                   <label for='death_year' class='form-label'>Death Year</label>
-                                                                  <input type='text' class='form-control' id='death_year' name='death_year' value='" . $row['death_year'] . "' />
+                                                                  <input type='number' class='form-control' id='death_year' name='death_year' value='" . ($row['death_year'] ? $row['death_year'] : '') . "' min='0' max='9999' />
                                                               </div>
                                                               
                                                               <!-- Author Image -->

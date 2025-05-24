@@ -1,6 +1,7 @@
 <?php 
     include("clientMenu.php");
-    require_once("../../../utilities/config.php");
+    require_once("../../../utilities/config1.php");
+    require_once("wishlistFunctionality.php");
 ?>
 
 <!DOCTYPE html>
@@ -286,7 +287,7 @@
                                             <img src="' . htmlspecialchars($img) . '" alt="img">
                                         </a>
                                         <ul class="shop-icon d-grid justify-content-center align-items-center">
-                                            <li><a href="shop-cart.html"><i class="far fa-heart"></i></a></li>
+                                            <li><a href="wishlist.php?add=' . $book['book_id'] . '" class="icon"><i class="far fa-heart"></i></a></li>
                                             <li><a href="shop-cart.html"><img class="icon" src="../assets/img/icon/shuffle.svg" alt="svg-icon"></a></li>
                                             <li><a href="shop-details.php?book_id=' . $book['book_id'] . '"><i class="far fa-eye"></i></a></li>
                                         </ul>
@@ -409,7 +410,7 @@
                                 </ul>
                                 <ul class="shop-icon d-grid justify-content-center align-items-center">
                                     <li>
-                                 <a href="shop-cart.html"><i class="far fa-heart"></i></a>
+                                 <a href="wishlist.php?add=1"><i class="far fa-heart"></i></a>
                                     </li>
                                     <li>
                                         <a href="shop-cart.html">
@@ -454,7 +455,7 @@
                                 <a href="shop-details"><img src="../assets/img/book/02.png" alt="img"></a>
                                 <ul class="shop-icon d-grid justify-content-center align-items-center">
                                     <li>
-                                        <a href="shop-cart.html"><i class="far fa-heart"></i></a>
+                                        <a href="wishlist.php?add=2"><i class="far fa-heart"></i></a>
                                     </li>
                                     <li>
                                         <a href="shop-cart.html">
@@ -496,7 +497,7 @@
                                 <a href="shop-details"><img src="../assets/img/book/03.png" alt="img"></a>
                                 <ul class="shop-icon d-grid justify-content-center align-items-center">
                                     <li>
-                                        <a href="shop-cart.html"><i class="far fa-heart"></i></a>
+                                        <a href="wishlist.php?add=3"><i class="far fa-heart"></i></a>
                                     </li>
                                     <li>
                                         <a href="shop-cart.html">
@@ -545,7 +546,7 @@
                                 </ul>
                                 <ul class="shop-icon d-grid justify-content-center align-items-center">
                                     <li>
-                                        <a href="shop-cart.html"><i class="far fa-heart"></i></a>
+                                        <a href="wishlist.php?add=4"><i class="far fa-heart"></i></a>
                                     </li>
                                     <li>
                                         <a href="shop-cart.html">
@@ -587,7 +588,7 @@
                                 <a href="shop-details"><img src="../assets/img/book/05.png" alt="img"></a>
                                 <ul class="shop-icon d-grid justify-content-center align-items-center">
                                     <li>
-                                        <a href="shop-cart.html"><i class="far fa-heart"></i></a>
+                                        <a href="wishlist.php?add=5"><i class="far fa-heart"></i></a>
                                     </li>
                                     <li>
                                         <a href="shop-cart.html">
@@ -1058,7 +1059,7 @@
                         <a href="shop-details"><img src="../assets/img/book/03.png" alt="img"></a>
                         <ul class="shop-icon d-grid justify-content-center align-items-center">
                             <li>
-                                <a href="shop-cart.html"><i class="far fa-heart"></i></a>
+                                <a href="wishlist.php?add=3"><i class="far fa-heart"></i></a>
                             </li>
                             <li>
                                 <a href="shop-cart.html">
@@ -1101,7 +1102,7 @@
                         <a href="shop-details"><img src="../assets/img/book/02.png" alt="img"></a>
                         <ul class="shop-icon d-grid justify-content-center align-items-center">
                             <li>
-                                <a href="shop-cart.html"><i class="far fa-heart"></i></a>
+                                <a href="wishlist.php?add=2"><i class="far fa-heart"></i></a>
                             </li>
                             <li>
                                 <a href="shop-cart.html">
@@ -1144,7 +1145,7 @@
                         <a href="shop-details"><img src="../assets/img/book/04.png" alt="img"></a>
                         <ul class="shop-icon d-grid justify-content-center align-items-center">
                             <li>
-                                <a href="shop-cart.html"><i class="far fa-heart"></i></a>
+                                <a href="wishlist.php?add=4"><i class="far fa-heart"></i></a>
                             </li>
                             <li>
                                 <a href="shop-cart.html">
@@ -1192,7 +1193,7 @@
                         </ul>
                         <ul class="shop-icon d-grid justify-content-center align-items-center">
                             <li>
-                                <a href="shop-cart.html"><i class="far fa-heart"></i></a>
+                                <a href="wishlist.php?add=5"><i class="far fa-heart"></i></a>
                             </li>
                             <li>
                                 <a href="shop-cart.html">
@@ -1286,7 +1287,7 @@
                                 </ul>
                                 <ul class="shop-icon d-grid justify-content-center align-items-center">
                                     <li>
-                                        <a href="shop-cart.html"><i class="far fa-heart"></i></a>
+                                        <a href="wishlist.php?add=1"><i class="far fa-heart"></i></a>
                                     </li>
                                     <li>
                                         <a href="shop-cart.html">
@@ -1331,7 +1332,7 @@
                                 <a href="shop-details"><img src="../assets/img/book/02.png" alt="img"></a>
                                 <ul class="shop-icon d-grid justify-content-center align-items-center">
                                     <li>
-                                        <a href="shop-cart.html"><i class="far fa-heart"></i></a>
+                                        <a href="wishlist.php?add=2"><i class="far fa-heart"></i></a>
                                     </li>
                                     <li>
                                         <a href="shop-cart.html">
@@ -1373,7 +1374,7 @@
                                 <a href="shop-details"><img src="../assets/img/book/03.png" alt="img"></a>
                                 <ul class="shop-icon d-grid justify-content-center align-items-center">
                                     <li>
-                                        <a href="shop-cart.html"><i class="far fa-heart"></i></a>
+                                        <a href="wishlist.php?add=3"><i class="far fa-heart"></i></a>
                                     </li>
                                     <li>
                                         <a href="shop-cart.html">
@@ -1422,7 +1423,7 @@
                                 </ul>
                                 <ul class="shop-icon d-grid justify-content-center align-items-center">
                                     <li>
-                                        <a href="shop-cart.html"><i class="far fa-heart"></i></a>
+                                        <a href="wishlist.php?add=4"><i class="far fa-heart"></i></a>
                                     </li>
                                     <li>
                                         <a href="shop-cart.html">
@@ -1464,7 +1465,7 @@
                                 <a href="shop-details"><img src="../assets/img/book/05.png" alt="img"></a>
                                 <ul class="shop-icon d-grid justify-content-center align-items-center">
                                     <li>
-                                        <a href="shop-cart.html"><i class="far fa-heart"></i></a>
+                                        <a href="wishlist.php?add=5"><i class="far fa-heart"></i></a>
                                     </li>
                                     <li>
                                         <a href="shop-cart.html">
