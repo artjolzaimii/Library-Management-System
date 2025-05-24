@@ -1,38 +1,52 @@
-<?php 
-  require_once("config.php");
-  
-  if(!isset($_SESSION['username']) || !isset($_SESSION['role']) || !isset($_SESSION['token'])){
-    if($_SESSION['role']=='Client'){
-      echo "<script>window.location.href='/Online-Library-Management-System/src/client/guest/mainPage.php'</script>";
-    }
-  }
-  else{
-    $username=mysqli_real_escape_string($conn,$_SESSION['username']);
-    $role=mysqli_real_escape_string($conn,$_SESSION['role']);
-    $token=mysqli_real_escape_string($conn,$_SESSION['token']);
-    
-    $query="SELECT full_name, image_path
-            FROM users
-            WHERE username=?";
-          
-    $stm=$conn->prepare($query);
-    $stm->bind_param("s",$username);
-    $stm->execute();
-    
-    $result=$stm->get_result();
-    
-    if($result->num_rows!=1){
-      echo "<script>window.location.href='../client/guest/mainPage.php'</script>";
-    }
-    $user=$result->fetch_assoc();
-  }
+<?php
+// Start session if not already started
+require_once("config.php");
 
+// Check if user is logged in and has the correct role
+if (!isset($_SESSION['username']) || !isset($_SESSION['role']) || !isset($_SESSION['token'])) {
+    // Redirect to guest page if session variables are missing
+    header("Location: ../client/guest/mainPage.php");
+    exit;
+}
+
+// Validate user session
+$username = $_SESSION['username'];
+$role = $_SESSION['role'];
+$token = $_SESSION['token'];
+
+// Restrict access to userManagement.php to Admin and Librarian roles
+if ($role === 'Client') {
+    header("Location: ../client/guest/mainPage.php");
+    exit;
+}
+
+// Fetch user details
+$query = "SELECT full_name, image_path FROM users WHERE username = ? AND role = ?";
+$stmt = $conn->prepare($query);
+if (!$stmt) {
+    die("Prepare failed: " . $conn->error);
+}
+$stmt->bind_param("ss", $username, $role);
+$stmt->execute();
+$result = $stmt->get_result();
+
+if ($result->num_rows !== 1) {
+    // Invalid user or session, redirect to guest page
+    header("Location: ../client/guest/mainPage.php");
+    exit;
+}
+
+$user = $result->fetch_assoc();
+$stmt->close();
+
+// Ensure image path is valid
+$image_path = !empty($user['image_path']) && file_exists("../Uploads/users/staff/" . $user['image_path'])
+    ? "../Uploads/users/staff/" . $user['image_path']
+    : "../assets/img/avatars/default-user.png";
 ?>
-
 
 <!-- Navbar -->
 <style>
-  
   #layout-navbar {
     z-index: 1055 !important;
     position: relative;
@@ -67,12 +81,11 @@
     </div>
 
     <ul class="navbar-nav flex-row align-items-center ms-auto">
-      
       <!-- User Dropdown -->
       <li class="nav-item navbar-dropdown dropdown-user dropdown" style="z-index: 1050;">
         <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown">
           <div class="avatar avatar-online">
-            <img src="../assets/img/avatars/1.png" alt class="w-px-40 h-auto rounded-circle" />
+            <img src="<?php echo htmlspecialchars($image_path); ?>" alt="User Avatar" class="w-px-40 h-auto rounded-circle" />
           </div>
         </a>
         <ul class="dropdown-menu dropdown-menu-end" style="z-index: 1050;">
@@ -81,24 +94,23 @@
               <div class="d-flex">
                 <div class="flex-shrink-0 me-3">
                   <div class="avatar avatar-online">
-                    <img src="../uploads/users/staff/<?php echo $user['image_path']?>" alt class="w-px-40 h-auto rounded-circle" />
+                    <img src="<?php echo htmlspecialchars($image_path); ?>" alt="User Avatar" class="w-px-40 h-auto rounded-circle" />
                   </div>
                 </div>
                 <div class="flex-grow-1">
-                  <span class="fw-semibold d-block"><?php echo $user['full_name']?></span>
-                  <small class="text-muted"><?php echo $role?></small>
+                  <span class="fw-semibold d-block"><?php echo htmlspecialchars($user['full_name']); ?></span>
+                  <small class="text-muted"><?php echo htmlspecialchars($role); ?></small>
                 </div>
               </div>
             </a>
           </li>
-          <li><div class="dropdown-divider" ></div></li>
-          <li><a class="dropdown-item" href="#"><i class="bx bx-user me-2"></i>My Profile</a></li>
           <li><div class="dropdown-divider"></div></li>
-          <li><a class="dropdown-item" href="../utilities/logOut.php?token=<?php echo $token?>"><i class="bx bx-power-off me-2"></i>Log Out</a></li>
+          <li><a class="dropdown-item" href="profile.php"><i class="bx bx-user me-2"></i>My Profile</a></li>
+          <li><div class="dropdown-divider"></div></li>
+          <li><a class="dropdown-item" href="../utilities/logOut.php?token=<?php echo htmlspecialchars($token); ?>"><i class="bx bx-power-off me-2"></i>Log Out</a></li>
         </ul>
       </li>
     </ul>
   </div>
-  
 </nav>
 <!-- /Navbar -->
