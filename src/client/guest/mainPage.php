@@ -173,74 +173,43 @@
     <div class="container">
         <div class="swiper book-slider-genre">
             <div class="swiper-wrapper">
-                <div class="swiper-slide">
-                    <div class="banner-book-card-items bg-cover" style="background-image: url('../assets/img/banner/book-banner-1.jpg');">
-                        <div class="book-shape">
-                            <img src="../assets/img/banner/book-1.png" alt="img">
-                        </div>
-                        <div class="banner-book-content">
-                            <div class="banner-text">
-                                <span>25% off</span>
-                                <h2>Romantic Novels</h2>
-                                <p>Fall in love with these classic stories</p>
+                <?php 
+                $sql = "SELECT * FROM genres"; 
+                $result = $conn->query($sql);
+                while ($row = $result->fetch_assoc()): ?>
+                    <div class="swiper-slide">
+                        <div class="banner-book-card-items bg-cover" style="background-image: url('../assets/img/banner/book-banner-1.jpg');">
+                            <div class="book-shape">
+                                <img src="../assets/img/banner/book-<?= $row['id'] ?>.png" alt="img">
                             </div>
-                            <a href="#shop-section" class="banner-icons" onclick="loadBooksByGenre('drama'); return false;">
-                                <img src="../assets/img/icon/icon-25.svg" alt="icon">
-                            </a>
+                            <div class="banner-book-content">
+                                <div class="banner-text">
+                                    <span>25% off</span>
+                                    <h2><?= htmlspecialchars($row['name']) ?> Novels</h2>
+                                    <p>Fall in love with these classic stories</p>
+                                </div>
+                                <a href="#shop-section" class="banner-icons" onclick="window.location.href='mainPage.php?genre=<?= urlencode($row['name']) ?>'">
+                                    <img src="../assets/img/icon/icon-25.svg" alt="icon">
+                                </a>
+                            </div>
                         </div>
                     </div>
-                </div>
-                
-                <div class="swiper-slide">
-                    <div class="banner-book-card-items bg-cover" style="background-image: url('../assets/img/banner/book-banner-1.jpg');">
-                        <div class="book-shape">
-                            <img src="../assets/img/banner/book-2.png" alt="img">
-                        </div>
-                        <div class="banner-book-content">
-                            <div class="banner-text">
-                                <span>25% off</span>
-                                <h2>Drama Novels</h2>
-                                <p>Fall in love with these classic stories</p>
-                            </div>
-                            <a href="#shop-section" class="banner-icons" onclick="window.location.href='mainPage.php?genre=drama'">
-                                <img src="../assets/img/icon/icon-25.svg" alt="icon">
-                            </a>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="swiper-slide">
-                    <div class="banner-book-card-items bg-cover" style="background-image: url('../assets/img/banner/book-banner-1.jpg');">
-                        <div class="book-shape">
-                            <img src="../assets/img/banner/book-3.png" alt="img">
-                        </div>
-                        <div class="banner-book-content">
-                            <div class="banner-text">
-                                <span>25% off</span>
-                                <h2>Romantic Novels</h2>
-                                <p>Fall in love with these classic stories</p>
-                            </div>
-                            <a href="#shop-section" class="banner-icons" onclick="loadBooksByGenre('Romantic Novels'); return false;">
-                                <img src="../assets/img/icon/icon-25.svg" alt="icon">
-                            </a>
-                        </div>
-                    </div>
-                </div>
-                
+                <?php endwhile; ?>
             </div>
             <div class="swiper-pagination"></div>
             <div class="swiper-button-next"></div>
             <div class="swiper-button-prev"></div>
         </div>
     </div>
-    </section>
+</section>
+
 
     
     <!-- Shop Section -->
     <?php 
-        require_once("./fetchBooksByGenre.php");
-    ?>
-    <section id="shop-section" class="shop-section section-padding fix pt-0">
+    require_once("./fetchBooksByGenre.php");
+?>
+<section id="shop-section" class="shop-section section-padding fix pt-0">
     <div class="container">
         <div class="section-title-area">
             <div class="section-title">
@@ -252,15 +221,13 @@
             </div>
             <a href="shop.html" class="theme-btn style-2">Explore More <i class="fa-solid fa-arrow-right-long"></i></a>
         </div>
+
         <div class="swiper book-slider-genre" id="shop-books-container">
             <div class="swiper-wrapper">
                 <?php 
                 if ($result && $result->num_rows > 0) {
                     while ($book = $result->fetch_assoc()) {
                         $img = !empty($book['image_path']) ? $book['image_path'] : '../assets/img/book/01.png';
-                        $author = "Author Unknown"; 
-                        $price = "$20.00"; 
-                        $old_price = "$30.00";
 
                         echo '
                             <div class="swiper-slide">
@@ -280,7 +247,7 @@
                                     </div>
                                     <div class="shop-content">
                                         <h5>Design Low Book</h5>
-                                        <h3><a href="shop-details.php?book_id=' . $book['book_id'] . '">' . htmlspecialchars($book['title'] ?? 'No Title') . '</a></h3>
+                                        <h3><a href="shop-details.php?book_id=' . $book['book_id'] . '">' . htmlspecialchars($book['description'] ?? 'No Title') . '</a></h3>
                                         <ul class="price-list">
                                             <li>$' . htmlspecialchars($book['price'] ?? '20.00') . '</li>
                                             <li><del>$' . htmlspecialchars($book['old_price'] ?? '30.00') . '</del></li>
@@ -288,26 +255,27 @@
                                         <ul class="author-post">
                                             <li class="authot-list">
                                                 <span class="thumb"><img src="../assets/img/testimonial/client-1.png" alt="img"></span>
-                                                <span class="content">' . htmlspecialchars($book['author'] ?? 'Author Unknown') . '</span>
+                                                <span class="content">' . htmlspecialchars($book['author_name'] ?? 'Author Unknown') . '</span>
                                             </li>
                                             <li><i class="fa-solid fa-star"></i>3.4 (25)</li>
                                         </ul>
                                     </div>
                                 </div>
                             </div>';
-
                     }
                 } else {
                     echo '<p>No books found for this genre.</p>';
                 }
                 ?>
             </div>
+
             <div class="swiper-pagination"></div>
             <div class="swiper-button-next"></div>
             <div class="swiper-button-prev"></div>
         </div>
     </div>
-    </section>
+</section>
+
     
     <!-- JS for AJAX genre load -->
     <script>
@@ -363,8 +331,6 @@
             document.getElementById('shop-section').scrollIntoView({ behavior: 'smooth' });
         }
         
-
-
     </script>
    
     <!-- Shop Section Start -->
