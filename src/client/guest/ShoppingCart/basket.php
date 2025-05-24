@@ -2,7 +2,7 @@
     <div class="cart-box">
         <?php
             require_once("shoppingCartFunctionalities.php");
-            require_once(__DIR__."/../../../../utilities/config.php");
+            require_once("/../../../utilities/config.php");
             
             
             $cartId = getShopCartId($conn);

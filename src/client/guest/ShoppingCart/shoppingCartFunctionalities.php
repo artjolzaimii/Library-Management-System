@@ -80,16 +80,14 @@
     function deleteBookFromBasket($conn,$bookId){
         $cartId=getShopCartId($conn);
         $query=
-        "
-        DELETE FROM cart_book WHERE book_id=? AND cart_id=?
-        ";
+        "DELETE FROM cart_book WHERE book_id=? AND cart_id=?";
         
         $stm=$conn->prepare($query);
         
         $stm->bind_param("ii",$bookId,$cartId);
         $stm->execute();
         
-        if($stm->affected_rows>1){
+        if($stm->affected_rows>=1){
             echo '<script>window.location.href = "shopList.php";</script>';
         }
     }

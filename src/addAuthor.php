@@ -1,4 +1,5 @@
 <?php 
+    session_start();
     require_once("../utilities/config.php");
 
     if($_SERVER["REQUEST_METHOD"] == "POST"){
@@ -117,7 +118,7 @@
                 <label for="bio" class="form-label">Biography</label>
                 <div class="input-group">
                   <span class="input-group-text"><i class="bx bx-detail"></i></span>
-                  <textarea class="form-control" name="bio" id="bio" placeholder="Ex: Born on the 28th of January 1936..." rows="2" maxlength="50" required></textarea>
+                  <textarea class="form-control" name="bio" id="bio" placeholder="Ex: Born on the 28th of January 1936..." rows="2" maxlength="5000" required></textarea>
                 </div>
               </div>
             </div>

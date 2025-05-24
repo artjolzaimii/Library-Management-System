@@ -164,6 +164,34 @@
         </div>
     </div>
 
+    <?php 
+        // Calculate sales
+        $salesQuery = "SELECT SUM(ob.quantity) AS nr_sales
+                       FROM book_author ba
+                       INNER JOIN book b ON ba.book_id = b.book_id
+                       INNER JOIN order_book ob ON ob.book_id = ba.book_id
+                       WHERE ba.author_id = ?";
+        $stm1 = $conn->prepare($salesQuery);
+        $stm1->bind_param("i", $authorId);
+        $stm1->execute();
+        $res1 = $stm1->get_result();
+        $book1 = $res1->fetch_assoc();
+        $salesCount = $book1 ? $book1['nr_sales'] : 0;
+    
+        // Calculate reviews
+        $reviewQuery = "SELECT COUNT(*) as nr_reviews
+                        FROM book_author ba
+                        INNER JOIN book b ON ba.book_id = b.book_id
+                        INNER JOIN review r ON r.book_id = b.book_id
+                        WHERE ba.author_id = ?";
+        $stm2 = $conn->prepare($reviewQuery);
+        $stm2->bind_param("i", $authorId);
+        $stm2->execute();
+        $res2 = $stm2->get_result();
+        $book2 = $res2->fetch_assoc();
+        $reviewCount = $book2 ? $book2['nr_reviews'] : 0;
+    ?>
+
     
     <!-- Team Details Section Start -->
     <section class="team-details-section fix section-padding">
@@ -175,7 +203,8 @@
                     </div>
                     <div class="details-content wow fadeInUp" data-wow-delay=".5s">
                         <h3>Author: <?php echo $author['full_name']?></h3>
-                        <span><?php echo $author['nationality']?></span>
+                        <span><?php echo $author['nationality']?></span><br>
+                        <span><?php echo $author['birth_year'].' - '.($author['death_year']!=0? $author['death_year']: "")?></span>
                     </div>
                 </div>
                 <p class="wow fadeInUp" data-wow-delay=".7s">
@@ -187,11 +216,11 @@
                         <p>Books</p>
                     </div>
                     <div class="counter-items wow fadeInUp" data-wow-delay=".5s">
-                        <h2><span class="count">100</span>+</h2>
-                        <p>Seles</p>
+                        <h2><span class="count"><?php echo $salesCount ?></span>+</h2>
+                        <p>Sales</p>
                     </div>
                     <div class="counter-items wow fadeInUp" data-wow-delay=".7s">
-                        <h2><span class="count">90</span>+</h2>
+                        <h2><span class="count"><?php echo $reviewCount; ?></span>+</h2>
                         <p>Review</p>
                     </div>
                 </div>
@@ -212,6 +241,51 @@
     $booksResult = $booksStmt->get_result();
     ?>
 
+    
+    <!-- Author's books -->
+    <?php 
+        //handle add to cart
+        require_once("./ShoppingCart/shoppingCartFunctionalities.php");
+        if(isset($_GET['add'])){
+            addBookToBasket($conn,$_GET['add'],1);
+            
+        }
+        
+        $forSale="SELECT b.book_id,isbn, title, image_path , price,AVG(r.rating) AS avg_rating, COUNT(r.review_id) AS review_count
+                FROM book b INNER JOIN book_author ba ON b.book_id=ba.book_id
+                INNER JOIN sale_book sa ON sa.book_id=b.book_id
+                LEFT JOIN review r ON b.book_id = r.book_id
+                WHERE ba.author_id=?
+                GROUP BY b.book_id";
+                
+        $stm=$conn->prepare($forSale);
+        $stm->bind_param("i",$authorId);
+        $stm->execute();
+        $forSaleResult=$stm->get_result();
+        
+        $forBorrow="SELECT b.book_id,isbn, title, image_path,AVG(r.rating) AS avg_rating, COUNT(r.review_id) AS review_count 
+                FROM book b INNER JOIN book_author ba ON b.book_id=ba.book_id
+                INNER JOIN borrow_book boa ON boa.book_id=b.book_id
+                LEFT JOIN review r ON b.book_id = r.book_id
+                WHERE ba.author_id=?
+                GROUP BY b.book_id"
+                ;
+        $stm=$conn->prepare($forBorrow);
+        $stm->bind_param("i",$authorId);
+        $stm->execute();
+        $forBorrowResult=$stm->get_result();        
+                
+        $eBook="SELECT b.book_id,isbn, title, image_path,AVG(r.rating) AS avg_rating, COUNT(r.review_id) AS review_count
+                FROM book b INNER JOIN book_author ba ON b.book_id=ba.book_id
+                INNER JOIN ebook e ON e.book_id=b.book_id
+                LEFT JOIN review r ON b.book_id = r.book_id
+                WHERE ba.author_id=?
+                GROUP BY b.book_id";
+        $stm=$conn->prepare($eBook);
+        $stm->bind_param("i",$authorId);
+        $stm->execute();
+        $eBookResult=$stm->get_result();        
+    ?>
     <!-- Shop Section Start -->
     <section class="shop-section fix">
         <div class="container">
@@ -220,7 +294,9 @@
             </div>
             <div class="swiper book-slider">
                 <div class="swiper-wrapper">
-                    <?php while($book=$booksResult->fetch_assoc()):?>
+                    <?php 
+                        while($book=$forSaleResult->fetch_assoc()):
+                    ?>
                     <div class="swiper-slide">
                         <div class="shop-box-items style-2">
                             <div class="book-thumb center">
@@ -249,10 +325,146 @@
                                 <h3><a href="bookDetails.php?isbn=<?php echo $book['isbn']?>"><?php echo htmlspecialchars($book['title'])?></a></h3>
                                 <ul class="price-list">
                                     <li>$<?php echo number_format($book['price'], 2)?></li>
+                                    <li><?php echo $book['price']?></li>
+                                
+                                </ul>
+                                <ul class="author-post">
+                                    <li class="authot-list">
+                                        <span class="thumb">
+                                            <img src="../../../<?php echo $author['image_path']?>" alt="img" width="30px" height="30px">
+                                        </span>
+                                        <span class="content"><?php echo $author['full_name'];?></span>
+                                    </li>
+
+                                    <li class="">
+                                        <div class="star">
+                                            <?php
+                                            $rating = round($book['avg_rating']);
+                                            for ($i = 1; $i <= 5; $i++) {
+                                                echo '<i class="fa-' . ($i <= $rating ? 'solid' : 'regular') . ' fa-star"></i>';
+                                            }
+                                            ?>
+                                            (<?= $book['review_count'] ?>)
+                                        </div>
+                                    </li>
                                 </ul>
                             </div>
                             <div class="shop-button">
-                                <a href="bookDetails.php?isbn=<?php echo $book['isbn']?>" class="theme-btn">View Details</a>
+                                <a href="authorProfile.php?authorId=<?php echo $authorId?>&add=<?php echo $book['book_id']?>" class="theme-btn">Add To Cart</a>
+                            </div>
+                        </div>
+                    </div>
+                    <?php endwhile;?>
+                    
+                    <?php 
+                        while($book=$eBookResult->fetch_assoc()):
+                    ?>
+                    <div class="swiper-slide">
+                        <div class="shop-box-items style-2">
+                            <div class="book-thumb center">
+                                <a href="shop-details"><img src="../../../uploads/images/<?php echo $book['image_path']?>" alt="img"></a>
+                                
+                                <ul class="shop-icon d-grid justify-content-center align-items-center">
+                                    <li>
+                                        <a href="shop-cart.html"><i class="far fa-heart"></i></a>
+                                    </li>
+                                </ul>
+                                <ul class="shop-icon d-grid justify-content-center align-items-center">
+                                    <li>
+                                        <a href=""><i class="far fa-heart"></i></a>
+                                    </li>
+                                    
+                                    <li>
+                                        <a href="bookDetails.php?isbn=<?php echo $book['isbn']?>"><i class="far fa-eye"></i></a>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="shop-content">
+                                <h3><a href="bookDetails.php?isbn=<?php echo $book['isbn']?>"><?php echo $book['title']?></a></h3>
+                                <ul class="price-list">
+                                    <li><?php echo "E-Book"?></li>
+                                
+                                </ul>
+                                <ul class="author-post">
+                                    <li class="authot-list">
+                                        <span class="thumb">
+                                            <img src="../../../<?php echo $author['image_path']?>" alt="img" width="30px" height="30px">
+                                        </span>
+                                        <span class="content"><?php echo $author['full_name'];?></span>
+                                    </li>
+
+                                    <li class="">
+                                        <div class="star">
+                                            <?php
+                                            $rating = round($book['avg_rating']);
+                                            for ($i = 1; $i <= 5; $i++) {
+                                                echo '<i class="fa-' . ($i <= $rating ? 'solid' : 'regular') . ' fa-star"></i>';
+                                            }
+                                            ?>
+                                            (<?= $book['review_count'] ?>)
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="shop-button">
+                                <button class="theme-btn" disabled>Add To Cart</button>
+                            </div>
+                        </div>
+                    </div>
+                    <?php endwhile;?>
+                    
+                    <?php 
+                        while($book=$forBorrowResult->fetch_assoc()):
+                    ?>
+                    <div class="swiper-slide">
+                        <div class="shop-box-items style-2">
+                            <div class="book-thumb center">
+                                <a href="shop-details"><img src="../../../uploads/images/<?php echo $book['image_path']?>" alt="img"></a>
+                                
+                                <ul class="shop-icon d-grid justify-content-center align-items-center">
+                                    <li>
+                                        <a href="shop-cart.html"><i class="far fa-heart"></i></a>
+                                    </li>
+                                </ul>
+                                <ul class="shop-icon d-grid justify-content-center align-items-center">
+                                    <li>
+                                        <a href="shop-cart.html"><i class="far fa-heart"></i></a>
+                                    </li>
+                                    
+                                    <li>
+                                        <a href="bookDetails.php?isbn=<?php echo $book['isbn']?>"><i class="far fa-eye"></i></a>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="shop-content">
+                                <h3><a href="bookDetails.php?isbn=<?php echo $book['isbn']?>"><?php echo $book['title']?></a></h3>
+                                <ul class="price-list">
+                                    <li>Free Borrowing</li>
+                                
+                                </ul>
+                                <ul class="author-post">
+                                    <li class="authot-list">
+                                        <span class="thumb">
+                                            <img src="../../../<?php echo $author['image_path']?>" alt="img" width="30px" height="30px">
+                                        </span>
+                                        <span class="content"><?php echo $author['full_name'];?></span>
+                                    </li>
+
+                                    <li class="">
+                                        <div class="star">
+                                            <?php
+                                            $rating = round($book['avg_rating']);
+                                            for ($i = 1; $i <= 5; $i++) {
+                                                echo '<i class="fa-' . ($i <= $rating ? 'solid' : 'regular') . ' fa-star"></i>';
+                                            }
+                                            ?>
+                                            (<?= $book['review_count'] ?>)
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="shop-button">
+                                <button  class="theme-btn" disabled>Add To Cart</button>
                             </div>
                         </div>
                     </div>
@@ -263,168 +475,6 @@
     </section>
 
     <!-- Footer Section start  -->
-    <footer class="footer-section fix">
-        <div class="container">
-            <div class="footer-widget-wrapper">
-                <div class="row">
-                    <div class="col-xl-3 col-lg-4 col-md-4 wow fadeInUp" data-wow-delay=".2s">
-                        <div class="single-footer-widget">
-                            <div class="widget-head"><a href="index.html" class="footer-logo">
-                                    <img src="assets/img/logo/logo.svg" alt="logo-img">
-                                </a>
-                            </div>
-                            <div class="footer-content">
-                                <div class="text">
-                                    <p>Got Questions? Call us</p>
-                                    <a href="tel:+67041390762">+670 413 90 762</a>
-                                </div>
-                                <ul class="contact-list">
-                                    <li>
-                                        <i class="fa-regular fa-envelope"></i>
-                                        <a href="mailto:readit@gmail.com">readit@gmail.com</a>
-                                    </li>
-                                    <li>
-                                        <i class="fa-regular fa-location-dot"></i>
-                                        79 Sleepy Hollow St.<br>
-                                        Jamaica, New York 1432
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-xl-3 col-lg-4 col-md-4 ps-lg-5 wow fadeInUp" data-wow-delay=".4s">
-                        <div class="single-footer-widget">
-                            <div class="widget-head">
-                                <h3>Costumers Support</h3>
-                            </div>
-                            <ul class="list-items">
-                                <li>
-                                    <a href="shop.html">
-                                        Store List
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="contact.html">
-                                        Opening Hours
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="contact.html">
-                                        Contact Us
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="contact.html">
-                                        Return Policy
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div class="col-xl-3 col-lg-4 col-md-4 ps-lg-5 wow fadeInUp" data-wow-delay=".6s">
-                        <div class="single-footer-widget">
-                            <div class="widget-head">
-                                <h3>Categories</h3>
-                            </div>
-                            <ul class="list-items">
-                                <li>
-                                    <a href="contact.html">
-                                        Novel Books
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="shop.html">
-                                        Poetry Books
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="contact.html">
-                                        Political Books
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="contact.html">
-                                        History Books
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div class="col-xl-3 col-lg-4 col-md-6 wow fadeInUp" data-wow-delay=".8s">
-                        <div class="single-footer-widget">
-                            <div class="widget-head">
-                                <h3>Subcribe.</h3>
-                            </div>
-                            <div class="footer-content">
-                                <p class="f-text">Our conversation is just getting started</p>
-                                <div class="footer-input">
-                                    <input type="email" id="email2" placeholder="Enter Your Email">
-                                    <button class="newsletter-btn" type="submit">
-                                        <span>Subscribe</span>
-                                    </button>
-                                </div>
-                                <div class="social-item">
-                                    <h6>Follow Us On</h6>
-                                    <div class="social-icon d-flex align-items-center">
-                                        <a href="#"><i class="fab fa-facebook-f"></i></a>
-                                        <a href="#"><i class="fab fa-twitter"></i></a>
-                                        <a href="#"><i class="fab fa-linkedin-in"></i></a>
-                                        <a href="#"><i class="fa-brands fa-vimeo-v"></i></a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                <div class="footer-wrapper">
-                    <p class="wow fadeInUp" data-wow-delay=".3s">
-                        ©All Rights reserved 2025 by <span>Readit.</span>
-                    </p>
-                    <div class="bottom-list wow fadeInUp" data-wow-delay=".5s">
-                        <div class="app-image">
-                            <img src="assets/img/footer/01.png" alt="img">
-                        </div>
-                        <div class="app-image">
-                            <img src="assets/img/footer/02.png" alt="img">
-                        </div>
-                        <div class="app-image">
-                            <img src="assets/img/footer/03.png" alt="img">
-                        </div>
-                        <div class="app-image">
-                            <img src="assets/img/footer/04.png" alt="img">
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </footer>
-
-
-    <!--<< All JS Plugins >>-->
-    <script src="assets/js/jquery-3.7.1.min.js"></script>
-    <!--<< Viewport Js >>-->
-    <script src="assets/js/viewport.jquery.js"></script>
-    <!--<< Bootstrap Js >>-->
-    <script src="assets/js/bootstrap.bundle.min.js"></script>
-    <!--<< Nice Select Js >>-->
-    <script src="assets/js/jquery.nice-select.min.js"></script>
-    <!--<< Waypoints Js >>-->
-    <script src="assets/js/jquery.waypoints.js"></script>
-    <!--<< Counterup Js >>-->
-    <script src="assets/js/jquery.counterup.min.js"></script>
-    <!--<< Swiper Slider Js >>-->
-    <script src="assets/js/swiper-bundle.min.js"></script>
-    <!--<< MeanMenu Js >>-->
-    <script src="assets/js/jquery.meanmenu.min.js"></script>
-    <!--<< Magnific Popup Js >>-->
-    <script src="assets/js/jquery.magnific-popup.min.js"></script>
-    <!--<< Wow Animation Js >>-->
-    <script src="assets/js/wow.min.js"></script>
-    <!-- Gsap -->
-    <script src="assets/js/gsap.min.js"></script>
-    <!--<< Main.js >>-->
-    <script src="assets/js/main.js"></script>
+    <?php include("footer.php")?>
 </body>
 </html>

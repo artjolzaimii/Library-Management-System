@@ -2,6 +2,10 @@
 require_once(__DIR__."/../../../utilities/config.php");
 $error = "";
 
+if (empty($_SESSION['token'])) {
+    $_SESSION['token'] = bin2hex(random_bytes(32));
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['username']) && isset($_POST['password'])) {
     $username = trim($_POST['username']);
     $password = $_POST['password'];
@@ -17,7 +21,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['username']) && isset(
         if (password_verify($password, $user['password'])) {
             $_SESSION['username'] = $user['username'];
             $_SESSION['role'] = $user['role'];
-            header("Location: mainPage.php");
+            $_SESSION['token'] = bin2hex(random_bytes(32));
+            
+            if($user['role']=='Client'){
+                header("Location: mainPage.php");
+            }
+            else{
+                header("Location: ../../addBook.php");
+            }
+            
             exit();
         } else {
             $error = "Incorrect username or password!";
@@ -26,6 +38,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['username']) && isset(
         $error = "Incorrect username or password!";
     }
 }
+
+
 ?>
 <div id="targetElement" class="side_bar slideInRight side_bar_hidden">
     <div class="side_bar_overlay"></div>
