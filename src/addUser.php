@@ -1,5 +1,10 @@
 <?php
+session_start();
 require('../utilities/config.php');
+
+$errors = [];
+$userId = $fullName = $email = $phone = $address = $username = $role = $gender = $birthday = '';
+$profileImage = '';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $userId = mysqli_real_escape_string($conn, $_POST['user_id']);
@@ -13,9 +18,31 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $gender = $_POST['gender'];
     $birthday = $_POST['birthday'];
 
-    // Handle image upload
-    $profileImage = '';
-    if (!empty($_FILES['profile_image']['name'])) {
+    $checkUserId = $conn->prepare("SELECT id FROM users WHERE user_id = ?");
+    $checkUserId->bind_param("s", $userId);
+    $checkUserId->execute();
+    $checkUserId->store_result();
+    if ($checkUserId->num_rows > 0) {
+        $errors[] = "User ID already exists.";
+    }
+
+    $checkEmail = $conn->prepare("SELECT id FROM users WHERE email = ?");
+    $checkEmail->bind_param("s", $email);
+    $checkEmail->execute();
+    $checkEmail->store_result();
+    if ($checkEmail->num_rows > 0) {
+        $errors[] = "Email address already exists.";
+    }
+
+    $checkUsername = $conn->prepare("SELECT id FROM users WHERE username = ?");
+    $checkUsername->bind_param("s", $username);
+    $checkUsername->execute();
+    $checkUsername->store_result();
+    if ($checkUsername->num_rows > 0) {
+        $errors[] = "Username already exists.";
+    }
+
+    if (empty($errors) && !empty($_FILES['profile_image']['name'])) {
         $imageName = basename($_FILES['profile_image']['name']);
         $imageExt = pathinfo($imageName, PATHINFO_EXTENSION);
         $uniqueImageName = uniqid('IMG_', true) . '.' . $imageExt;
@@ -29,18 +56,25 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         if (move_uploaded_file($_FILES['profile_image']['tmp_name'], $uploadPath)) {
             $profileImage = $uniqueImageName;
         } else {
-            echo "Failed to upload image.";
-            exit;
+            $errors[] = "Failed to upload profile image.";
         }
     }
 
-    $query = "INSERT INTO users (user_id, full_name, email, phone, address, username, password, role, gender, birthday, image_path)
-              VALUES ('$userId', '$fullName', '$email', '$phone', '$address', '$username', '$password', '$role', '$gender', '$birthday', '$profileImage')";
 
-    if (mysqli_query($conn, $query)) {
-        echo "User added successfully.";
-    } else {
-        echo "Error: " . mysqli_error($conn);
+    if (empty($errors)) {
+        $stmt = $conn->prepare("INSERT INTO users 
+        (user_id, full_name, email, phone, address, username, password, role, gender, birthday, image_path) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+
+
+        $stmt->bind_param("sssssssssss", $userId, $fullName, $email, $phone, $address, $username, $password, $role, $gender, $birthday, $profileImage);
+
+        if ($stmt->execute()) {
+            header("Location: userManagement.php?success=1");
+            exit;
+        } else {
+            $errors[] = "Database error: " . $stmt->error;
+        }
     }
 }
 ?>
@@ -57,11 +91,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <body>
 <div class="layout-container">
   <?php include('../utilities/menu.php'); ?>
-
   <div class="layout-page">
     <div class="content-wrapper">
       <?php include('../utilities/navbar.php'); ?>
-
       <div class="container-xxl flex-grow-1 container-p-y">
         <h4 class="fw-bold py-3 mb-4">
           <span class="text-muted fw-light">User Management /</span> Add New User
@@ -70,13 +102,24 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <div class="card mb-4">
           <h5 class="card-header"><i class="bx bx-user-add"></i> Add New User</h5>
           <div class="card-body">
+
+            <?php if (!empty($errors)): ?>
+              <div class="alert alert-danger">
+                <ul class="mb-0">
+                  <?php foreach ($errors as $error): ?>
+                    <li><?= htmlspecialchars($error) ?></li>
+                  <?php endforeach; ?>
+                </ul>
+              </div>
+            <?php endif; ?>
+
             <form action="addUser.php" method="POST" enctype="multipart/form-data">
               <div class="row mb-3">
                 <div class="col-md-6">
                   <label for="user_id" class="form-label">User ID</label>
                   <div class="input-group">
                     <span class="input-group-text"><i class="bx bx-id-card"></i></span>
-                    <input type="text" class="form-control" name="user_id" id="user_id" placeholder="Unique User ID" required>
+                    <input type="text" class="form-control" name="user_id" id="user_id" value="<?= htmlspecialchars($userId) ?>" placeholder="Unique User ID" required>
                   </div>
                 </div>
                 <div class="col-md-6">
@@ -92,31 +135,31 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                   <label for="fullName" class="form-label">Full Name</label>
                   <div class="input-group">
                     <span class="input-group-text"><i class="bx bx-user"></i></span>
-                    <input type="text" class="form-control" name="fullName" id="fullName" placeholder="Full Name" required>
+                    <input type="text" class="form-control" name="fullName" id="fullName" value="<?= htmlspecialchars($fullName) ?>" placeholder="Full Name" required>
                   </div>
                 </div>
                 <div class="col-md-6">
                   <label for="email" class="form-label">Email Address</label>
                   <div class="input-group">
                     <span class="input-group-text"><i class="bx bx-envelope"></i></span>
-                    <input type="email" class="form-control" name="email" id="email" placeholder="Email Address" required>
+                    <input type="email" class="form-control" name="email" id="email" value="<?= htmlspecialchars($email) ?>" placeholder="Email Address" required>
                   </div>
                 </div>
               </div>
-              
+
               <div class="row mb-3">
                 <div class="col-md-6">
                   <label for="phone" class="form-label">Phone Number</label>
                   <div class="input-group">
                     <span class="input-group-text"><i class="bx bx-phone"></i></span>
-                    <input type="text" class="form-control" name="phone" id="phone" placeholder="Phone Number" required>
+                    <input type="text" class="form-control" name="phone" id="phone" value="<?= htmlspecialchars($phone) ?>" placeholder="Phone Number" required>
                   </div>
                 </div>
                 <div class="col-md-6">
                   <label for="address" class="form-label">Address</label>
                   <div class="input-group">
                     <span class="input-group-text"><i class="bx bx-map"></i></span>
-                    <input type="text" class="form-control" name="address" id="address" placeholder="Address" required>
+                    <input type="text" class="form-control" name="address" id="address" value="<?= htmlspecialchars($address) ?>" placeholder="Address" required>
                   </div>
                 </div>
               </div>
@@ -126,7 +169,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                   <label for="username" class="form-label">Username</label>
                   <div class="input-group">
                     <span class="input-group-text"><i class="bx bx-user-circle"></i></span>
-                    <input type="text" class="form-control" name="username" id="username" placeholder="Username" required>
+                    <input type="text" class="form-control" name="username" id="username" value="<?= htmlspecialchars($username) ?>" placeholder="Username" required>
                   </div>
                 </div>
                 <div class="col-md-6">
@@ -137,17 +180,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                   </div>
                 </div>
               </div>
-              
+
               <div class="row mb-3">
                 <div class="col-md-6">
                   <label for="role" class="form-label">Role</label>
                   <div class="input-group">
                     <span class="input-group-text"><i class="bx bx-briefcase"></i></span>
                     <select name="role" id="role" class="form-control" required>
-                      <option value="" selected disabled>Select Role</option>
-                      <option value="Librarian">Librarian</option>
-                      <option value="Admin">Admin</option>
-                      <option value="User">User</option>
+                      <option value="" disabled <?= $role == '' ? 'selected' : '' ?>>Select Role</option>
+                      <option value="Librarian" <?= $role == 'Librarian' ? 'selected' : '' ?>>Librarian</option>
+                      <option value="Admin" <?= $role == 'Admin' ? 'selected' : '' ?>>Admin</option>
+                      <option value="User" <?= $role == 'User' ? 'selected' : '' ?>>User</option>
                     </select>
                   </div>
                 </div>
@@ -155,9 +198,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                   <label for="gender" class="form-label">Gender</label>
                   <div class="d-flex align-items-center">
                     <div>
-                      <input type="radio" name="gender" value="Male" required> Male
-                      <input type="radio" name="gender" value="Female" required> Female
-                      <input type="radio" name="gender" value="Other" required> Other
+                      <input type="radio" name="gender" value="Male" <?= $gender == 'Male' ? 'checked' : '' ?> required> Male
+                      <input type="radio" name="gender" value="Female" <?= $gender == 'Female' ? 'checked' : '' ?> required> Female
+                      <input type="radio" name="gender" value="Other" <?= $gender == 'Other' ? 'checked' : '' ?> required> Other
                     </div>
                   </div>
                 </div>
@@ -168,7 +211,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                   <label for="birthday" class="form-label">Birthday</label>
                   <div class="input-group">
                     <span class="input-group-text"><i class="bx bx-calendar"></i></span>
-                    <input type="date" class="form-control" name="birthday" id="birthday" required>
+                    <input type="date" class="form-control" name="birthday" id="birthday" value="<?= htmlspecialchars($birthday) ?>" required>
                   </div>
                 </div>
               </div>

@@ -20,6 +20,7 @@ CREATE TABLE users (
 
 CREATE TABLE book(
 	book_id INT AUTO_INCREMENT PRIMARY KEY,
+	title varchar(127) NOT NULL,
     isbn varchar(30),
     publication_year INT, 
     publisher VARCHAR(30),
@@ -36,8 +37,8 @@ CREATE TABLE author (
     bio TEXT,
     nationality VARCHAR(50),
     image_path varchar(255),
-    birth_year YEAR,
-    death_year YEAR
+    birth_year INT,
+    death_year INT
 );
 
 CREATE TABLE book_author (

@@ -4,7 +4,7 @@
       $token=$_GET['token'];  
     }
     else{
-        echo "<script>window.location.href='mainPage.php'</script>";
+        echo "<script>window.location.href='../src/client/guest/mainPage.php'</script>";
     }
 
     if(isset($_SESSION['username']) && isset($_SESSION['role']) && isset($_SESSION['token'])){
@@ -14,14 +14,11 @@
             unset($_SESSION['token']);
             
             session_destroy();
-            echo "<script>window.location.href='mainPage.php'</script>";
+            echo "<script>window.location.href='../src/client/guest/mainPage.php'</script>";
         }
         else{
-            echo "<script>window.location.href='mainPage.php'</script>";
+            echo "<script>window.location.href='../src/client/guest/mainPage.php'</script>";
 
         }
-    }
-    else{
-        echo "<script>window.location.href='mainPage.php'</script>";
     }
 ?>

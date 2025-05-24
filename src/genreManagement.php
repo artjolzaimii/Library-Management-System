@@ -1,4 +1,5 @@
 <?php
+session_start();
 require('../utilities/config.php');
 
 // Add new genre
@@ -113,7 +114,18 @@ if (isset($_GET['delete'])) {
                 </thead>
                 <tbody>
                   <?php
-                    $result = mysqli_query($conn, "SELECT * FROM genres");
+                      $genresPerPage = 5;
+                      $page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
+                      $offset = ($page - 1) * $genresPerPage;
+
+                      $totalGenreQuery = "SELECT COUNT(*) AS total FROM genres";
+                      $totalGenreResult = $conn->query($totalGenreQuery);
+                      $totalGenreRow = $totalGenreResult->fetch_assoc();
+                      $totalGenre = $totalGenreRow['total'];
+                      $totalPages = ceil($totalGenre / $genresPerPage);
+                      $query = "SELECT * FROM genres LIMIT $genresPerPage OFFSET $offset";
+                      $result = $conn->query($query);
+                   
                     while ($row = mysqli_fetch_assoc($result)) {
                         echo "
                         <tr>
@@ -156,6 +168,16 @@ if (isset($_GET['delete'])) {
                   ?>
                 </tbody>
               </table>
+
+              <nav class="mt-3">
+                                    <ul class="pagination justify-content-center">
+                                        <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                                            <li class="page-item <?= ($i == $page) ? 'active' : '' ?>">
+                                                <a class="page-link" href="?page=<?= $i ?>"><?= $i ?></a>
+                                            </li>
+                                        <?php endfor; ?>
+                                    </ul>
+                                </nav>
             </div>
           </div>
 

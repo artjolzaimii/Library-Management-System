@@ -42,109 +42,92 @@
 
 <body>
 <!-- Find book by isbn , placed in the url by a get request-->
-    <?php 
+   <?php
         require_once("../../../utilities/config.php");
-    
-        $isbn=mysqli_real_escape_string($conn,$_GET['isbn']);
         
-        $query="SELECT `book_id`,`isbn`, `publication_year`, `publisher`, `language`, `nr_pages`, `description`, `format`, `image_path`, `title` FROM `book` WHERE `isbn`=?";
+        $isbn = mysqli_real_escape_string($conn, $_GET['isbn']);
         
-        $stm=$conn->prepare($query);
-        
-        $stm->bind_param("s",$isbn);
+        // Main book data query
+        $query = "SELECT b.book_id, `isbn`, `publication_year`, `publisher`, `language`, `nr_pages`, `description`, `format`, `image_path`, `title` ,AVG(r.rating) AS avg_rating, COUNT(r.review_id) AS review_count
+        FROM book b LEFT JOIN review r ON b.book_id = r.book_id
+        WHERE `isbn`=?
+        GROUP BY b.book_id"
+        ;
+        $stm = $conn->prepare($query);
+        $stm->bind_param("s", $isbn);
         $stm->execute();
+        $result = $stm->get_result();
         
-        $result=$stm->get_result();
-        
-        if($result->num_rows==1){
-            $row=$result->fetch_assoc();
-            
-            //look for other fields
-            if($row['format']=='For Sale'){
-                $query="SELECT inventory, price 
-                        FROM sale_book INNER JOIN book ON book.book_id=sale_book.book_id
-                        WHERE book.isbn=?
-                        ";
-                $stm=$conn->prepare($query);
-        
-                $stm->bind_param("s",$isbn);
-                $stm->execute();
-                
-                $result=$stm->get_result(); 
-                
-                if($result->num_rows==1){
-                    $saleRow=$result->fetch_assoc();
-                }
-            }
-            else if($row['format']=='For Borrow'){
-                $query="SELECT inventory, condition 
-                        FROM borrow_book INNER JOIN book ON book.book_id=borrow_book.book_id
-                        WHERE book.isbn=?
-                        ";
-                $stm=$conn->prepare($query);
-        
-                $stm->bind_param("s",$isbn);
-                $stm->execute();
-                
-                $result=$stm->get_result(); 
-                
-                if($result->num_rows==1){
-                    $borrowRow=$result->fetch_assoc();
-                }
-            }
-            else if($row['format']=='E-Book'){
-                $query="SELECT book_path 
-                        FROM ebook INNER JOIN book ON book.book_id=ebook.book_id
-                        WHERE book.isbn=?
-                        ";
-                $stm=$conn->prepare($query);
-        
-                $stm->bind_param("s",$isbn);
-                $stm->execute();
-                
-                $result=$stm->get_result(); 
-                
-                if($result->num_rows==1){
-                    $ebookRow=$result->fetch_assoc();
-                }
-            }
-            
-            //loog for authors
-            $query="SELECT full_Name FROM author INNER JOIN book_author ON author.author_id=book_author.author_id
-            INNER JOIN book ON book.book_id=book_author.book_id
-            WHERE book.isbn=?" ;
-            
-            $stm=$conn->prepare($query);
-            $stm->bind_param("s",$isbn);
-            $stm->execute();
-            $authorResult=$stm->get_result();
-            $authors = [];
-            while ($author = mysqli_fetch_assoc($authorResult)) {
-                $authors[] = $author['full_Name'];
-            }
-            $authors = implode(" , ", $authors);
-            
-            //look for gneres
-            $query="SELECT `name` FROM genres INNER JOIN book_genre ON genres.id=book_genre.genre_id
-            INNER JOIN book ON book.book_id=book_genre.book_id
-            WHERE book.isbn=?" ;
-            
-            $stm=$conn->prepare($query);
-            $stm->bind_param("s",$isbn);
-            $stm->execute();
-            $genreResult=$stm->get_result();
-            $genres = [];
-            while ($genre = mysqli_fetch_assoc($genreResult)) {
-                $genres[] = $genre['name'];
-            }
-            $genres = implode(" , ", $genres);
+        if ($result->num_rows !== 1) {
+            echo "The book with this ISBN does not exist!";
+            exit; // Stop execution
         }
-        else{
-            echo "The book with this id does not exist!";
-            header("Location: mainPage.php");
-            
+        
+        $row = $result->fetch_assoc();
+        
+        // Load format-specific info
+        switch ($row['format']) {
+            case 'For Sale':
+                $query = "SELECT inventory, price FROM sale_book WHERE book_id=?";
+                break;
+        
+            case 'For Borrow':
+                $query = "SELECT inventory, `book_condition` FROM borrow_book WHERE book_id=?";
+                break;
+        
+            case 'E-Book':
+                $query = "SELECT book_path FROM ebook WHERE book_id=?";
+                break;
+        
+            default:
+                echo "Invalid book format!";
+                exit;
         }
-    ?>
+        
+        $stm = $conn->prepare($query);
+        $stm->bind_param("i", $row['book_id']);
+        $stm->execute();
+        $result = $stm->get_result();
+        
+        if ($result->num_rows !== 1) {
+            echo "Details for the selected format were not found!";
+            exit;
+        }
+        
+        $formatRow = $result->fetch_assoc(); // Holds saleRow / borrowRow / ebookRow
+        
+        // Fetch authors
+        $query = "SELECT full_Name FROM author 
+            INNER JOIN book_author ON author.author_id = book_author.author_id 
+            WHERE book_author.book_id = ?";
+        $stm = $conn->prepare($query);
+        $stm->bind_param("i", $row['book_id']);
+        $stm->execute();
+        $authorResult = $stm->get_result();
+        
+        $authors = [];
+        while ($author = $authorResult->fetch_assoc()) {
+            $authors[] = $author['full_Name'];
+        }
+        $authors = implode(", ", $authors);
+        
+        // Fetch genres
+        $query = "SELECT `name` FROM genres 
+            INNER JOIN book_genre ON genres.id = book_genre.genre_id 
+            WHERE book_genre.book_id = ?";
+        $stm = $conn->prepare($query);
+        $stm->bind_param("i", $row['book_id']);
+        $stm->execute();
+        $genreResult = $stm->get_result();
+        
+        $genres = [];
+        while ($genre = $genreResult->fetch_assoc()) {
+            $genres[] = $genre['name'];
+        }
+        $genres = implode(", ", $genres);
+        
+        ?>
+
     
         
 
@@ -253,7 +236,7 @@
                 <div class="page-header">
                     <ul class="breadcrumb-items wow fadeInUp" data-wow-delay=".3s">
                         <li>
-                            <a href="index.html">
+                            <a href="mainPage.php">
                                 Home
                             </a>
                         </li>
@@ -292,7 +275,7 @@
                                 <h5>
                                     <?php 
                                         if($row['format']=='For Sale'){
-                                            if($saleRow['inventory']>0){
+                                            if($formatRow['inventory']>0){
                                                 echo "<h5>Stock Available</h5>";
                                             }
                                             else{
@@ -300,7 +283,7 @@
                                             }
                                         }
                                         else if($row['format']=='For Borrow'){
-                                            if($borrowRow['inventory']>0){
+                                            if($formatRow['inventory']>0){
                                                 echo "<h5>Stock Available</h5>";
                                             }
                                             else{
@@ -311,13 +294,14 @@
                                 </h5>
                             </div>
                             <div class="star">
-                                <a href="shop-details.html"> <i class="fas fa-star"></i></a>
-                                <a href="shop-details.html"><i class="fas fa-star"></i></a>
-                                <a href="shop-details.html"> <i class="fas fa-star"></i></a>
-                                <a href="shop-details.html"><i class="fas fa-star"></i></a>
-                                <a href="shop-details.html"><i class="fa-regular fa-star"></i></a>
-                                <span>(1 Customer Reviews)</span>
-                            </div>
+                                    <?php
+                                    $rating = round($row['avg_rating']);
+                                    for ($i = 1; $i <= 5; $i++) {
+                                        echo '<i class="fa-' . ($i <= $rating ? 'solid' : 'regular') . ' fa-star"></i>';
+                                    }
+                                    ?>
+                                    (<?= $row['review_count']. " Customer Reviews" ?>)
+                                </div>
                             <p>
                                 <?php 
                                     echo $row['description'];
@@ -326,20 +310,23 @@
                             <?php 
                                 if($row['format']=='For Sale'){
                                     echo "<div class=\"price-list\">
-                                            <h3>".$saleRow['price']." ALL</h3>
+                                            <h3>".$formatRow['price']." ALL</h3>
                                         </div>";
                                 }
                             
                             ?>
                             <!--If an item is out of stock make buttons, inputs disabled -->
-                            <form action="" method="POST">
+                            <form action="" method="POST" >
                                 <div class="cart-wrapper">
-                                <div class="quantity-basket">
+                                <div class="quantity-basket"  <?php if($row['format']=='E-Book' || $row['format']=='For Borrow'){
+                                                    echo "style=\"display: none;\"";
+                                                }
+                                            ?>>
                                     <p class="qty">
                                         <button class="qtyminus" aria-hidden="true"
                                             <?php 
                                                 if($row['format']=='For Sale'){
-                                                    if($saleRow['inventory']<0){
+                                                    if($formatRow['inventory']<0){
                                                         echo "disabled;";
                                                     }       
                                                 }
@@ -347,17 +334,19 @@
                                         >−</button>
                                         <input type="number" name="quantity" id="qty2" min="1" max="199" step="1" value="1"
                                             <?php 
-                                                if($row['format']=='For Sale'){
-                                                    if($saleRow['inventory']<0){
+                                                if($row['format']=='For Sale' ){
+                                                    if($formatRow['inventory']<0){
                                                         echo "disabled;";
                                                     }       
                                                 }
+                                                
+                                            ?>
                                             ?>
                                         >
                                         <button class="qtyplus" aria-hidden="true"
                                             <?php 
                                                 if($row['format']=='For Sale'){
-                                                    if($saleRow['inventory']<0){
+                                                    if($formatRow['inventory']<0){
                                                         echo "disabled;";
                                                     }       
                                                 }
@@ -422,7 +411,10 @@
                                     </div>
                                 </div>
                                 <!-- Submit button of form-->
-                                <button  type="submit" class="theme-btn">Add To Cart</button>
+                                <button  type="submit" class="theme-btn"  <?php if($row['format']=='E-Book' || $row['format']=='For Borrow'){
+                                                    echo "style=\"display: none;\"";
+                                                }
+                                            ?>>Add To Cart</button>
                                 <div class="icon-box">
                                     <a href="shop-details.html" class="icon">
                                         <i class="far fa-heart"></i>
@@ -557,7 +549,13 @@
                                             <td class="text-2">
                                                 <?php 
                                                     if($row['format'] == 'For Sale'){
-                                                        if($saleRow['inventory'] > 0){
+                                                        if($formatRow['inventory'] > 0){
+                                                            echo "Available";
+                                                        } else {
+                                                            echo "Out of Stock";
+                                                        }
+                                                    } else if($row['format'] == 'For Borrow'){
+                                                        if($formatRow['inventory'] > 0){
                                                             echo "Available";
                                                         } else {
                                                             echo "Out of Stock";
@@ -605,7 +603,7 @@
                                             <td class="text-2">
                                                 <?php 
                                                     if(isset($saleRow['price'])) {
-                                                        echo number_format($saleRow['price'], 2)." All";
+                                                        echo number_format($formatRow['price'], 2)." All";
                                                     } else {
                                                         echo 'N/A';
                                                     }
@@ -621,8 +619,7 @@
                                     <?php
                                            $book_id = isset($row['book_id']) ? $row['book_id'] : null;
 
-                                           $reviewQuery = $conn->prepare("
-                                                SELECT r.*, u.username, u.email 
+                                           $reviewQuery = $conn->prepare("SELECT r.*, u.username, u.email 
                                                 FROM review r 
                                                 JOIN users u ON r.username = u.username 
                                                 WHERE r.book_id = ?
