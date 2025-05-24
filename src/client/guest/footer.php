@@ -11,23 +11,7 @@
                                     <img src="../assets/img/logo/logo.png" alt="logo-img">
                                 </a>
                             </div>
-                            <div class="footer-content">
-                                <div class="text">
-                                    <p>Got Questions? Call us</p>
-                                    <a href="tel:+67041390762">+670 413 90 762</a>
-                                </div>
-                                <ul class="contact-list">
-                                    <li>
-                                        <i class="fa-regular fa-envelope"></i>
-                                        <a href="mailto:readit@gmail.com">readit@gmail.com</a>
-                                    </li>
-                                    <li>
-                                        <i class="fa-regular fa-location-dot"></i>
-                                        79 Sleepy Hollow St.<br>
-                                        Jamaica, New York 1432
-                                    </li>
-                                </ul>
-                            </div>
+                            
                         </div>
                     </div>
                     <div class="col-xl-3 col-lg-4 col-md-4 ps-lg-5 wow fadeInUp" data-wow-delay=".4s">
@@ -37,23 +21,23 @@
                             </div>
                             <ul class="list-items">
                                 <li>
-                                    <a href="shop.html">
-                                        Store List
+                                    <a href="shopList.php">
+                                        Shop List
                                     </a>
                                 </li>
                                 <li>
-                                    <a href="contact.html">
-                                        Opening Hours
+                                    <a href="mainPage.php#borrow">
+                                        Borrow books
                                     </a>
                                 </li>
                                 <li>
-                                    <a href="contact.html">
-                                        Contact Us
+                                    <a href="mainPage.php#ebook">
+                                        E-Books
                                     </a>
                                 </li>
                                 <li>
-                                    <a href="contact.html">
-                                        Return Policy
+                                    <a href="mainPage.php#authors">
+                                        Authors
                                     </a>
                                 </li>
                             </ul>
@@ -101,15 +85,6 @@
                                         <span>Subscribe</span>
                                     </button>
                                 </div>
-                                <div class="social-item">
-                                    <h6>Follow Us On</h6>
-                                    <div class="social-icon d-flex align-items-center">
-                                        <a href="#"><i class="fab fa-facebook-f"></i></a>
-                                        <a href="#"><i class="fab fa-twitter"></i></a>
-                                        <a href="#"><i class="fab fa-linkedin-in"></i></a>
-                                        <a href="#"><i class="fa-brands fa-vimeo-v"></i></a>
-                                    </div>
-                                </div>
                             </div>
                         </div>
                     </div>
@@ -117,23 +92,7 @@
             </div>
             <div class="footer-bottom">
                 <div class="footer-wrapper">
-                    <p class="wow fadeInUp" data-wow-delay=".3s">
-                        ©All Rights reserved 2025 by <span>Readit.</span>
-                    </p>
-                    <div class="bottom-list wow fadeInUp" data-wow-delay=".5s">
-                        <div class="app-image">
-                            <img src="../assets/img/footer/01.png" alt="img">
-                        </div>
-                        <div class="app-image">
-                            <img src="../assets/img/footer/02.png" alt="img">
-                        </div>
-                        <div class="app-image">
-                            <img src="../assets/img/footer/03.png" alt="img">
-                        </div>
-                        <div class="app-image">
-                            <img src="../assets/img/footer/04.png" alt="img">
-                        </div>
-                    </div>
+                    <p>CEN-311 Project -- Epoka University</p>
                 </div>
             </div>
         </div>

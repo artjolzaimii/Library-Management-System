@@ -1,5 +1,6 @@
 <?php 
-    require_once("../utilities/config.php");
+session_start();
+require_once("../utilities/config.php");
 ?>
 <!DOCTYPE html>
 <html lang="en">

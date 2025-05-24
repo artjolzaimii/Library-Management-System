@@ -1,4 +1,5 @@
 <?php
+session_start();
 require('../utilities/config.php');
 
 // Add new genre

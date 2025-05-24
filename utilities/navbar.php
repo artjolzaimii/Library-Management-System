@@ -1,8 +1,6 @@
 <?php 
   require_once("config.php");
   
-  
-  
   if(!isset($_SESSION['username']) || !isset($_SESSION['role']) || !isset($_SESSION['token'])){
     if($_SESSION['role']=='Client'){
       echo "<script>window.location.href='/Online-Library-Management-System/src/client/guest/mainPage.php'</script>";

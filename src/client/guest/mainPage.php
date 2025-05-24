@@ -429,7 +429,7 @@
                             <ul class="author-post">
                                 <li class="authot-list">
                                     <span class="thumb">
-                                        <img src="assets/img/testimonial/client-2.png" alt="img">
+                                        <img src="../assets/img/testimonial/client-4.png" alt="img">
                                     </span>
                                     <span class="content mt-10"><?= htmlspecialchars($book['authors'] ?? 'Unknown') ?></span>
                                 </li>
@@ -524,7 +524,7 @@
                                 <ul class="author-post">
                                     <li class="authot-list">
                                         <span class="thumb">
-                                            <img src="../assets/img/testimonial/client-1.png" alt="img">
+                                            <img src="../assets/img/testimonial/client-4.png" alt="img">
                                         </span>
                                         <span class="content"><?php echo $book['authors'] ?></span>
                                     </li>
@@ -568,110 +568,70 @@
         </div>
     </section>
 
-    <!-- Best Seller Section Start -->
-    <section class="best-seller-section section-padding fix">
+    <!-- E-Book Section Start -->
+    <?php
+        $query="SELECT b.*, AVG(r.rating) AS avg_rating, COUNT(r.review_id) AS review_count,
+                (SELECT GROUP_CONCAT(a.full_name SEPARATOR ', ') 
+                     FROM book_author ba  
+                     JOIN author a ON ba.author_id = a.author_id  
+                     WHERE ba.book_id = b.book_id) AS authors,
+                    (SELECT GROUP_CONCAT(g.name SEPARATOR ', ') 
+                     FROM book_genre bg  
+                     JOIN genres g ON bg.genre_id = g.id  
+                     WHERE bg.book_id = b.book_id) AS genres
+                FROM book b LEFT JOIN review r ON b.book_id = r.book_id
+                WHERE b.format='E-Book'
+                LIMIT 4";
+        $ebooks=mysqli_query($conn, $query);
+        
+    ?>
+    <section class="best-seller-section section-padding fix" id="bestseller">
         <div class="container">
             <div class="section-title-area">
                 <div class="section-title wow fadeInUp" data-wow-delay=".3s">
-                    <h2>Best Sellers</h2>
+                    <h2>E-Books</h2>
                 </div>
-                <a href="shop.html" class="theme-btn style-2 wow fadeInUp" data-wow-delay=".5s">Explore More <i
+                <a href="shopList.php?format=ebook" class="theme-btn style-2 wow fadeInUp" data-wow-delay=".5s">Explore More <i
                         class="fa-solid fa-arrow-right-long"></i></a>
             </div>
             <div class="book-shop-wrapper style-2">
+                <?php 
+                    while($book=$ebooks->fetch_assoc()):
+                ?>
                 <div class="shop-box-items style-3 wow fadeInUp" data-wow-delay=".2s">
                     <div class="book-thumb center">
-                        <a href="shop-details"><img src="../assets/img/book/07.png" alt="img"></a>
+                        <a href="shop-details"><img src="../../../uploads/images/<?php echo $book['image_path']?>" alt="img" width="357px" height="570px"></a>
                     </div>
                     <div class="shop-content">
                         <ul class="book-category">
-                            <li class="book-category-badge">Adventure</li>
+                            <li class="book-category-badge"><?php echo $book['genres']?></li>
                             <li>
                                 <i class="fa-solid fa-star"></i>
-                                3.4 (25)
+                                <?php echo round($book['avg_rating'])?> (<?php echo $book['review_count']?>)
                             </li>
                         </ul>
-                        <h3><a href="shop-details.html">The Hidden Mystery <br> Behind</a></h3>
+                        <h3><a href="bookDetails.php?isbn=<?php echo $book['isbn']?>"><?php echo $book['title']?></a></h3>
                         <ul class="author-post">
                             <li class="authot-list">
-                                <span class="content">Wilson</span>
+                                <span class="content"><?php echo $book['authors']?></span>
                             </li>
                         </ul>
                         <ul class="price-list">
-                            <li>$30.00</li>
-                            <li>
-                                <del>$39.99</del>
-                            </li>
+                            <li>Free</li>
+                            
                         </ul>
-                        <div class="shop-button">
-                            <a href="shop-details.html" class="theme-btn">Add To Cart</a>
+                        <div css="shop-button">
+                            <a href="shop-details.html" class="theme-btn">Read</a>
                         </div>
                     </div>
                 </div>
-                <div class="shop-box-items style-3 wow fadeInUp" data-wow-delay=".4s">
-                    <div class="book-thumb center">
-                        <a href="shop-details"><img src="../assets/img/book/08.png" alt="img"></a>
-                    </div>
-                    <div class="shop-content">
-                        <ul class="book-category">
-                            <li class="book-category-badge">Adventure</li>
-                            <li>
-                                <i class="fa-solid fa-star"></i>
-                                3.4 (25)
-                            </li>
-                        </ul>
-                        <h3><a href="shop-details.html">Qple GPad With <br> Retina Sisplay </a></h3>
-                        <ul class="author-post">
-                            <li class="authot-list">
-                                <span class="content">Wilson</span>
-                            </li>
-                        </ul>
-                        <ul class="price-list">
-                            <li>$30.00</li>
-                            <li>
-                                <del>$39.99</del>
-                            </li>
-                        </ul>
-                        <div class="shop-button">
-                            <a href="shop-details.html" class="theme-btn">Add To Cart</a>
-                        </div>
-                    </div>
-                </div>
-                <div class="shop-box-items style-3 wow fadeInUp" data-wow-delay=".6s">
-                    <div class="book-thumb center">
-                        <a href="shop-details"><img src="../assets/img/book/09.png" alt="img"></a>
-                    </div>
-                    <div class="shop-content">
-                        <ul class="book-category">
-                            <li class="book-category-badge">Adventure</li>
-                            <li>
-                                <i class="fa-solid fa-star"></i>
-                                3.4 (25)
-                            </li>
-                        </ul>
-                        <h3><a href="shop-details.html">Simple Things You <br> To Save BOOK </a></h3>
-                        <ul class="author-post">
-                            <li class="authot-list">
-                                <span class="content">Wilson</span>
-                            </li>
-                        </ul>
-                        <ul class="price-list">
-                            <li>$30.00</li>
-                            <li>
-                                <del>$39.99</del>
-                            </li>
-                        </ul>
-                        <div class="shop-button">
-                            <a href="shop-details.html" class="theme-btn">Add To Cart</a>
-                        </div>
-                    </div>
-                </div>
+                <?php endwhile;?>
             </div>
         </div>
     </section>
 
     <!-- Feature Section Start -->
-    <section class="feature-section fix section-padding pt-0">
+    <section class="feature-section fix section-padding pt-0" id="ebook">
         <div class="container">
             <div class="feature-wrapper">
                 <div class="feature-box-items wow fadeInUp" data-wow-delay=".2s">
@@ -714,200 +674,81 @@
         </div>
     </section>
 
-    <!-- Shop Section Start -->
-    <section class="shop-section section-padding fix pt-0">
+    <!-- Borrow Book Section Start -->
+    <?php
+        $query="SELECT b.*,bb.inventory,bb.book_condition, AVG(r.rating) AS avg_rating, COUNT(r.review_id) AS review_count,
+                (SELECT GROUP_CONCAT(a.full_name SEPARATOR ', ') 
+                     FROM book_author ba  
+                     JOIN author a ON ba.author_id = a.author_id  
+                     WHERE ba.book_id = b.book_id) AS authors,
+                    (SELECT GROUP_CONCAT(g.name SEPARATOR ', ') 
+                     FROM book_genre bg  
+                     JOIN genres g ON bg.genre_id = g.id  
+                     WHERE bg.book_id = b.book_id) AS genres
+                FROM book b LEFT JOIN review r ON b.book_id = r.book_id
+                INNER JOIN borrow_book bb ON bb.book_id=b.book_id 
+                WHERE b.format='For Borrow'";
+        $borrowBooks=mysqli_query($conn, $query);
+        
+    ?>
+    <section class="shop-section section-padding fix pt-0" id="borrow">
         <div class="container">
             <div class="section-title-area">
                 <div class="section-title wow fadeInUp" data-wow-delay=".3s">
-                    <h2>Discover Your Favorite Author Books</h2>
+                    <h2>Discover Some Books You Can Borrow for free</h2>
                 </div>
-                <a href="shop.html" class="theme-btn style-2 wow fadeInUp" data-wow-delay=".5s">Explore More <i
+                <a href="shopList.php?format=borrow" class="theme-btn style-2 wow fadeInUp" data-wow-delay=".5s">Explore More <i
                         class="fa-solid fa-arrow-right-long"></i></a>
             </div>
+            <?php 
+                while($book=$borrowBooks->fetch_assoc()):
+            ?>
             <div class="book-shop-wrapper">
                 <div class="shop-box-items style-2 wow fadeInUp" data-wow-delay=".2s">
                     <div class="book-thumb center">
-                        <a href="shop-details"><img src="../assets/img/book/03.png" alt="img"></a>
+                        <a href="shop-details"><img src="../../../uploads/images/<?php echo $book['image_path']?>" alt="img"></a>
                         <ul class="shop-icon d-grid justify-content-center align-items-center">
                             <li>
                                 <a href="shop-cart.html"><i class="far fa-heart"></i></a>
                             </li>
+                        
                             <li>
-                                <a href="shop-cart.html">
-                                    <img class="icon" src="../assets/img/icon/shuffle.svg" alt="svg-icon">
-                                </a>
-                            </li>
-                            <li>
-                                <a href="shop-details.html"><i class="far fa-eye"></i></a>
+                                <a href="bookDetails.php?isbn=<?php echo $book['isbn']?>"><i class="far fa-eye"></i></a>
                             </li>
                         </ul>
                         <div class="shop-button">
-                            <a href="shop-details.html" class="theme-btn">Add To Cart</a>
+                            <button class="theme-btn" disabled>Borrow for free</button>
                         </div>
                     </div>
                     <div class="shop-content">
-                        <h5> Design Low Book </h5>
-                        <h3><a href="shop-details.html">The Hidden Mystery <br> Behind</a></h3>
+                        <h5> Condition: <?php $book['book_condition']?>  </h5>
+                        <h3><a href="shop-details.html"><?php echo $book['book_condition'] ?></a></h3>
                         <ul class="price-list">
-                            <li>$30.00</li>
-                            <li>
-                                <del>$39.99</del>
-                            </li>
-                        </ul>
-                        <ul class="author-post">
-                            <li class="authot-list">
-                                <span class="thumb">
-                                    <img src="../assets/img/testimonial/client-1.png" alt="img">
-                                </span>
-                                <span class="content">Wilson</span>
-                            </li>
-                            <li>
-                                <i class="fa-solid fa-star"></i>
-                                3.4 (25)
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="shop-box-items style-2 wow fadeInUp" data-wow-delay=".3s">
-                    <div class="book-thumb center">
-                        <a href="shop-details"><img src="../assets/img/book/02.png" alt="img"></a>
-                        <ul class="shop-icon d-grid justify-content-center align-items-center">
-                            <li>
-                                <a href="shop-cart.html"><i class="far fa-heart"></i></a>
-                            </li>
-                            <li>
-                                <a href="shop-cart.html">
-                                    <img class="icon" src="../assets/img/icon/shuffle.svg" alt="svg-icon">
-                                </a>
-                            </li>
-                            <li>
-                                <a href="shop-details.html"><i class="far fa-eye"></i></a>
-                            </li>
-                        </ul>
-                        <div class="shop-button">
-                            <a href="shop-details.html" class="theme-btn">Add To Cart</a>
-                        </div>
-                    </div>
-                    <div class="shop-content">
-                        <h5> Design Low Book </h5>
-                        <h3><a href="shop-details.html">Qple GPad With Retina <br> Sisplay</a></h3>
-                        <ul class="price-list">
-                            <li>$30.00</li>
-                            <li>
-                                <del>$39.99</del>
-                            </li>
-                        </ul>
-                        <ul class="author-post">
-                            <li class="authot-list">
-                                <span class="thumb">
-                                    <img src="../assets/img/testimonial/client-2.png" alt="img">
-                                </span>
-                                <span class="content">Hawkins</span>
-                            </li>
-                            <li>
-                                <i class="fa-solid fa-star"></i>
-                                3.4 (25)
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="shop-box-items style-2 wow fadeInUp" data-wow-delay=".4s">
-                    <div class="book-thumb center">
-                        <a href="shop-details"><img src="../assets/img/book/04.png" alt="img"></a>
-                        <ul class="shop-icon d-grid justify-content-center align-items-center">
-                            <li>
-                                <a href="shop-cart.html"><i class="far fa-heart"></i></a>
-                            </li>
-                            <li>
-                                <a href="shop-cart.html">
-                                    <img class="icon" src="../assets/img/icon/shuffle.svg" alt="svg-icon">
-                                </a>
-                            </li>
-                            <li>
-                                <a href="shop-details.html"><i class="far fa-eye"></i></a>
-                            </li>
-                        </ul>
-                        <div class="shop-button">
-                            <a href="shop-details.html" class="theme-btn">Add To Cart</a>
-                        </div>
-                    </div>
-                    <div class="shop-content">
-                        <h5> Design Low Book </h5>
-                        <h3><a href="shop-details.html">Flovely and Unicom <br> Erna</a></h3>
-                        <ul class="price-list">
-                            <li>$30.00</li>
-                            <li>
-                                <del>$39.99</del>
-                            </li>
-                        </ul>
-                        <ul class="author-post">
-                            <li class="authot-list">
-                                <span class="thumb">
-                                    <img src="../assets/img/testimonial/client-3.png" alt="img">
-                                </span>
-                                <span class="content">Esther</span>
-                            </li>
-                            <li>
-                                <i class="fa-solid fa-star"></i>
-                                3.4 (25)
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="shop-box-items style-2 wow fadeInUp" data-wow-delay=".5s">
-                    <div class="book-thumb center">
-                        <a href="shop-details"><img src="../assets/img/book/05.png" alt="img"></a>
-                        <ul class="post-box">
-                            <li class="style-2">
-                                -30%
-                            </li>
-                        </ul>
-                        <ul class="shop-icon d-grid justify-content-center align-items-center">
-                            <li>
-                                <a href="shop-cart.html"><i class="far fa-heart"></i></a>
-                            </li>
-                            <li>
-                                <a href="shop-cart.html">
-                                    <img class="icon" src="../assets/img/icon/shuffle.svg" alt="svg-icon">
-                                </a>
-                            </li>
-                            <li>
-                                <a href="shop-details.html"><i class="far fa-eye"></i></a>
-                            </li>
-                        </ul>
-                        <div class="shop-button">
-                            <a href="shop-details.html" class="theme-btn">Add To Cart</a>
-                        </div>
-                    </div>
-                    <div class="shop-content">
-                        <h5> Design Low Book </h5>
-                        <h3><a href="shop-details.html">How Deal With Very <br> Bad BOOK</a></h3>
-                        <ul class="price-list">
-                            <li>$30.00</li>
-                            <li>
-                                <del>$39.99</del>
-                            </li>
+                            <li>Free</li>
                         </ul>
                         <ul class="author-post">
                             <li class="authot-list">
                                 <span class="thumb">
                                     <img src="../assets/img/testimonial/client-4.png" alt="img">
                                 </span>
-                                <span class="content">(Author) Albert</span>
+                                <span class="content"><?php echo $book['authors']?></span>
                             </li>
                             <li>
                                 <i class="fa-solid fa-star"></i>
-                                3.4 (25)
+                                <?php echo ($book['avg_rating']==0? 0: round($book['avg_rating']) )?> (<?php echo $book['review_count'] ?>)
                             </li>
                         </ul>
                     </div>
                 </div>
+                <?php endwhile;?>
                 <div class="cta-shop-box">
                     <div class="boy-shape">
                         <img src="../assets/img/boy-shape.png" alt="shape-img">
                     </div>
                 </div>
             </div>
+            
+            
         </div>
     </section>
 
@@ -915,15 +756,14 @@
     <section class="cta-banner-section fix section-padding pt-0">
         <div class="container">
             <div class="cta-banner-wrapper-2 section-padding bg-cover"
-                style="background-image: url('../assets/img/cta-banner-2.jpg');">
+                style="background-image: url('../assets/img/banner/book_banner.png');">
                 <div class="cta-content-wrappers">
                     <div class="cta-texts">
-                        <span class="wow fadeInUp">Get 25% </span>
-                        <h2 class="text-white mb-40 wow fadeInUp" data-wow-delay=".3s">discount in all<br> kind of
-                            super Selling</h2>
+                        <span class="wow fadeInUp">Find here</span>
+                        <h2 class="text-white mb-40 wow fadeInUp" data-wow-delay=".3s">the best deals <br> for Bestseller books</h2>
                     </div>
                     <div class="ctx-btn">
-                        <a href="shop.html" class="theme-btn white-bg wow fadeInUp" data-wow-delay=".5s">
+                        <a href="shopList.php" class="theme-btn white-bg wow fadeInUp" data-wow-delay=".5s">
                             Shop Now <i class="fa-solid fa-arrow-right-long"></i>
                         </a>
                     </div>
@@ -932,6 +772,7 @@
         </div>
     </section>
 
+    <?php /*
     <!-- Shop Section Start -->
     <section class="shop-section section-padding fix pt-0">
         <div class="container">
@@ -1176,7 +1017,8 @@
             </div>
         </div>
     </section>
-
+    */
+    ?>   
     <!-- Team Section Start -->
     <?php 
         $query="SELECT a.author_id, a.full_name, a.image_path, COUNT(ba.book_id) as nr_books
@@ -1185,7 +1027,7 @@
         $result=mysqli_query($conn,$query);
     ?>
     
-    <section class="team-section fix section-padding pt-0 margin-bottom-30">
+    <section class="team-section fix section-padding pt-0 margin-bottom-30" id="authors">
         <div class="container">
             <div class="section-title text-center">
                 <h2 class="mb-3 wow fadeInUp" data-wow-delay=".3s">Featured Author</h2>
@@ -1432,7 +1274,6 @@
             });
         });
         </script>
-
 </body>
 
 </html>
