@@ -11,7 +11,7 @@ CREATE TABLE users (
     phone VARCHAR(20),
     address TEXT,
     username VARCHAR(50) UNIQUE NOT NULL,
-    password VARCHAR(255) NOT NULL, t
+    password VARCHAR(255) NOT NULL,
     role varchar(20)  NOT NULL,
     gender varchar(20) NOT NULL,
     birthday DATE,

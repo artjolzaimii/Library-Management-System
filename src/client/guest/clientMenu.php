@@ -2,9 +2,9 @@
     ob_start();
     if (session_status() === PHP_SESSION_NONE) session_start();
 
-    require("wishlistFunctionality.php");
+    require_once("wishlistFunctionality.php");
     
-    require_once("../../../utilities/config.php");
+    require_once("../../../utilities/config1.php");
 ?>
 
 <header id="header-sticky" class="header-1">
@@ -70,7 +70,14 @@
                     
                         <ul class="header-icon">
                             <li>
-                                <a href="wishlist.php"><i class="fa-regular fa-heart"></i><span class="number"><?php echo getWishlistCount($_SESSION['user_id']); ?></span></a>
+                                <a href="wishlist.php"><i class="fa-regular fa-heart"></i><span class="number"><?php 
+                                    if(isset($_SESSION['username'])) {
+                                        $userId = getUserId($_SESSION['username']);
+                                        echo getWishlistCount($userId);
+                                    } else {
+                                        echo "0";
+                                    }
+                                ?></span></a>
                             </li>
                         </ul>
                         

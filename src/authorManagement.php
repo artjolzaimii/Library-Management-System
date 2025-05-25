@@ -2,12 +2,19 @@
 require_once('../utilities/config1.php');
 session_start();
 
-$query = "SELECT * FROM author";
+if (!isset($_SESSION['role']) || (strtolower($_SESSION['role']) !== 'admin')) {
+    header("Location: ../client/guest/mainPage.php");
+    exit();
+}
+
+$query = "SELECT a.* FROM author a WHERE 1";
 $result = $conn->query($query); 
 
 if (!$result) {
     die("Database query failed: " . $conn->error);
 }
+
+$num_rows = $result->num_rows;
 
 //Update author functionality
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -108,6 +115,9 @@ if (isset($_GET['delete_id'])) {
 <html lang="en">
 <head>
     <title>Author Management | BookNoW Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="https://cdn.jsdelivr.net/npm/boxicons@2.0.7/css/boxicons.min.css" rel="stylesheet"/>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 
 <body>
@@ -116,7 +126,7 @@ if (isset($_GET['delete_id'])) {
 
         <div class="layout-page">
             <div class="content-wrapper">
-                <?php include('../utilities/navbar.php'); ?>
+                
 
                 <div class="container-xxl flex-grow-1 container-p-y">
                     <h4 class="fw-bold py-3 mb-4">
@@ -133,6 +143,7 @@ if (isset($_GET['delete_id'])) {
                         <div class="card mb-4">
                             <h5 class="card-header">Author List</h5>
                             <div class="table-responsive text-nowrap" style="max-width: 1150px; margin: 0 auto;">
+                                
                                 <table class="table">
                                     <thead class="table-light">
                                         <tr>
@@ -142,13 +153,12 @@ if (isset($_GET['delete_id'])) {
                                             <th>Birth year</th>
                                             <th>Death year</th>
                                             <th>Bio</th>
+                                            <th>Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <?php
                                         while ($row = $result->fetch_assoc()) {
-                                            echo "<tr>";
-                                          
                                             echo "<td>" . $row['author_id'] . "</td>";
                                             echo "<td>" . $row['full_name'] . "</td>";
                                             echo "<td>" . $row['nationality'] . "</td>";
