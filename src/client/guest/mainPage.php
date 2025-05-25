@@ -493,69 +493,79 @@
         </div>
     </section>
 
-    <!-- E-Book Section Start -->
-    <?php
-        $query="SELECT b.*, AVG(r.rating) AS avg_rating, COUNT(r.review_id) AS review_count,
-                (SELECT GROUP_CONCAT(a.full_name SEPARATOR ', ') 
-                     FROM book_author ba  
-                     JOIN author a ON ba.author_id = a.author_id  
-                     WHERE ba.book_id = b.book_id) AS authors,
-                    (SELECT GROUP_CONCAT(g.name SEPARATOR ', ') 
-                     FROM book_genre bg  
-                     JOIN genres g ON bg.genre_id = g.id  
-                     WHERE bg.book_id = b.book_id) AS genres
-                FROM book b LEFT JOIN review r ON b.book_id = r.book_id
-                WHERE b.format='E-Book'
-                GROUP BY b.book_id, b.isbn, b.title, b.image_path, b.format, b.description, 
-                 b.publication_year, b.publisher, b.language, b.nr_pages
-                LIMIT 4";
-        $ebooks=mysqli_query($conn, $query);
-        
-    ?>
-    <section class="best-seller-section section-padding fix" id="bestseller">
-        <div class="container">
-            <div class="section-title-area">
-                <div class="section-title wow fadeInUp" data-wow-delay=".3s">
-                    <h2>E-Books</h2>
-                </div>
-                <a href="shopList.php?format=ebook" class="theme-btn style-2 wow fadeInUp" data-wow-delay=".5s">Explore More <i
-                        class="fa-solid fa-arrow-right-long"></i></a>
+  <!-- E-Book Section Start -->
+<?php
+    $query="SELECT b.*, AVG(r.rating) AS avg_rating, COUNT(r.review_id) AS review_count,
+            (SELECT GROUP_CONCAT(a.full_name SEPARATOR ', ') 
+                 FROM book_author ba  
+                 JOIN author a ON ba.author_id = a.author_id  
+                 WHERE ba.book_id = b.book_id) AS authors,
+                (SELECT GROUP_CONCAT(g.name SEPARATOR ', ') 
+                 FROM book_genre bg  
+                 JOIN genres g ON bg.genre_id = g.id  
+                 WHERE bg.book_id = b.book_id) AS genres
+            FROM book b LEFT JOIN review r ON b.book_id = r.book_id
+            WHERE b.format='E-Book'
+            LIMIT 4";
+    $ebooks=mysqli_query($conn, $query);
+?>
+<section class="best-seller-section section-padding fix" id="bestseller">
+    <div class="container">
+        <div class="section-title-area">
+            <div class="section-title wow fadeInUp" data-wow-delay=".3s">
+                <h2>E-Books</h2>
             </div>
-            <div class="book-shop-wrapper style-2">
-                <?php 
-                    while($book=$ebooks->fetch_assoc()):
-                ?>
-                <div class="shop-box-items style-3 wow fadeInUp" data-wow-delay=".2s">
-                    <div class="book-thumb center">
-                        <a href="shop-details"><img src="../../../uploads/images/<?php echo $book['image_path']?>" alt="img" width="357px" height="570px"></a>
-                    </div>
-                    <div class="shop-content">
-                        <ul class="book-category">
-                            <li class="book-category-badge"><?php echo $book['genres']?></li>
-                            <li>
-                                <i class="fa-solid fa-star"></i>
-                                <?php echo round($book['avg_rating'])?> (<?php echo $book['review_count']?>)
-                            </li>
-                        </ul>
-                        <h3><a href="bookDetails.php?isbn=<?php echo $book['isbn']?>"><?php echo $book['title']?></a></h3>
-                        <ul class="author-post">
-                            <li class="authot-list">
-                                <span class="content"><?php echo $book['authors']?></span>
-                            </li>
-                        </ul>
-                        <ul class="price-list">
-                            <li>Free</li>
-                            
-                        </ul>
-                        <div css="shop-button">
-                            <a href="shop-details.html" class="theme-btn">Read</a>
-                        </div>
-                    </div>
-                </div>
-                <?php endwhile;?>
-            </div>
+            <a href="shopList.php?format=ebook" class="theme-btn style-2 wow fadeInUp" data-wow-delay=".5s">Explore More <i
+                    class="fa-solid fa-arrow-right-long"></i></a>
         </div>
-    </section>
+        <div class="book-shop-wrapper style-2">
+            <?php 
+                while($book=$ebooks->fetch_assoc()):
+                    $bookId = $book['book_id'];
+                    $previewPdf = "../../../uploads/previews/$bookId/preview.pdf";
+                    $ebookPdf = "../../../uploads/eBooks/$bookId.pdf";
+            ?>
+            <div class="shop-box-items style-3 wow fadeInUp" data-wow-delay=".2s">
+                <div class="book-thumb center">
+                    <a href="bookDetails.php?isbn=<?= $book['isbn'] ?>"><img src="../../../uploads/images/<?= htmlspecialchars($book['image_path']) ?>" alt="img" width="357px" height="570px"></a>
+                </div>
+                <div class="shop-content">
+                    <ul class="book-category">
+                        <li class="book-category-badge"><?= htmlspecialchars($book['genres']) ?></li>
+                        <li>
+                            <i class="fa-solid fa-star"></i>
+                            <?= round($book['avg_rating']) ?> (<?= $book['review_count'] ?>)
+                        </li>
+                    </ul>
+                    <h3><a href="bookDetails.php?isbn=<?= $book['isbn'] ?>"><?= htmlspecialchars($book['title']) ?></a></h3>
+                    <ul class="author-post">
+                        <li class="authot-list">
+                            <span class="content"><?= htmlspecialchars($book['authors']) ?></span>
+                        </li>
+                    </ul>
+                    <ul class="price-list">
+                        <li>Free</li>
+                    </ul>
+                    <div class="shop-button d-flex gap-2">
+                        <?php if (file_exists($previewPdf)): ?>
+                            <a href="<?= $previewPdf ?>" target="_blank" class="theme-btn">Read</a>
+                        <?php elseif (file_exists($ebookPdf)): ?>
+                            <a href="<?= $ebookPdf ?>" target="_blank" class="theme-btn">Read</a>
+                        <?php else: ?>
+                            <span class="text-muted">No Preview Available</span>
+                        <?php endif; ?>
+
+                        <?php if (file_exists($ebookPdf)): ?>
+                            <a href="<?= $ebookPdf ?>" download class="theme-btn"><i class="fa-solid fa-download"></i> Download</a>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+            <?php endwhile; ?>
+        </div>
+    </div>
+</section>
+
 
     <!-- Feature Section Start -->
     <section class="feature-section fix section-padding pt-0" id="ebook">
