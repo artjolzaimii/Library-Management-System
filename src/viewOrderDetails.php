@@ -1,4 +1,8 @@
 <?php
+if (!isset($row) || !isset($row['order_id'])) {
+    die("Error: Order data not provided");
+}
+
 $order_id = $row['order_id'];
 $billingQuery = $conn->prepare("SELECT * FROM order_billing_details WHERE order_id = ?");
 $billingQuery->bind_param("i", $order_id);
@@ -16,7 +20,6 @@ $billing = $billingQuery->get_result()->fetch_assoc();
       <div class="modal-body">
         <p><strong>First Name:</strong> <?= $billing['first_name'] ?? 'N/A' ?></p>
         <p><strong>Last Name:</strong> <?= $billing['last_name'] ?? 'N/A' ?></p>
-        <p><strong>Company:</strong> <?= $billing['company_name'] ?? 'N/A' ?></p>
         <p><strong>Country:</strong> <?= $billing['country'] ?? 'N/A' ?></p>
         <p><strong>Address:</strong> <?= $billing['street_address'] ?? '' ?> <?= $billing['apartment_suite'] ?? '' ?></p>
         <p><strong>City:</strong> <?= $billing['city'] ?? 'N/A' ?></p>

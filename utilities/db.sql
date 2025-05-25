@@ -121,6 +121,20 @@ CREATE TABLE order_book(
     FOREIGN KEY (order_id) REFERENCES orders(order_id)
 );
 
+CREATE TABLE order_billing_details (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    order_id INT NOT NULL,
+    first_name VARCHAR(50) NOT NULL,
+    last_name VARCHAR(50) NOT NULL,
+    country VARCHAR(50) NOT NULL,
+    street_address VARCHAR(255) NOT NULL,
+    city VARCHAR(50) NOT NULL,
+    phone VARCHAR(20) NOT NULL,
+    email VARCHAR(100) NOT NULL,
+    order_notes TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE TABLE review (
     review_id INT AUTO_INCREMENT PRIMARY KEY,
     book_id INT NOT NULL,

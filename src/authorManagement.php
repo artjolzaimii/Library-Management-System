@@ -1,5 +1,7 @@
 <?php
 require_once('../utilities/config.php');
+
+ob_start();
 session_start();
 
 if (!isset($_SESSION['role']) || (strtolower($_SESSION['role']) !== 'admin')) {

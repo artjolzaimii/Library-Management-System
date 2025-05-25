@@ -5,6 +5,7 @@
     require_once("wishlistFunctionality.php");
     
     require_once("../../../utilities/config.php");
+    require_once("wishlistFunctionality.php");
 ?>
 
 <header id="header-sticky" class="header-1">
@@ -46,7 +47,7 @@
                                         if(isset($_SESSION['username'])):
                                     ?>
                                     <li class="has-dropdown">
-                                        <a href="about.html">
+                                        <a href="myOrders.php">
                                             My Orders
                                         </a>
                                     </li>

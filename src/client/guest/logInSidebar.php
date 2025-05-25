@@ -1,5 +1,10 @@
 <?php
-require_once(__DIR__."/../../../utilities/config.php");
+// filepath: c:\xampp\htdocs\Online-Library-Management-System\src\client\guest\logInSidebar.php
+ob_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+require_once("../../../utilities/config.php");
 $error = "";
 
 if (empty($_SESSION['token'])) {
@@ -27,7 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['username']) && isset(
                 header("Location: mainPage.php");
             }
             else{
-                header("Location: ../../addBook.php");
+                header("Location: ../../adminDashboard.php");
             }
             
             exit();

@@ -5,35 +5,28 @@ require_once('../../../utilities/config.php');
 function addToWishlist($book_id, $user_id) {
     global $conn;
     
-    // Check if the book is already in the wishlist
-    $check_query = "SELECT * FROM wishlist WHERE book_id = ? AND user_id = ?";
-    $stmt = $conn->prepare($check_query);
-    $stmt->bind_param("ii", $book_id, $user_id);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    
-    if ($result->num_rows > 0) {
-        return array(
+    try {
+        $query = "INSERT INTO wishlist (book_id, user_id) VALUES (?, ?)";
+        $stm = $conn->prepare($query);
+        $stm->bind_param("ii", $book_id, $user_id);
+        $stm->execute();
+        
+        if($conn->affected_rows > 0) {
+            return [
+                'success' => true,
+                'message' => 'Book added to wishlist successfully'
+            ];
+        } else {
+            return [
+                'success' => false,
+                'message' => 'Failed to add book to wishlist'
+            ];
+        }
+    } catch (Exception $e) {
+        return [
             'success' => false,
-            'message' => 'Book is already in your wishlist'
-        );
-    }
-    
-    // Add book to wishlist
-    $insert_query = "INSERT INTO wishlist (book_id, user_id, created_at) VALUES (?, ?, NOW())";
-    $stmt = $conn->prepare($insert_query);
-    $stmt->bind_param("ii", $book_id, $user_id);
-    
-    if ($stmt->execute()) {
-        return array(
-            'success' => true,
-            'message' => 'Book added to wishlist successfully'
-        );
-    } else {
-        return array(
-            'success' => false,
-            'message' => 'Error adding book to wishlist: ' . $conn->error
-        );
+            'message' => 'An error occurred while adding to wishlist'
+        ];
     }
 }
 
@@ -41,20 +34,28 @@ function addToWishlist($book_id, $user_id) {
 function removeFromWishlist($book_id, $user_id) {
     global $conn;
     
-    $delete_query = "DELETE FROM wishlist WHERE book_id = ? AND user_id = ?";
-    $stmt = $conn->prepare($delete_query);
-    $stmt->bind_param("ii", $book_id, $user_id);
-    
-    if ($stmt->execute()) {
-        return array(
-            'success' => true,
-            'message' => 'Book removed from wishlist successfully'
-        );
-    } else {
-        return array(
+    try {
+        $query = "DELETE FROM wishlist WHERE book_id = ? AND user_id = ?";
+        $stm = $conn->prepare($query);
+        $stm->bind_param("ii", $book_id, $user_id);
+        $stm->execute();
+        
+        if($conn->affected_rows > 0) {
+            return [
+                'success' => true,
+                'message' => 'Book removed from wishlist successfully'
+            ];
+        } else {
+            return [
+                'success' => false,
+                'message' => 'Failed to remove book from wishlist'
+            ];
+        }
+    } catch (Exception $e) {
+        return [
             'success' => false,
-            'message' => 'Error removing book from wishlist: ' . $conn->error
-        );
+            'message' => 'An error occurred while removing from wishlist'
+        ];
     }
 }
 
@@ -62,24 +63,29 @@ function removeFromWishlist($book_id, $user_id) {
 function isInWishlist($book_id, $user_id) {
     global $conn;
     
-    $check_query = "SELECT * FROM wishlist WHERE book_id = ? AND user_id = ?";
-    $stmt = $conn->prepare($check_query);
-    $stmt->bind_param("ii", $book_id, $user_id);
-    $stmt->execute();
-    $result = $stmt->get_result();
+    $query = "SELECT COUNT(*) as count FROM wishlist WHERE book_id = ? AND user_id = ?";
+    $stm = $conn->prepare($query);
+    $stm->bind_param("ii", $book_id, $user_id);
+    $stm->execute();
+    $result = $stm->get_result();
+    $row = $result->fetch_assoc();
     
-    return $result->num_rows > 0;
+    return $row['count'] > 0;
 }
 
 // Function to get user's wishlist
 function getUserWishlist($user_id) {
     global $conn;
     
-    $query = "SELECT w.*, b.title, b.author, b.cover_image 
+    $query = "SELECT w.*, b.title, b.image_path, GROUP_CONCAT(a.full_name) as authors, sb.price 
               FROM wishlist w 
-              JOIN books b ON w.book_id = b.book_id 
-              WHERE w.user_id = ? 
-              ORDER BY w.date_added DESC";
+              JOIN book b ON w.book_id = b.book_id 
+              LEFT JOIN book_author ba ON b.book_id = ba.book_id
+              LEFT JOIN author a ON ba.author_id = a.author_id
+              LEFT JOIN sale_book sb ON b.book_id = sb.book_id
+              WHERE w.user_id = (SELECT id FROM users WHERE username = ?)
+              GROUP BY w.wishlist_id, b.title, b.image_path, sb.price
+              ORDER BY w.created_at DESC";
               
     $stmt = $conn->prepare($query);
     $stmt->bind_param("i", $user_id);
@@ -107,12 +113,14 @@ function getWishlistCount($user_id) {
 
 function getUserId($username) {
     global $conn;
-    $userQuery = "SELECT id FROM users WHERE username = ?";
-    $userStmt = $conn->prepare($userQuery);
-    $userStmt->bind_param("s", $username);
-    $userStmt->execute();
-    $userId = $userStmt->get_result()->fetch_assoc()['id'];
-    return $userId;
+    
+    $query = "SELECT id FROM users WHERE username = ?";
+    $stm = $conn->prepare($query);
+    $stm->bind_param("s", $username);
+    $stm->execute();
+    $result = $stm->get_result();
+    $row = $result->fetch_assoc();
+    
+    return $row ? $row['id'] : null;
 }
-
 ?>

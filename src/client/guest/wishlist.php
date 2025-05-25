@@ -3,7 +3,7 @@
     include("clientMenu.php");
     include("../../../utilities/config.php");
     require_once("wishlistFunctionality.php");
-    if(!isset($_SESSION['username'])){
+    if(!isset($_SESSION['username'])&& !isset($_GET['add'])){
         echo "<script>window.location.href =\"mainPage.php\"</script>";
     }
 ?>
@@ -241,33 +241,38 @@
                  WHERE book_id=? AND user_id=?";
         $stm = $conn->prepare($query);
         $stm->bind_param("ii", $bookId, $userId);
-        $stm->execute();
-
-        if($conn->affected_rows > 0){
-            $nrOfBooksRemaining = getWishlistCount($userId);
-            if($nrOfBooksRemaining > 0){
-                echo "<script>window.location.href='wishlist.php'</script>";
-            } else {
-                echo "<script>window.location.href='shopList.php'</script>";
-            }
+        $stm->execute();        if($conn->affected_rows > 0){
+            echo '<script>
+                alert("Book removed from wishlist successfully");
+                window.location.href = "wishlist.php";
+            </script>';
         }
     }
 
-    if (isset($_GET['add'])) {
-    $book_id = intval($_GET['add']);
-    $username = $_SESSION['username'];
+    //Handle add to wishlist
+    if (isset($_GET['add'])) {        if (!isset($_SESSION['username'])) {
+            echo '<script>
+                alert("Please login to add to wishlist");
+                window.location.href = "mainPage.php";
+            </script>';
+        } else {
+            $book_id = intval($_GET['add']);
+            $username = $_SESSION['username'];
 
-    // Get User ID 
-    $user_id = getUserId($username);
-
-    $result = addToWishlist($book_id, $user_id);
-
-    if ($result['success']) {
-        echo "<script>alert('{$result['message']}'); window.location.href='shopList.php';</script>";
-    } else {
-        echo "<script>alert('{$result['message']}'); window.location.href='shopList.php';</script>";
+            // Get User ID 
+            $user_id = getUserId($username);            if(isInWishlist($book_id, $user_id)) {
+                echo '<script>
+                    alert("Book is already in your wishlist");
+                    window.location.href = "shopList.php";
+                </script>';            } else {
+                $result = addToWishlist($book_id, $user_id);
+                echo '<script>
+                    alert("'.$result['message'].'");
+                    window.location.href = "shopList.php";
+                </script>';
+            }
+        }
     }
-}
     ?>
 
     <!-- Footer Section start  -->

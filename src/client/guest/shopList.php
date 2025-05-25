@@ -2,6 +2,7 @@
     include("clientMenu.php");
     require_once("../../../utilities/config.php");
     require_once("../../../src/client/guest/wishlistFunctionality.php");
+    require_once("./ShoppingCart/shoppingCartFunctionalities.php");
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -258,9 +259,9 @@
                                                     </a>';
                                         }
                                     } else {
-                                        echo '<a href="login.php" class="btn btn-link" title="Login to add to wishlist">
-                                                <i class="far fa-heart"></i>
-                                                </a>';
+                                        echo '<a href="wishlist.php?add='.$book['book_id'].'" class="btn btn-link" title="Add to wishlist">
+                                              <i class="far fa-heart"></i>
+                                              </a>';
                                     }
                                                         echo '</li>
                                                         <li><a href="bookDetails.php?isbn='.$book['isbn'].'"><i class="far fa-eye"></i></a></li>
@@ -307,7 +308,7 @@
                             // AUTHOR FILTER
                             if ($currentAuthorId) {
                                 if ($search) {
-                                    $bookQueryPerPage = "SELECT b.*, sb.price ,AVG(r.rating) AS avg_rating, COUNT(r.review_id) AS review_count
+                                    $bookQueryPerPage = "SELECT b.*, sb.price, AVG(r.rating) AS avg_rating, COUNT(r.review_id) AS review_count
                                         FROM book b
                                         JOIN book_author ba ON b.book_id = ba.book_id
                                         LEFT JOIN sale_book sb ON b.book_id = sb.book_id
@@ -315,7 +316,8 @@
                                         WHERE ba.author_id = '$currentAuthorId' 
                                         AND b.format='For Sale'
                                         AND b.title LIKE '%$search%'
-                                        GROUP BY b.book_id
+                                        GROUP BY b.book_id, b.title, b.isbn, b.image_path, b.format, b.description, 
+                                                 b.publication_year, b.publisher, b.language, b.nr_pages, sb.price
                                         LIMIT $startPos, $perPage";
                                 } else {
                                     $bookQueryPerPage = "SELECT b.*, sb.price, AVG(r.rating) AS avg_rating, COUNT(r.review_id) AS review_count
@@ -325,7 +327,8 @@
                                         LEFT JOIN review r ON b.book_id = r.book_id
                                         WHERE ba.author_id = '$currentAuthorId' 
                                         AND b.format='For Sale'
-                                        GROUP BY b.book_id
+                                        GROUP BY b.book_id, b.title, b.isbn, b.image_path, b.format, b.description, 
+                                                 b.publication_year, b.publisher, b.language, b.nr_pages, sb.price
                                         LIMIT $startPos, $perPage";
                                 }
                                 $pagedResult = mysqli_query($conn, $bookQueryPerPage);
@@ -346,7 +349,7 @@
                                                         <li>';
 
                                     //add and remove from wishlist
-                                                        if(isset($_SESSION['username'])) {
+                                    if(isset($_SESSION['username'])) {
                                         $userId = getUserId($_SESSION['username']);
                                         if(isInWishlist($book['book_id'], $userId)) {
                                             echo '<a href="wishlist.php?remove='.$book['book_id'].'" class="btn btn-link" title="Remove from wishlist">
@@ -358,9 +361,9 @@
                                                     </a>';
                                         }
                                     } else {
-                                        echo '<a href="login.php" class="btn btn-link" title="Login to add to wishlist">
-                                                <i class="far fa-heart"></i>
-                                                </a>';
+                                        echo '<a href="wishlist.php?add='.$book['book_id'].'" class="btn btn-link" title="Add to wishlist">
+                                                    <i class="far fa-heart"></i>
+                                                    </a>';
                                     }
                                                         echo '</li>
                                                         <li><a href="bookDetails.php?isbn='.$book['isbn'].'"><i class="far fa-eye"></i></a></li>
@@ -388,7 +391,7 @@
                                 $genrePage = $currentPage;
                                 $genreStartPos = $startPos;
                                 if ($search) {
-                                    $bookQueryPerPage = "SELECT b.*, sb.price ,AVG(r.rating) AS avg_rating, COUNT(r.review_id) AS review_count
+                                    $bookQueryPerPage = "SELECT b.*, sb.price, AVG(r.rating) AS avg_rating, COUNT(r.review_id) AS review_count
                                         FROM book b
                                         JOIN book_genre bg ON b.book_id = bg.book_id
                                         LEFT JOIN sale_book sb ON b.book_id = sb.book_id
@@ -396,7 +399,8 @@
                                         WHERE bg.genre_id = '$currentGenreId' 
                                         AND b.format='For Sale' 
                                         AND b.title LIKE '%$search%'
-                                        GROUP BY b.book_id
+                                        GROUP BY b.book_id, b.title, b.isbn, b.image_path, b.format, b.description, 
+                                                 b.publication_year, b.publisher, b.language, b.nr_pages, sb.price
                                         LIMIT $genreStartPos, $genrePerPage";
                                 } else {
                                     $bookQueryPerPage = "SELECT b.*, sb.price, AVG(r.rating) AS avg_rating, COUNT(r.review_id) AS review_count
@@ -406,7 +410,8 @@
                                         LEFT JOIN review r ON b.book_id = r.book_id
                                         WHERE bg.genre_id = '$currentGenreId' 
                                         AND b.format='For Sale'
-                                        GROUP BY b.book_id
+                                        GROUP BY b.book_id, b.title, b.isbn, b.image_path, b.format, b.description, 
+                                                 b.publication_year, b.publisher, b.language, b.nr_pages, sb.price
                                         LIMIT $genreStartPos, $genrePerPage";
                                 }
                                 $pagedResult = mysqli_query($conn, $bookQueryPerPage);
@@ -433,9 +438,9 @@
                                                                       </a>';
                                                             }
                                                         } else {
-                                                            echo '<a href="login.php" class="btn btn-link" title="Login to add to wishlist">
-                                                                    <i class="far fa-heart"></i>
-                                                                  </a>';
+                                                            echo '<a href="wishlist.php?add='.$book['book_id'].'" class="btn btn-link" title="Add to wishlist">
+                                                                        <i class="far fa-heart"></i>
+                                                                      </a>';
                                                         }
                                                         echo '</li>
                                                         <li><a href="bookDetails.php?isbn='.$book['isbn'].'"><i class="far fa-eye"></i></a></li>
@@ -480,21 +485,23 @@
                             // ALL BOOKS
                             else {
                                 if ($search) {
-                                    $bookQuery = "SELECT b.*, sb.price ,AVG(r.rating) AS avg_rating, COUNT(r.review_id) AS review_count
+                                    $bookQuery = "SELECT b.*, MAX(sb.price) as price ,AVG(r.rating) AS avg_rating, COUNT(r.review_id) AS review_count
                                             FROM book b
                                             JOIN book_author ba ON b.book_id = ba.book_id
                                             LEFT JOIN sale_book sb ON b.book_id = sb.book_id
                                             LEFT JOIN review r ON b.book_id = r.book_id
                                             WHERE b.format='For Sale' AND b.title LIKE '%$search%'
-                                            GROUP BY b.book_id, b.title, b.isbn, b.image_path, b.format, b.description, b.publication_year, b.publisher, b.language, b.nr_pages";
-                                } else {
-                                    $bookQuery = "SELECT b.*, sb.price ,AVG(r.rating) AS avg_rating, COUNT(r.review_id) AS review_count
+                                            GROUP BY b.book_id, b.title, b.isbn, b.image_path, b.format, b.description, 
+                                                     b.publication_year, b.publisher, b.language, b.nr_pages, sb.price";
+                                } else {                                    
+                                    $bookQuery = "SELECT b.*, sb.price, AVG(r.rating) AS avg_rating
                                             FROM book b
                                             JOIN book_author ba ON b.book_id = ba.book_id
                                             LEFT JOIN sale_book sb ON b.book_id = sb.book_id
                                             LEFT JOIN review r ON b.book_id = r.book_id
                                             WHERE b.format='For Sale'
-                                            GROUP BY b.book_id, b.title, b.isbn, b.image_path, b.format, b.description, b.publication_year, b.publisher, b.language, b.nr_pages";
+                                            GROUP BY b.book_id, b.title, b.isbn, b.image_path, b.format, b.description, 
+                                                     b.publication_year, b.publisher, b.language, b.nr_pages, sb.price";
                                 }
                                 $bookResult = mysqli_query($conn, $bookQuery);  
                                 $nrBooks = $bookResult->num_rows;
@@ -502,23 +509,24 @@
                                 $nrPages = ceil($nrBooks/$perPage);
                                 $page = $currentPage;
                                 $startPos = ($page-1)*$perPage;
-                                if ($search) {
-                                    $bookQueryPerPage = "SELECT b.*, sb.price ,AVG(r.rating) AS avg_rating, COUNT(r.review_id) AS review_count
-                                            FROM book b, AVG(r.rating) AS avg_rating
+                                if ($search) {                                    
+                                    $bookQueryPerPage = "SELECT b.*, sb.price, AVG(r.rating) AS avg_rating, 
                                             JOIN book_genre bg ON b.book_id = bg.book_id
                                             LEFT JOIN sale_book sb ON b.book_id = sb.book_id
                                             LEFT JOIN review r ON b.book_id = r.book_id
                                             WHERE b.format='For Sale' AND b.title LIKE '%$search%'
-                                            GROUP BY b.book_id, b.title, b.isbn, b.image_path, b.format, b.description, b.publication_year, b.publisher, b.language, b.nr_pages
+                                            GROUP BY b.book_id, b.title, b.isbn, b.image_path, b.format, b.description, 
+                                                     b.publication_year, b.publisher, b.language, b.nr_pages, sb.price
                                             LIMIT $startPos, $perPage";
                                 } else {
-                                    $bookQueryPerPage = "SELECT b.*, sb.price ,AVG(r.rating) AS avg_rating, COUNT(r.review_id) AS review_count
+                                    $bookQueryPerPage = "SELECT b.*, sb.price 
                                             FROM book b
                                             JOIN book_author ba ON b.book_id = ba.book_id
                                             LEFT JOIN sale_book sb ON b.book_id = sb.book_id
                                             LEFT JOIN review r ON b.book_id = r.book_id
                                             WHERE b.format='For Sale'
-                                            GROUP BY b.book_id, b.title, b.isbn, b.image_path, b.format, b.description, b.publication_year, b.publisher, b.language, b.nr_pages
+                                            GROUP BY b.book_id, b.title, b.isbn, b.image_path, b.format, b.description, 
+                                                     b.publication_year, b.publisher, b.language, b.nr_pages, sb.price
                                             LIMIT $startPos, $perPage";
                                 }
                                 $perPageResult = mysqli_query($conn, $bookQueryPerPage);
@@ -545,8 +553,8 @@
                                                                       </a>';
                                                             }
                                                         } else {
-                                                            echo '<a href="login.php" class="btn btn-link" title="Login to add to wishlist">
-                                                                    <i class="far fa-heart"></i>
+                                                            echo '<a href="wishlist.php?add='.$book['book_id'].'" class="btn btn-link" title="Add to wishlist">
+                                                                  <i class="far fa-heart"></i>
                                                                   </a>';
                                                         }
                                                         echo '</li>

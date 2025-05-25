@@ -437,9 +437,9 @@
                                                 </a>";
                                         }
                                     } else {
-                                        echo "<a href='login.php' class='icon'>
-                                                <i class='far fa-heart'></i>
-                                            </a>";
+                                        echo "<a href='wishlist.php?add=" . $row['book_id'] . "' class='icon'>
+                                                    <i class='far fa-heart'></i>
+                                                </a>";
                                     }
                                     ?>
                                     
