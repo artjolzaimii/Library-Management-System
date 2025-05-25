@@ -4,7 +4,7 @@ if (!isset($row) || !isset($row['order_id'])) {
 }
 
 $order_id = $row['order_id'];
-$billingQuery = $conn->prepare("SELECT * FROM order_billing_details WHERE order_id = ?");
+$billingQuery = $conn->prepare("SELECT * FROM orders WHERE order_id = ?");
 $billingQuery->bind_param("i", $order_id);
 $billingQuery->execute();
 $billing = $billingQuery->get_result()->fetch_assoc();
@@ -25,7 +25,7 @@ $billing = $billingQuery->get_result()->fetch_assoc();
         <p><strong>City:</strong> <?= $billing['city'] ?? 'N/A' ?></p>
         <p><strong>Phone:</strong> <?= $billing['phone'] ?? 'N/A' ?></p>
         <p><strong>Email:</strong> <?= $billing['email'] ?? 'N/A' ?></p>
-        <p><strong>Order Notes:</strong><br><?= nl2br($billing['order_notes'] ?? '') ?></p>
+        <p><strong>Order Notes:</strong><br><?= nl2br($billing['notes'] ?? '') ?></p>
       </div>
     </div>
   </div>

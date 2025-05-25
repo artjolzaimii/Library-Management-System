@@ -60,57 +60,57 @@ while ($g = $genreResult->fetch_assoc()) {
 
 
             <?php
-$price = "N/A";
-$inventory = "N/A";
-
-if ($book['format'] === 'For Sale') {
-    $saleQuery = $conn->prepare("SELECT price, inventory FROM sale_book WHERE book_id = ?");
-    $saleQuery->bind_param("i", $bookId);
-    $saleQuery->execute();
-    $saleResult = $saleQuery->get_result()->fetch_assoc();
-    if ($saleResult) {
-        $price = $saleResult['price'] . ' €';
-        $inventory = $saleResult['inventory'];
-    }
-} elseif ($book['format'] === 'For Borrow') {
-    $borrowQuery = $conn->prepare("SELECT inventory FROM borrow_book WHERE book_id = ?");
-    $borrowQuery->bind_param("i", $bookId);
-    $borrowQuery->execute();
-    $borrowResult = $borrowQuery->get_result()->fetch_assoc();
-    if ($borrowResult) {
-        $inventory = $borrowResult['inventory'];
-    }
-}
-?>
-
-<p><strong>Price:</strong> <?= htmlspecialchars($price) ?></p>
-<p><strong>Inventory:</strong> <?= htmlspecialchars($inventory) ?></p>
-
-            <p><strong>Format:</strong> <?= $book['format'] ?></p>
-            <p style="white-space: pre-wrap; word-wrap: break-word;"><strong>Description:</strong><br><?= nl2br(htmlspecialchars($book['description'])) ?></p>
-
-
-        
-
-<?php if ($book['format'] === 'For Borrow'): 
-    $condQuery = $conn->prepare("SELECT book_condition FROM borrow_book WHERE book_id = ?");
-    $condQuery->bind_param("i", $bookId);
-    $condQuery->execute();
-    $condResult = $condQuery->get_result()->fetch_assoc();
-    $bookCondition = $condResult ? $condResult['book_condition'] : 'Unknown';
-?>
-  <p><strong>Condition:</strong> <?= htmlspecialchars($bookCondition) ?></p>
-<?php endif; ?>
-
-<?php if ($book['format'] === 'E-Book'): 
-    $pdfQuery = $conn->prepare("SELECT book_path FROM ebook WHERE book_id = ?");
-    $pdfQuery->bind_param("i", $bookId);
-    $pdfQuery->execute();
-    $pdfResult = $pdfQuery->get_result()->fetch_assoc();
-    $pdfPath = $pdfResult ? $pdfResult['book_path'] : 'Not uploaded';
-?>
-  <p><strong>PDF File:</strong> <?= htmlspecialchars($pdfPath) ?></p>
-<?php endif; ?>
+              $price = "N/A";
+              $inventory = "N/A";
+              
+              if ($book['format'] === 'For Sale') {
+                  $saleQuery = $conn->prepare("SELECT price, inventory FROM sale_book WHERE book_id = ?");
+                  $saleQuery->bind_param("i", $bookId);
+                  $saleQuery->execute();
+                  $saleResult = $saleQuery->get_result()->fetch_assoc();
+                  if ($saleResult) {
+                      $price = $saleResult['price'] . ' €';
+                      $inventory = $saleResult['inventory'];
+                  }
+              } elseif ($book['format'] === 'For Borrow') {
+                  $borrowQuery = $conn->prepare("SELECT inventory FROM borrow_book WHERE book_id = ?");
+                  $borrowQuery->bind_param("i", $bookId);
+                  $borrowQuery->execute();
+                  $borrowResult = $borrowQuery->get_result()->fetch_assoc();
+                  if ($borrowResult) {
+                      $inventory = $borrowResult['inventory'];
+                  }
+              }
+              ?>
+              
+              <p><strong>Price:</strong> <?= htmlspecialchars($price) ?></p>
+              <p><strong>Inventory:</strong> <?= htmlspecialchars($inventory) ?></p>
+              
+                          <p><strong>Format:</strong> <?= $book['format'] ?></p>
+                          <p style="white-space: pre-wrap; word-wrap: break-word;"><strong>Description:</strong><br><?= nl2br(htmlspecialchars($book['description'])) ?></p>
+              
+              
+                      
+              
+              <?php if ($book['format'] === 'For Borrow'): 
+                  $condQuery = $conn->prepare("SELECT book_condition FROM borrow_book WHERE book_id = ?");
+                  $condQuery->bind_param("i", $bookId);
+                  $condQuery->execute();
+                  $condResult = $condQuery->get_result()->fetch_assoc();
+                  $bookCondition = $condResult ? $condResult['book_condition'] : 'Unknown';
+              ?>
+                <p><strong>Condition:</strong> <?= htmlspecialchars($bookCondition) ?></p>
+              <?php endif; ?>
+              
+              <?php if ($book['format'] === 'E-Book'): 
+                  $pdfQuery = $conn->prepare("SELECT book_path FROM ebook WHERE book_id = ?");
+                  $pdfQuery->bind_param("i", $bookId);
+                  $pdfQuery->execute();
+                  $pdfResult = $pdfQuery->get_result()->fetch_assoc();
+                  $pdfPath = $pdfResult ? $pdfResult['book_path'] : 'Not uploaded';
+              ?>
+                <p><strong>PDF File:</strong> <?= htmlspecialchars($pdfPath) ?></p>
+              <?php endif; ?>
 
           </div>
         </div>

@@ -1,4 +1,5 @@
 <?php
+session_start();
 require('../utilities/config.php');
 
 $book_id = $_POST['book_id'] ?? null;

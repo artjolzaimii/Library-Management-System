@@ -1,6 +1,6 @@
 <?php
 include_once("clientMenu.php");
-require_once("../../../utilities/config1.php");
+require_once("../../../utilities/config.php");
 
 // Redirect if not logged in
 if (!isset($_SESSION['username'])) {
@@ -13,10 +13,8 @@ $username = $_SESSION['username'];
 $userId = getUserId($username);
 
 // Fetch user's orders
-$ordersQuery = $conn->prepare("
-    SELECT o.*, obd.first_name, obd.last_name, obd.email, obd.phone
+$ordersQuery = $conn->prepare("SELECT o.*
     FROM orders o
-    LEFT JOIN order_billing_details obd ON o.order_id = obd.order_id
     JOIN shopping_cart sc ON o.cart_id = sc.cart_id
     WHERE sc.user_id = ?
     ORDER BY o.order_date DESC

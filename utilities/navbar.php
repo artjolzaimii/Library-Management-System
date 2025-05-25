@@ -92,7 +92,7 @@
             </a>
           </li>
           <li><div class="dropdown-divider" ></div></li>
-          <li><a class="dropdown-item" href="#"><i class="bx bx-user me-2"></i>My Profile</a></li>
+          <li><a class="dropdown-item" href="userProfile.php"><i class="bx bx-user me-2"></i>My Profile</a></li>
           <li><div class="dropdown-divider"></div></li>
           <li><a class="dropdown-item" href="../utilities/logOut.php?token=<?php echo $token?>"><i class="bx bx-power-off me-2"></i>Log Out</a></li>
         </ul>
@@ -101,4 +101,7 @@
   </div>
   
 </nav>
+
+
+    
 <!-- /Navbar -->

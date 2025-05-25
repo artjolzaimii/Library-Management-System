@@ -1,5 +1,5 @@
 <?php
-require_once('../utilities/config1.php');
+require_once('../utilities/config.php');
 
 // Start session if not already started
 ob_start();
@@ -52,6 +52,7 @@ $stats = $result->fetch_assoc();
 </head>
 <body>
     <div class="layout-container">
+        <?php include('../utilities/menu.php'); ?>
         <div class="layout-page">
             <div class="content-wrapper">
                 <?php include('../utilities/navbar.php'); ?>

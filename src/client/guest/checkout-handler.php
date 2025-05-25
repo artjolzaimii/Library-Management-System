@@ -1,6 +1,6 @@
 <?php
     require_once("clientMenu.php");
-    require_once("../../../utilities/config1.php");
+    require_once("../../../utilities/config.php");
     require_once("./ShoppingCart/shoppingCartFunctionalities.php");
     $cartId=getShopCartId($conn);
     
@@ -77,6 +77,11 @@ $remodeFromCartQuery=
 $removeStm=$conn->prepare($remodeFromCartQuery);
 
 while($book = $allBooks->fetch_assoc()){
+//Update quantity
+    $updateSale = $conn->prepare("UPDATE sale_book SET inventory = inventory - ? WHERE book_id = ? AND inventory >= ?");
+    $updateSale->bind_param("iii", $book['quantity'], $book['book_id'], $book['quantity']);
+    $updateSale->execute();
+    
     $insertStm->bind_param("iii", $orderId, $book['book_id'], $book['quantity']);
     $insertStm->execute();
 
@@ -84,27 +89,7 @@ while($book = $allBooks->fetch_assoc()){
     $removeStm->execute();
 }
 
-$insertBillingQuery = "INSERT INTO order_billing_details 
-    (order_id, first_name, last_name, email, phone, street_address, city, country, order_notes) 
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-$billingStm = $conn->prepare($insertBillingQuery);
-$billingStm->bind_param("issssssss", 
-    $orderId,
-    $firstName,
-    $lastName,
-    $email,
-    $phone,
-    $address,
-    $city,
-    $country,
-    $notes
-);
-
-if (!$billingStm->execute()) {
-    echo "<div class='alert alert-danger'>Error saving billing details: " . $conn->error . "</div>";
-    exit;
-}
-
+    
 echo "<script>window.location.href=\"orderSentSuccessfullyPage.php\"</script>";
 ?>

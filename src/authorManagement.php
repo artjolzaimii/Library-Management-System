@@ -9,8 +9,20 @@ if (!isset($_SESSION['role']) || (strtolower($_SESSION['role']) !== 'admin')) {
     exit();
 }
 
-$query = "SELECT a.* FROM author a WHERE 1";
-$result = $conn->query($query); 
+// Pagination setup
+$perPage = 10;
+$page = isset($_GET['page']) && is_numeric($_GET['page']) ? (int)$_GET['page'] : 1;
+$offset = ($page - 1) * $perPage;
+
+// Get total authors count
+$countQuery = "SELECT COUNT(*) as total FROM author";
+$countResult = $conn->query($countQuery);
+$totalAuthors = $countResult->fetch_assoc()['total'];
+$totalPages = ceil($totalAuthors / $perPage);
+
+// Fetch authors for current page
+$query = "SELECT a.* FROM author a LIMIT $perPage OFFSET $offset";
+$result = $conn->query($query);
 
 if (!$result) {
     die("Database query failed: " . $conn->error);
@@ -125,10 +137,9 @@ if (isset($_GET['delete_id'])) {
 <body>
     <div class="layout-container">
         <?php include('../utilities/menu.php'); ?>
-
         <div class="layout-page">
             <div class="content-wrapper">
-                
+                <?php include("../utilities/navbar.php");?>
 
                 <div class="container-xxl flex-grow-1 container-p-y">
                     <h4 class="fw-bold py-3 mb-4">
@@ -160,6 +171,7 @@ if (isset($_GET['delete_id'])) {
                                     <tbody>
                                         <?php
                                         while ($row = $result->fetch_assoc()) {
+                                            echo "<tr>";
                                             echo "<td>" . $row['author_id'] . "</td>";
                                             echo "<td>" . $row['full_name'] . "</td>";
                                             echo "<td>" . $row['nationality'] . "</td>";
@@ -271,12 +283,29 @@ if (isset($_GET['delete_id'])) {
                                     </tbody>
                                 </table>
                             </div>
+                            <!-- Pagination Controls -->
+                            <nav aria-label="Author pagination" class="mt-3">
+                                <ul class="pagination justify-content-center">
+                                    <li class="page-item <?php if($page <= 1) echo 'disabled'; ?>">
+                                        <a class="page-link" href="?page=<?php echo $page-1; ?>" tabindex="-1">Previous</a>
+                                    </li>
+                                    <?php for($i = 1; $i <= $totalPages; $i++): ?>
+                                        <li class="page-item <?php if($i == $page) echo 'active'; ?>">
+                                            <a class="page-link" href="?page=<?php echo $i; ?>"><?php echo $i; ?></a>
+                                        </li>
+                                    <?php endfor; ?>
+                                    <li class="page-item <?php if($page >= $totalPages) echo 'disabled'; ?>">
+                                        <a class="page-link" href="?page=<?php echo $page+1; ?>">Next</a>
+                                    </li>
+                                </ul>
+                            </nav>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
     <script>
   document.getElementById('searchBar').addEventListener("keyup", () => {
     filterTables();

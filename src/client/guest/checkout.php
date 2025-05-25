@@ -220,8 +220,7 @@
                     $cartId=getShopCartId($conn);
                 
                     $query=
-                    "
-                        SELECT book.title, price, quantity
+                    " SELECT book.title, price, quantity
                         FROM cart_book INNER  JOIN book ON book.book_id=cart_book.book_id
                         INNER JOIN sale_book ON sale_book.book_id=book.book_id
                         where cart_book.cart_id= $cartId

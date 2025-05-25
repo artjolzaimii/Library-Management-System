@@ -102,14 +102,14 @@
                 <label for="birth_year" class="form-label">Birth Year</label>
                 <div class="input-group">
                   <span class="input-group-text"><i class="bx bx-cake"></i></span>
-                  <input type="number" class="form-control" name="birth_year" id="birth_year" placeholder="Ex: 1936" max="2025" required>
+                  <input type="number" class="form-control" name="birth_year" id="birth_year" placeholder="Ex: 1936" min="1000" max="2025" required>
                 </div>
               </div>
               <div class="col-md-4">
                 <label for="death_year" class="form-label">Death Year</label>
                 <div class="input-group">
                   <span class="input-group-text"><i class="bx bx-calendar"></i></span>
-                  <input type="number" class="form-control" name="death_year" id="death_year" placeholder="Ex: 2024" min="1900" max="2025">
+                  <input type="number" class="form-control" name="death_year" id="death_year" placeholder="Ex: 2024" min="1500" max="2025">
                 </div>
               </div>
             </div>

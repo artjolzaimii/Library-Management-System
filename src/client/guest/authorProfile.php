@@ -1,3 +1,4 @@
+
 <?php 
     require_once("./clientmenu.php");
     require_once("../../../utilities/config.php");
@@ -227,20 +228,6 @@
             </div>
         </div>
     </section>
-
-    <?php
-    //Fetch author's books
-    $booksQuery = "SELECT b.*, sb.price 
-                FROM book b 
-                JOIN book_author ba ON b.book_id = ba.book_id 
-                LEFT JOIN sale_book sb ON b.book_id = sb.book_id 
-                WHERE ba.author_id = ?";
-    $booksStmt = mysqli_prepare($conn, $booksQuery);
-    $booksStmt->bind_param("i", $authorId);
-    $booksStmt->execute();
-    $booksResult = $booksStmt->get_result();
-    ?>
-
     
     <!-- Author's books -->
     <?php 
@@ -251,40 +238,36 @@
             
         }
         
-        $forSale="SELECT b.book_id, b.isbn, b.title, b.image_path , sa. price, AVG(r.rating) AS avg_rating, COUNT(r.review_id) AS review_count
-                FROM book b 
-                INNER JOIN book_author ba ON b.book_id=ba.book_id
-                INNER JOIN sale_book sa ON sa.book_id = b.book_id
+        $forSale="SELECT b.book_id,isbn, title, image_path , price,AVG(r.rating) AS avg_rating, COUNT(r.review_id) AS review_count
+                FROM book b INNER JOIN book_author ba ON b.book_id=ba.book_id
+                INNER JOIN sale_book sa ON sa.book_id=b.book_id
                 LEFT JOIN review r ON b.book_id = r.book_id
                 WHERE ba.author_id=?
-                GROUP BY b.book_id, b.isbn, b.title, b.image_path, sa.price";
+                GROUP BY b.book_id";
                 
         $stm=$conn->prepare($forSale);
         $stm->bind_param("i",$authorId);
         $stm->execute();
         $forSaleResult=$stm->get_result();
         
-        $forBorrow="SELECT b.book_id, b.isbn, b.title, b.image_path, AVG(r.rating) AS avg_rating, COUNT(r.review_id) AS review_count 
-                FROM book b 
-                INNER JOIN book_author ba ON b.book_id=ba.book_id
+        $forBorrow="SELECT b.book_id,isbn, title, image_path,AVG(r.rating) AS avg_rating, COUNT(r.review_id) AS review_count 
+                FROM book b INNER JOIN book_author ba ON b.book_id=ba.book_id
                 INNER JOIN borrow_book boa ON boa.book_id=b.book_id
                 LEFT JOIN review r ON b.book_id = r.book_id
                 WHERE ba.author_id=?
-                GROUP BY b.book_id, b.isbn, b.title, b.image_path";
-
+                GROUP BY b.book_id"
+                ;
         $stm=$conn->prepare($forBorrow);
         $stm->bind_param("i",$authorId);
         $stm->execute();
         $forBorrowResult=$stm->get_result();        
                 
-        $eBook="SELECT b.book_id,b.isbn, b.title, b.image_path, AVG(r.rating) AS avg_rating, COUNT(r.review_id) AS review_count
-                FROM book b 
-                INNER JOIN book_author ba ON b.book_id=ba.book_id
-                INNER JOIN ebook e ON e.book_id = b.book_id
+        $eBook="SELECT b.book_id,isbn, title, image_path,AVG(r.rating) AS avg_rating, COUNT(r.review_id) AS review_count
+                FROM book b INNER JOIN book_author ba ON b.book_id=ba.book_id
+                INNER JOIN ebook e ON e.book_id=b.book_id
                 LEFT JOIN review r ON b.book_id = r.book_id
                 WHERE ba.author_id=?
-                GROUP BY b.book_id, b.isbn, b.title, b.image_path";
-                
+                GROUP BY b.book_id";
         $stm=$conn->prepare($eBook);
         $stm->bind_param("i",$authorId);
         $stm->execute();
@@ -304,19 +287,18 @@
                     <div class="swiper-slide">
                         <div class="shop-box-items style-2">
                             <div class="book-thumb center">
-                                <a href="shop-details"><img src="assets/img/book/01.png" alt="img"></a>
-                                <ul class="post-box">
+                                <a href="shop-details"><img src="../../../uploads/images/<?php echo $book['image_path']?>" alt="img"></a>
+                                
+                                <ul class="shop-icon d-grid justify-content-center align-items-center">
                                     <li>
-                                        Hot
-                                    </li>
-                                    <li>
-                                        -30%
+                                        <a href="shop-cart.html"><i class="far fa-heart"></i></a>
                                     </li>
                                 </ul>
                                 <ul class="shop-icon d-grid justify-content-center align-items-center">
                                     <li>
-                                    <a href="wishlist.php?add=<?php echo $book['book_id']?>"><i class="far fa-heart"></i></a>
+                                        <a href="shop-cart.html"><i class="far fa-heart"></i></a>
                                     </li>
+                                    >
                                     <li>
                                         <a href="bookDetails.php?isbn=<?php echo $book['isbn']?>"><i class="far fa-eye"></i></a>
                                     </li>
@@ -325,7 +307,6 @@
                             <div class="shop-content">
                                 <h3><a href="bookDetails.php?isbn=<?php echo $book['isbn']?>"><?php echo $book['title']?></a></h3>
                                 <ul class="price-list">
-                                    <li>$<?php echo number_format($book['price'], 2)?></li>
                                     <li><?php echo $book['price']?></li>
                                 
                                 </ul>
@@ -355,203 +336,112 @@
                             </div>
                         </div>
                     </div>
+                    <?php endwhile;?>
+                    
+                    <?php 
+                        while($book=$eBookResult->fetch_assoc()):
+                    ?>
                     <div class="swiper-slide">
                         <div class="shop-box-items style-2">
                             <div class="book-thumb center">
-                                <a href="shop-details"><img src="assets/img/book/02.png" alt="img"></a>
+                                <a href="shop-details"><img src="../../../uploads/images/<?php echo $book['image_path']?>" alt="img"></a>
+                                
                                 <ul class="shop-icon d-grid justify-content-center align-items-center">
                                     <li>
                                         <a href="shop-cart.html"><i class="far fa-heart"></i></a>
                                     </li>
+                                </ul>
+                                <ul class="shop-icon d-grid justify-content-center align-items-center">
                                     <li>
-                                        <a href="shop-cart.html">
-
-                                            <img class="icon" src="assets/img/icon/shuffle.svg" alt="svg-icon">
-                                        </a>
+                                        <a href=""><i class="far fa-heart"></i></a>
                                     </li>
+                                    
                                     <li>
-                                        <a href="shop-details.html"><i class="far fa-eye"></i></a>
+                                        <a href="bookDetails.php?isbn=<?php echo $book['isbn']?>"><i class="far fa-eye"></i></a>
                                     </li>
                                 </ul>
                             </div>
                             <div class="shop-content">
-                                <h5> Design Low Book </h5>
-                                <h3><a href="shop-details.html">How Deal With Very <br> Bad BOOK</a></h3>
+                                <h3><a href="bookDetails.php?isbn=<?php echo $book['isbn']?>"><?php echo $book['title']?></a></h3>
                                 <ul class="price-list">
-                                    <li>$30.00</li>
-                                    <li>
-                                        <del>$39.99</del>
-                                    </li>
+                                    <li><?php echo "E-Book"?></li>
+                                
                                 </ul>
                                 <ul class="author-post">
                                     <li class="authot-list">
                                         <span class="thumb">
-                                            <img src="assets/img/testimonial/client-2.png" alt="img">
+                                            <img src="../../../<?php echo $author['image_path']?>" alt="img" width="30px" height="30px">
                                         </span>
-                                        <span class="content">Alexander</span>
+                                        <span class="content"><?php echo $author['full_name'];?></span>
                                     </li>
 
-                                    <li class="star">
-                                        <i class="fa-solid fa-star"></i>
-                                        <i class="fa-solid fa-star"></i>
-                                        <i class="fa-solid fa-star"></i>
-                                        <i class="fa-solid fa-star"></i>
-                                        <i class="fa-regular fa-star"></i>
+                                    <li class="">
+                                        <div class="star">
+                                            <?php
+                                            $rating = round($book['avg_rating']);
+                                            for ($i = 1; $i <= 5; $i++) {
+                                                echo '<i class="fa-' . ($i <= $rating ? 'solid' : 'regular') . ' fa-star"></i>';
+                                            }
+                                            ?>
+                                            (<?= $book['review_count'] ?>)
+                                        </div>
                                     </li>
                                 </ul>
                             </div>
                             <div class="shop-button">
-                                <a href="shop-details.html" class="theme-btn">Add To Cart</a>
+                                <button class="theme-btn" disabled>Add To Cart</button>
                             </div>
                         </div>
                     </div>
+                    <?php endwhile;?>
+                    
+                    <?php 
+                        while($book=$forBorrowResult->fetch_assoc()):
+                    ?>
                     <div class="swiper-slide">
                         <div class="shop-box-items style-2">
                             <div class="book-thumb center">
-                                <a href="shop-details"><img src="assets/img/book/03.png" alt="img"></a>
+                                <a href="shop-details"><img src="../../../uploads/images/<?php echo $book['image_path']?>" alt="img"></a>
+                                
                                 <ul class="shop-icon d-grid justify-content-center align-items-center">
                                     <li>
                                         <a href="shop-cart.html"><i class="far fa-heart"></i></a>
-                                    </li>
-                                    <li>
-                                        <a href="shop-cart.html">
-
-                                            <img class="icon" src="assets/img/icon/shuffle.svg" alt="svg-icon">
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a href="shop-details.html"><i class="far fa-eye"></i></a>
-                                    </li>
-                                </ul>
-                            </div>
-                            <div class="shop-content">
-                                <h5> Design Low Book </h5>
-                                <h3><a href="shop-details.html">Qple GPad With Retina <br> Sisplay</a></h3>
-                                <ul class="price-list">
-                                    <li>$30.00</li>
-                                    <li>
-                                        <del>$39.99</del>
-                                    </li>
-                                </ul>
-                                <ul class="author-post">
-                                    <li class="authot-list">
-                                        <span class="thumb">
-                                            <img src="assets/img/testimonial/client-3.png" alt="img">
-                                        </span>
-                                        <span class="content">Esther</span>
-                                    </li>
-
-                                    <li class="star">
-                                        <i class="fa-solid fa-star"></i>
-                                        <i class="fa-solid fa-star"></i>
-                                        <i class="fa-solid fa-star"></i>
-                                        <i class="fa-solid fa-star"></i>
-                                        <i class="fa-regular fa-star"></i>
-                                    </li>
-                                </ul>
-                            </div>
-                            <div class="shop-button">
-                                <a href="shop-details.html" class="theme-btn">Add To Cart</a>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="swiper-slide">
-                        <div class="shop-box-items style-2">
-                            <div class="book-thumb center">
-                                <a href="shop-details"><img src="assets/img/book/04.png" alt="img"></a>
-                                <ul class="post-box">
-                                    <li>
-                                        Hot
                                     </li>
                                 </ul>
                                 <ul class="shop-icon d-grid justify-content-center align-items-center">
                                     <li>
                                         <a href="shop-cart.html"><i class="far fa-heart"></i></a>
                                     </li>
+                                    
                                     <li>
-                                        <a href="shop-cart.html">
-
-                                            <img class="icon" src="assets/img/icon/shuffle.svg" alt="svg-icon">
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a href="shop-details.html"><i class="far fa-eye"></i></a>
+                                        <a href="bookDetails.php?isbn=<?php echo $book['isbn']?>"><i class="far fa-eye"></i></a>
                                     </li>
                                 </ul>
                             </div>
                             <div class="shop-content">
-                                <h5> Design Low Book </h5>
-                                <h3><a href="shop-details.html">Qple GPad With Retina <br> Sisplay</a></h3>
+                                <h3><a href="bookDetails.php?isbn=<?php echo $book['isbn']?>"><?php echo $book['title']?></a></h3>
                                 <ul class="price-list">
-                                    <li>$30.00</li>
-                                    <li>
-                                        <del>$39.99</del>
-                                    </li>
+                                    <li>Free Borrowing</li>
+                                
                                 </ul>
                                 <ul class="author-post">
                                     <li class="authot-list">
                                         <span class="thumb">
-                                            <img src="assets/img/testimonial/client-4.png" alt="img">
+                                            <img src="../../../<?php echo $author['image_path']?>" alt="img" width="30px" height="30px">
                                         </span>
-                                        <span class="content">Hawkins</span>
+                                        <span class="content"><?php echo $author['full_name'];?></span>
                                     </li>
 
-                                    <li class="star">
-                                        <i class="fa-solid fa-star"></i>
-                                        <i class="fa-solid fa-star"></i>
-                                        <i class="fa-solid fa-star"></i>
-                                        <i class="fa-solid fa-star"></i>
-                                        <i class="fa-regular fa-star"></i>
-                                    </li>
-                                </ul>
-                            </div>
-                            <div class="shop-button">
-                                <a href="shop-details.html" class="theme-btn">Add To Cart</a>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="swiper-slide">
-                        <div class="shop-box-items style-2">
-                            <div class="book-thumb center">
-                                <a href="shop-details"><img src="assets/img/book/05.png" alt="img"></a>
-                                <ul class="shop-icon d-grid justify-content-center align-items-center">
-                                    <li>
-                                        <a href="shop-cart.html"><i class="far fa-heart"></i></a>
-                                    </li>
-                                    <li>
-                                        <a href="shop-cart.html">
-
-                                            <img class="icon" src="assets/img/icon/shuffle.svg" alt="svg-icon">
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a href="shop-details.html"><i class="far fa-eye"></i></a>
-                                    </li>
-                                </ul>
-                            </div>
-                            <div class="shop-content">
-                                <h5> Design Low Book </h5>
-                                <h3><a href="shop-details.html">Simple Things You To <br> Save BOOK</a></h3>
-                                <ul class="price-list">
-                                    <li>$30.00</li>
-                                    <li>
-                                        <del>$39.99</del>
-                                    </li>
-                                </ul>
-                                <ul class="author-post">
-                                    <li class="authot-list">
-                                        <span class="thumb">
-                                            <img src="assets/img/testimonial/client-5.png" alt="img">
-                                        </span>
-                                        <span class="content">(Author) Albert</span>
-                                    </li>
-
-                                    <li class="star">
-                                        <i class="fa-solid fa-star"></i>
-                                        <i class="fa-solid fa-star"></i>
-                                        <i class="fa-solid fa-star"></i>
-                                        <i class="fa-solid fa-star"></i>
-                                        <i class="fa-regular fa-star"></i>
+                                    <li class="">
+                                        <div class="star">
+                                            <?php
+                                            $rating = round($book['avg_rating']);
+                                            for ($i = 1; $i <= 5; $i++) {
+                                                echo '<i class="fa-' . ($i <= $rating ? 'solid' : 'regular') . ' fa-star"></i>';
+                                            }
+                                            ?>
+                                            (<?= $book['review_count'] ?>)
+                                        </div>
                                     </li>
                                 </ul>
                             </div>
@@ -560,6 +450,7 @@
                             </div>
                         </div>
                     </div>
+                    <?php endwhile;?>
                 </div>
             </div>
         </div>
@@ -568,4 +459,5 @@
     <!-- Footer Section start  -->
     <?php include("footer.php")?>
 </body>
+
 </html>

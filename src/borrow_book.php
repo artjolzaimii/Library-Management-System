@@ -1,4 +1,5 @@
 <?php
+session_start();
 require('../utilities/config.php');
 
 $books = mysqli_query($conn, "
@@ -16,7 +17,7 @@ $books = mysqli_query($conn, "
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Borrow Book | BookNoW Admin</title>
+    <title>Borrow Book | Eternal Library</title>
 
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="../assets/img/favicon/favicon.ico">
