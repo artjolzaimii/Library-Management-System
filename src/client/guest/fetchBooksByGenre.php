@@ -4,43 +4,69 @@ require_once("./styleAndScripts.php");
 
 
 $selected_genre = isset($_GET['genre']) ? $_GET['genre'] : null;
+
 if ($selected_genre) {
-    $stmt = $conn->prepare("
-        SELECT 
-            book.book_id,
-            book.title,
-            book.description,
-            book.image_path,
-            sale_book.price,
-            sale_book.inventory,
-            author.full_name AS author_name
-        FROM book
-        JOIN book_genre ON book.book_id = book_genre.book_id
-        JOIN genres ON book_genre.genre_id = genres.id
-        LEFT JOIN sale_book ON book.book_id = sale_book.book_id
-        LEFT JOIN book_author ON book.book_id = book_author.book_id
-        LEFT JOIN author ON book_author.author_id = author.author_id
-        WHERE genres.name = ?
+    $stmt = $conn->prepare("SELECT 
+            b.book_id,
+            b.title,
+            b.isbn,
+            b.description,
+            b.image_path,
+            sb.price,
+            format,
+            sb.inventory,
+            AVG(r.rating) AS avg_rating,
+            COUNT(r.review_id) AS review_count,
+            (SELECT GROUP_CONCAT(a.full_name SEPARATOR ', ')
+                FROM book_author ba
+                JOIN author a ON ba.author_id = a.author_id
+                WHERE ba.book_id = b.book_id
+            ) AS authors,
+            (SELECT GROUP_CONCAT(g.name SEPARATOR ', ')
+                FROM book_genre bg
+                JOIN genres g ON bg.genre_id = g.id
+                WHERE bg.book_id = b.book_id
+            ) AS genres
+        FROM book b
+        JOIN book_genre bg ON b.book_id = bg.book_id
+        JOIN genres g ON bg.genre_id = g.id
+        LEFT JOIN sale_book sb ON b.book_id = sb.book_id
+        LEFT JOIN review r ON b.book_id = r.book_id
+        WHERE g.name = ?
+        GROUP BY b.book_id
+        LIMIT 12
     ");
     $stmt->bind_param("s", $selected_genre);
     $stmt->execute();
     $result = $stmt->get_result();
 } else {
-   
-    $result = $conn->query("
-        SELECT 
-            book.book_id,
-            book.title,
-            book.description,
-            book.image_path,
-            sale_book.price,
-            sale_book.inventory,
-            author.full_name AS author_name
-        FROM book
-        LEFT JOIN sale_book ON book.book_id = sale_book.book_id
-        LEFT JOIN book_author ON book.book_id = book_author.book_id
-        LEFT JOIN author ON book_author.author_id = author.author_id
-        LIMIT 10
+    $result = $conn->query("SELECT 
+            b.book_id,
+            b.title,
+            b.isbn,
+            b.description,
+            b.image_path,
+            format,
+            sb.price,
+            sb.inventory,
+            AVG(r.rating) AS avg_rating,
+            COUNT(r.review_id) AS review_count,
+            (SELECT GROUP_CONCAT(a.full_name SEPARATOR ', ')
+                FROM book_author ba
+                JOIN author a ON ba.author_id = a.author_id
+                WHERE ba.book_id = b.book_id
+            ) AS authors,
+            (SELECT GROUP_CONCAT(g.name SEPARATOR ', ')
+                FROM book_genre bg
+                JOIN genres g ON bg.genre_id = g.id
+                WHERE bg.book_id = b.book_id
+            ) AS genres
+        FROM book b
+        LEFT JOIN sale_book sb ON b.book_id = sb.book_id
+        LEFT JOIN review r ON b.book_id = r.book_id
+        GROUP BY b.book_id
+        ORDER BY RAND()
+        LIMIT 12
     ");
 }
 ?>

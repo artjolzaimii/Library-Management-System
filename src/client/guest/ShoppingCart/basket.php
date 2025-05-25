@@ -34,7 +34,7 @@ $cnt = 0;
                                 </a>
                                 <span><?php echo htmlspecialchars($book['quantity']) . " x " . htmlspecialchars($book['price']); ?> All</span>
                             </div>
-                            <a href="basket.php?bookId=<?php echo urlencode($book['book_id']); ?>"><i class="fa-solid fa-xmark"></i></a>
+                            <a href="shopList.php?bookId=<?php echo $book['book_id']; ?>"><i class="fa-solid fa-xmark"></i></a>
                         </div>
                     </li>
                 </ul>
@@ -50,7 +50,7 @@ $cnt = 0;
             $bookId = mysqli_real_escape_string($conn, $_GET['bookId']);
             deleteBookFromBasket($conn, $bookId);
             // Redirect to avoid resubmission on refresh
-            header("Location: basket.php");
+            //header("Location: basket.php");
             exit;
         }
         ?>
