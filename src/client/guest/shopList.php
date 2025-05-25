@@ -1,6 +1,6 @@
 <?php 
     include("clientMenu.php");
-    require_once("../../../utilities/config1.php");
+    require_once("../../../utilities/config.php");
     require_once("../../../src/client/guest/wishlistFunctionality.php");
 ?>
 <!DOCTYPE html>

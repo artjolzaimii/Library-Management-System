@@ -1,7 +1,7 @@
 <!-- Header Section Start -->
 <?php 
     include("clientMenu.php");
-    require_once("../../../utilities/config1.php");
+    require_once("../../../utilities/config.php");
 ?>
 
 
@@ -43,7 +43,6 @@
 <body>
 <!-- Find book by isbn , placed in the url by a get request-->
    <?php
-        require_once("../../../utilities/config1.php");
         
         $isbn = mysqli_real_escape_string($conn, $_GET['isbn']);
         
@@ -340,9 +339,8 @@
                                                     }       
                                                 }
                                                 
-                                            ?>
-                                            ?>
-                                        >
+                                            ?>>
+                                        
                                         <button class="qtyplus" aria-hidden="true"
                                             <?php 
                                                 if($row['format']=='For Sale'){
@@ -541,7 +539,7 @@
                         <li class="nav-item" role="presentation">
                             <a href="#review" data-bs-toggle="tab" class="nav-link" aria-selected="false" tabindex="-1"
                                 role="tab">
-                                <h6>reviews (3)</h6>
+                                <h6>reviews</h6>
                             </a>
                         </li>
                     </ul>
@@ -628,7 +626,22 @@
                                     </tbody>
                                 </table>
                             </div>
-                        </div>
+                        </div>   
+                                <?php 
+                                    //getUserid
+                                    if(isset($_SESSION['username'])){
+                                        $q="SELECT image_path FROM users WHERE USERNAME=?";
+                                        $photo_stm=$conn->prepare($q);
+                                        $photo_stm->bind_param("s", $_SESSION['username']);
+                                        $photo_stm->execute();
+                                        $p_res=$photo_stm->get_result();
+                                        
+                                        if($p_res->num_rows==1){
+                                            $user_photo=$p_res->fetch_assoc();
+                                            $photo=$user_photo['image_path'];
+                                        }
+                                    }
+                                ?>
                                  <div id="review" class="tab-pane fade" role="tabpanel">
                                     <div class="review-items">
                                     <?php
@@ -650,7 +663,7 @@
                                         ?>
                                         <div class="review-wrap-area d-flex gap-4">
                                         <div class="review-thumb">
-                                            <img src="assets/img/shop-details/review.png" alt="img">
+                                            <img src="../../../uploads/users/<?php echo $photo?>" alt="img" width="50px" height="50px" style="border-radius: 25px;">
                                         </div>
 
                                         <div class="review-content">
@@ -699,7 +712,7 @@
 
                                             
 
-                                            <button type="submit" class="theme-btn style-2">Submit Review</button>
+                                            <button type="submit" class="theme-btn style-2" <?php if(!isset($_SESSION['username'])){echo 'disabled';}?>>Submit Review</button>
                                         </form>
 
                                         </div>

@@ -4,7 +4,7 @@
 
     require_once("wishlistFunctionality.php");
     
-    require_once("../../../utilities/config1.php");
+    require_once("../../../utilities/config.php");
 ?>
 
 <header id="header-sticky" class="header-1">

@@ -1,6 +1,6 @@
 <?php 
     include("clientMenu.php");
-    require_once("../../../utilities/config1.php");
+    require_once("../../../utilities/config.php");
     require_once("wishlistFunctionality.php");
 ?>
 
@@ -297,7 +297,6 @@
             </div>
             <div class="row">
                 <?php
-                require_once("../../../utilities/config1.php");
 
                 $query = "SELECT 
                         b.book_id, b.isbn, b.title, b.image_path, sb.price,
@@ -385,7 +384,6 @@
         </div>
     </div>
 </section>
-
 
     <!-- Best Sellers -->
     <?php 
@@ -510,7 +508,6 @@
                 WHERE b.format='E-Book'
                 GROUP BY b.book_id, b.isbn, b.title, b.image_path, b.format, b.description, 
                  b.publication_year, b.publisher, b.language, b.nr_pages
-                GROUP BY b.book_id
                 LIMIT 4";
         $ebooks=mysqli_query($conn, $query);
         

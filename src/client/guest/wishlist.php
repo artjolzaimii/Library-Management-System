@@ -1,7 +1,7 @@
 <!-- Header Section Start -->
 <?php 
     include("clientMenu.php");
-    include("../../../utilities/config1.php");
+    include("../../../utilities/config.php");
     require_once("wishlistFunctionality.php");
     if(!isset($_SESSION['username'])){
         echo "<script>window.location.href =\"mainPage.php\"</script>";

@@ -1,6 +1,6 @@
 <?php 
     require_once("./clientmenu.php");
-    require_once("../../../utilities/config1.php");
+    require_once("../../../utilities/config.php");
     if(isset($_GET['authorId'])){
         $authorId=mysqli_real_escape_string($conn,$_GET['authorId']);
         $query="SELECT a.full_name, bio, nationality, birth_year, death_year, image_path, COUNT(a.author_id) as nr_books

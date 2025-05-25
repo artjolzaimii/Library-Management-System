@@ -1,5 +1,5 @@
 <?php
-require_once('../../../utilities/config1.php');
+require_once('../../../utilities/config.php');
 
 // Function to add a book to wishlist
 function addToWishlist($book_id, $user_id) {
