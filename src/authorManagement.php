@@ -1,5 +1,5 @@
 <?php
-require_once('../utilities/config.php');
+require_once('../utilities/config1.php');
 
 ob_start();
 session_start();
@@ -145,6 +145,20 @@ if (isset($_GET['delete_id'])) {
                     <h4 class="fw-bold py-3 mb-4">
                         <span class="text-muted fw-light">Admin /</span> Author Management
                     </h4>
+                    <?php 
+                     if(isset($_SESSION['message'])) { ?>
+                        <div id="alertMessage">
+                            <?php
+                            echo $_SESSION['message'];
+                            unset($_SESSION['message']);
+                            ?>
+                        </div>
+                        <script>
+                            setTimeout(function() {
+                                document.getElementById('alertMessage').style.display = 'none';
+                            }, 1500);
+                            </script>
+                        <?php } ?>
                     <div class="card-body">
                         <div class="col mb-12 d-flex justify-content-end">
                             <button class="btn btn-primary" onclick="window.location.href='addAuthor.php'">
@@ -177,6 +191,7 @@ if (isset($_GET['delete_id'])) {
                                             echo "<td>" . $row['nationality'] . "</td>";
                                             echo "<td>" . $row['birth_year'] . "</td>";
                                             echo "<td>" . (empty($row['death_year']) || $row['death_year'] == '0000' ? '-' : $row['death_year']) . "</td>";
+                                            echo "<td>" . $row['bio'] . "</td>";
                                             echo "<td>
                                                <!-- View Button -->
                                                 <button type='button' class='btn rounded-pill btn-icon btn-outline-primary' data-bs-toggle='modal' data-bs-target='#viewAuthorModal{$row['author_id']}' title='View'>
