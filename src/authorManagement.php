@@ -1,5 +1,5 @@
 <?php
-require_once('../utilities/config1.php');
+require_once('../utilities/config.php');
 
 ob_start();
 session_start();
@@ -191,7 +191,6 @@ if (isset($_GET['delete_id'])) {
                                             echo "<td>" . $row['nationality'] . "</td>";
                                             echo "<td>" . $row['birth_year'] . "</td>";
                                             echo "<td>" . (empty($row['death_year']) || $row['death_year'] == '0000' ? '-' : $row['death_year']) . "</td>";
-                                            echo "<td>" . $row['bio'] . "</td>";
                                             echo "<td>
                                                <!-- View Button -->
                                                 <button type='button' class='btn rounded-pill btn-icon btn-outline-primary' data-bs-toggle='modal' data-bs-target='#viewAuthorModal{$row['author_id']}' title='View'>
@@ -285,7 +284,7 @@ if (isset($_GET['delete_id'])) {
                                                          <div class='modal-body'>
                                                           <p><strong>Author ID:</strong> " . $row['author_id'] . "</p>
                                                              <p><strong>Full Name:</strong> " . $row['full_name'] . "</p>
-                                                             <p><strong>Bio:</strong> " . $row['bio'] . "</p>
+                                                             <p style='white-space: pre-wrap; word-wrap: break-word;'><strong>Bio:</strong><br>" . nl2br(htmlspecialchars($row['bio']))."</p> 
                                                              <p><strong>Nationality:</strong> " . $row['nationality'] . "</p>
                                                              <p><strong>Birth year:</strong> " . $row['birth_year'] . "</p>
                                                              <p><strong>Death year:</strong> " . ($row['death_year'] == 0000 ? '-' : $row['death_year']). "</p>
