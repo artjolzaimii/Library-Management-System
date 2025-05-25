@@ -506,6 +506,7 @@
                  WHERE bg.book_id = b.book_id) AS genres
             FROM book b LEFT JOIN review r ON b.book_id = r.book_id
             WHERE b.format='E-Book'
+            group by b.book_id
             LIMIT 4";
     $ebooks=mysqli_query($conn, $query);
 ?>
