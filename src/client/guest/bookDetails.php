@@ -354,69 +354,57 @@
                                         ></button>
                                     </p>
                                 </div>
-                              
+                                                            
+                                <!-- Read/Download Button -->
+                                <button type="button"
+                                        class="theme-btn"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#readBookModal<?= $row['book_id'] ?>">
+                                <i class="bx bx-book-open"></i> Read/Download
+                                </button>
 
-                                                                                                
-                                                                    <!-- Read/Download Button -->
-                                    <button type="button"
-                                            class="theme-btn"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#readBookModal<?= $row['book_id'] ?>">
-                                    <i class="bx bx-book-open"></i> Read/Download
-                                    </button>
+                                <!-- Modal for Read/Download -->
+                                <div class="modal fade" id="readBookModal<?= $row['book_id'] ?>" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog modal-xl">
+                                    <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Preview & Download: <?= htmlspecialchars($row['title']) ?></h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
 
-                                    <!-- Modal for Read/Download Preview -->
-                                    <div class="modal fade" id="readBookModal<?= $row['book_id'] ?>" tabindex="-1" aria-hidden="true">
-                                    <div class="modal-dialog modal-xl">
-                                        <div class="modal-content">
-                                        <div class="modal-header">
-                                            <h5 class="modal-title">Preview & Download: <?= htmlspecialchars($row['title']) ?></h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                        </div>
+                                    <div class="modal-body">
+                                        <?php
+                                        // Fetch the actual PDF filename from the ebook table
+                                        $book_id = $row['book_id'];
+                                        $ebookQuery = $conn->prepare("SELECT book_path FROM ebook WHERE book_id = ?");
+                                        $ebookQuery->bind_param("i", $book_id);
+                                        $ebookQuery->execute();
+                                        $ebookResult = $ebookQuery->get_result()->fetch_assoc();
+                                        $ebookQuery->close();
 
-                                        <div class="modal-body">
-                                            <?php
-                                            $book_id = $row['book_id'];
-                                            $previewDir = "../../../uploads/previews/$book_id.pdf";
-                                            $ebookPath = "../../../uploads/eBooks/$book_id.pdf";
+                                        $ebookFile = $ebookResult ? $ebookResult['book_path'] : null;
+                                        $ebookPath = "../../../uploads/eBooks/" . $ebookFile;
 
-                                            // Show previews (PDF or images)
-                                            if (is_dir($previewDir)) {
-                                            $files = glob($previewDir . "*.{jpg,jpeg,png,pdf}", GLOB_BRACE);
-                                            if ($files && count($files) > 0) {
-                                                echo "<div class='row'>";
-                                                foreach ($files as $file) {
-                                                $fileUrl = htmlspecialchars($file);
-                                                if (preg_match('/\.(jpg|jpeg|png)$/i', $file)) {
-                                                    echo "<div class='col-md-3 mb-3'><img src='$fileUrl' class='img-fluid rounded' style='border:1px solid #ccc;'></div>";
-                                                } elseif (preg_match('/\.pdf$/i', $file)) {
-                                                    echo "<div class='col-12 mb-3'><embed src='$fileUrl' type='application/pdf' width='100%' height='500px'></div>";
-                                                }
-                                                }
-                                                echo "</div>";
-                                            } else {
-                                                echo "<p class='text-muted'>No preview available for this book.</p>";
-                                            }
-                                            } else {
-                                            echo "<p class='text-muted'>No preview available for this book.</p>";
-                                            }
-                                            ?>
-                                        </div>
+                                        if ($ebookFile && file_exists($ebookPath)) {
+                                        // Show PDF preview
+                                        echo "<embed src='" . htmlspecialchars($ebookPath) . "' type='application/pdf' width='100%' height='500px'>";
+                                        } else {
+                                        echo "<p class='text-muted'>No preview available for this book.</p>";
+                                        }
+                                        ?>
+                                    </div>
 
-                                        <div class="modal-footer">
-                                            <?php
-                                            if (file_exists($ebookPath)) {
-                                            $ebookUrl = htmlspecialchars($ebookPath);
-                                            echo "<a href='$ebookUrl' download class='btn btn-primary' target='_blank'><i class='bx bx-download'></i> Download Full Book (PDF)</a>";
-                                            } else {
-                                            echo "<button class='btn btn-secondary' disabled>No PDF Available</button>";
-                                            }
-                                            ?>
-                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                        </div>
-                                        </div>
+                                    <div class="modal-footer">
+                                        <?php if ($ebookFile && file_exists($ebookPath)): ?>
+                                        <a href="<?= htmlspecialchars($ebookPath) ?>" download class="btn btn-primary" target="_blank"><i class="bx bx-download"></i> Download Full Book (PDF)</a>
+                                        <?php else: ?>
+                                        <button class="btn btn-secondary" disabled>No PDF Available</button>
+                                        <?php endif; ?>
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                                     </div>
                                     </div>
+                                </div>
+                                </div>
 
 
 

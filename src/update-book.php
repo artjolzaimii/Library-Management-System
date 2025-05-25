@@ -41,18 +41,29 @@ if ($format === 'For Sale') {
     if ($inventory < 0 || empty($condition)) {
         die("Invalid borrow book inputs.");
     }
-} elseif ($format === 'E-Book') {
+}  elseif ($format === 'E-Book') {
     if (isset($_FILES['bookPdf']) && $_FILES['bookPdf']['error'] === UPLOAD_ERR_OK) {
         $pdfTmp = $_FILES['bookPdf']['tmp_name'];
-        $pdfName = uniqid() . "_" . basename($_FILES['bookPdf']['name']);
-        move_uploaded_file($pdfTmp, "../uploads/eBooks/" . $pdfName);
+        $pdfExt = pathinfo($_FILES['bookPdf']['name'], PATHINFO_EXTENSION);
+        $pdfName = uniqid() . "_" . basename($_FILES['bookPdf']['name']); // Generates unique name
+        $pdfTargetPath = "../uploads/eBooks/" . $pdfName;
+
+        if (move_uploaded_file($pdfTmp, $pdfTargetPath)) {
+            $pdfName = "uploads/eBooks/" . $pdfName; // Save relative path
+        } else {
+            die("Failed to move uploaded eBook PDF file.");
+        }
     } else {
+        // If no new file, keep the current file path
         $res = $conn->query("SELECT book_path FROM ebook WHERE book_id = $book_id");
         if ($res && $row = $res->fetch_assoc()) {
             $pdfName = $row['book_path'];
+        } else {
+            $pdfName = '';
         }
     }
 }
+
 
 if (isset($_FILES['imagePath']) && $_FILES['imagePath']['error'] === UPLOAD_ERR_OK) {
     $imgTmp = $_FILES['imagePath']['tmp_name'];
