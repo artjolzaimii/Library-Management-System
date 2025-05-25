@@ -107,7 +107,8 @@ CREATE TABLE cart_book(
     email VARCHAR(127) NOT NULL,
     notes VARCHAR(511),
     cart_id INT,
-    order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    status varchar(50) default 'Pending',
+    order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (cart_id) REFERENCES shopping_cart(cart_id)
 );
 
@@ -141,3 +142,12 @@ CREATE TABLE wishlist (
     FOREIGN KEY (book_id) REFERENCES book(book_id) ON DELETE CASCADE
 );
 
+CREATE TABLE sales_reports (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    report_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    total_books_sold INT NOT NULL,
+    most_sold_book VARCHAR(255) NOT NULL,
+    total_revenue DECIMAL(10,2) NOT NULL,
+    start_date DATE DEFAULT NULL,
+    end_date DATE DEFAULT NULL
+);

@@ -1,5 +1,5 @@
 <?php
-require_once('../utilities/config1.php');
+require_once('../utilities/config.php');
 session_start();
 
 if (!isset($_SESSION['role']) || (strtolower($_SESSION['role']) !== 'admin')) {
@@ -152,7 +152,6 @@ if (isset($_GET['delete_id'])) {
                                             <th>Nationality</th>
                                             <th>Birth year</th>
                                             <th>Death year</th>
-                                            <th>Bio</th>
                                             <th>Actions</th>
                                         </tr>
                                     </thead>
@@ -164,7 +163,6 @@ if (isset($_GET['delete_id'])) {
                                             echo "<td>" . $row['nationality'] . "</td>";
                                             echo "<td>" . $row['birth_year'] . "</td>";
                                             echo "<td>" . (empty($row['death_year']) || $row['death_year'] == '0000' ? '-' : $row['death_year']) . "</td>";
-                                            echo "<td>" . substr($row['bio'], 0, 40) . (strlen($row['bio']) > 40 ? "..." : "") . "</td>";
                                             echo "<td>
                                                <!-- View Button -->
                                                 <button type='button' class='btn rounded-pill btn-icon btn-outline-primary' data-bs-toggle='modal' data-bs-target='#viewAuthorModal{$row['author_id']}' title='View'>

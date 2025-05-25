@@ -1,6 +1,19 @@
 <?php 
 session_start();
 require_once("../utilities/config.php");
+
+// Pagination settings
+$perPage = 10;
+
+// For "View All"
+$page_all = isset($_GET['page_all']) && is_numeric($_GET['page_all']) ? (int)$_GET['page_all'] : 1;
+$page_all = max(1, $page_all);
+$start_all = ($page_all - 1) * $perPage;
+
+// For "View Low Stock"
+$page_low = isset($_GET['page_low']) && is_numeric($_GET['page_low']) ? (int)$_GET['page_low'] : 1;
+$page_low = max(1, $page_low);
+$start_low = ($page_low - 1) * $perPage;
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -60,22 +73,29 @@ require_once("../utilities/config.php");
                       </thead>
                       <tbody class="table-border-bottom-0">
                         <?php
+                          // Count total rows for pagination
+                          $count_query = "SELECT COUNT(*) as total FROM book WHERE format='For Sale' OR format='For Borrow'";
+                          $count_result = mysqli_query($conn, $count_query);
+                          $totalRows = mysqli_fetch_assoc($count_result)['total'];
+                          $totalPages = ceil($totalRows / $perPage);
+
+                          // Main query with LIMIT
                           $query = "SELECT 
-                                        book.book_id, 
-                                        book.isbn, 
-                                        book.title, 
-                                        book.format, 
-                                        sale_book.inventory AS sale_inventory, 
-                                        borrow_book.inventory AS borrow_inventory
-                                    FROM 
-                                        book
-                                    LEFT JOIN 
-                                        sale_book ON book.book_id = sale_book.book_id
-                                    LEFT JOIN 
-                                        borrow_book ON book.book_id = borrow_book.book_id
-                                    WHERE
-                                        book.format='For Sale' OR book.format='For Borrow'
-                                    ;";
+                                      book.book_id, 
+                                      book.isbn, 
+                                      book.title, 
+                                      book.format, 
+                                      sale_book.inventory AS sale_inventory, 
+                                      borrow_book.inventory AS borrow_inventory
+                                  FROM 
+                                      book
+                                  LEFT JOIN 
+                                      sale_book ON book.book_id = sale_book.book_id
+                                  LEFT JOIN 
+                                      borrow_book ON book.book_id = borrow_book.book_id
+                                  WHERE
+                                      book.format='For Sale' OR book.format='For Borrow'
+                                  LIMIT $start_all, $perPage";
                           $result = mysqli_query($conn, $query);
 
                           while ($row = mysqli_fetch_array($result)):
@@ -180,6 +200,36 @@ require_once("../utilities/config.php");
                         
                       </tbody>
                     </table>
+                    <!-- Pagination for View All -->
+                    <div class="card-body">
+                      <div class="row">
+                        <div class="col">
+                          <div class="demo-inline-spacing">
+                            <nav aria-label="Page navigation">
+                              <ul class="pagination">
+                                <li class="page-item first">
+                                  <a class="page-link" href="?page_all=1&page_low=<?= $page_low ?>"><i class="tf-icon bx bx-chevrons-left"></i></a>
+                                </li>
+                                <li class="page-item prev">
+                                  <a class="page-link" href="?page_all=<?= max(1, $page_all - 1) ?>&page_low=<?= $page_low ?>"><i class="tf-icon bx bx-chevron-left"></i></a>
+                                </li>
+                                <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                                  <li class="page-item <?= ($i == $page_all) ? 'active' : '' ?>">
+                                    <a class="page-link" href="?page_all=<?= $i ?>&page_low=<?= $page_low ?>"><?= $i ?></a>
+                                  </li>
+                                <?php endfor; ?>
+                                <li class="page-item next">
+                                  <a class="page-link" href="?page_all=<?= min($totalPages, $page_all + 1) ?>&page_low=<?= $page_low ?>"><i class="tf-icon bx bx-chevron-right"></i></a>
+                                </li>
+                                <li class="page-item last">
+                                  <a class="page-link" href="?page_all=<?= $totalPages ?>&page_low=<?= $page_low ?>"><i class="tf-icon bx bx-chevrons-right"></i></a>
+                                </li>
+                              </ul>
+                            </nav>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
@@ -200,24 +250,36 @@ require_once("../utilities/config.php");
                       </thead>
                       <tbody class="table-border-bottom-0">
                         <?php
-                         $low_query = "SELECT 
-                         book.book_id, 
-                         book.isbn, 
-                         book.title, 
-                         book.format, 
-                         COALESCE(sale_book.inventory, 0) AS sale_inventory, 
-                         COALESCE(borrow_book.inventory, 0) AS borrow_inventory
-                       FROM 
-                         book
-                       LEFT JOIN 
-                         sale_book ON book.book_id = sale_book.book_id
-                       LEFT JOIN 
-                         borrow_book ON book.book_id = borrow_book.book_id
-                       WHERE
-                         (book.format = 'For Sale' AND COALESCE(sale_book.inventory, 0) <= 5)
-                         OR (book.format = 'For Borrow' AND COALESCE(borrow_book.inventory, 0) <= 2)";
-         
-                          $low_result = mysqli_query($conn, $low_query);
+                         // Count total rows for pagination
+                         $count_low_query = "SELECT COUNT(*) as total FROM book
+                                LEFT JOIN sale_book ON book.book_id = sale_book.book_id
+                                LEFT JOIN borrow_book ON book.book_id = borrow_book.book_id
+                                WHERE (book.format = 'For Sale' AND COALESCE(sale_book.inventory, 0) <= 5)
+                                   OR (book.format = 'For Borrow' AND COALESCE(borrow_book.inventory, 0) <= 2)";
+                                $count_low_result = mysqli_query($conn, $count_low_query);
+                                $totalLowRows = mysqli_fetch_assoc($count_low_result)['total'];
+                                $totalLowPages = ceil($totalLowRows / $perPage);
+                                
+                                                          // Main query with LIMIT
+                                                          $low_query = "SELECT 
+                                 book.book_id, 
+                                 book.isbn, 
+                                 book.title, 
+                                 book.format, 
+                                 COALESCE(sale_book.inventory, 0) AS sale_inventory, 
+                                 COALESCE(borrow_book.inventory, 0) AS borrow_inventory
+                                FROM 
+                                 book
+                                LEFT JOIN 
+                                 sale_book ON book.book_id = sale_book.book_id
+                                LEFT JOIN 
+                                 borrow_book ON book.book_id = borrow_book.book_id
+                                WHERE
+                                 (book.format = 'For Sale' AND COALESCE(sale_book.inventory, 0) <= 5)
+                                 OR (book.format = 'For Borrow' AND COALESCE(borrow_book.inventory, 0) <= 2)
+                                LIMIT $start_low, $perPage";
+                                $low_result = mysqli_query($conn, $low_query);
+
                           while ($row = mysqli_fetch_array($low_result)):
                             $modalId = "modalCenter_" . $row['book_id'] . "_low";
                             if (($row['sale_inventory'] <= 5 && $row['format']=='For Sale') || 
@@ -315,6 +377,36 @@ require_once("../utilities/config.php");
                         ?>
                       </tbody>
                     </table>
+                    <!-- Pagination for View Low Stock -->
+                    <div class="card-body">
+                      <div class="row">
+                        <div class="col">
+                          <div class="demo-inline-spacing">
+                            <nav aria-label="Page navigation">
+                              <ul class="pagination">
+                                <li class="page-item first">
+                                  <a class="page-link" href="?page_all=<?= $page_all ?>&page_low=1#viewLow"><i class="tf-icon bx bx-chevrons-left"></i></a>
+                                </li>
+                                <li class="page-item prev">
+                                  <a class="page-link" href="?page_all=<?= $page_all ?>&page_low=<?= max(1, $page_low - 1) ?>#viewLow"><i class="tf-icon bx bx-chevron-left"></i></a>
+                                </li>
+                                <?php for ($i = 1; $i <= $totalLowPages; $i++): ?>
+                                  <li class="page-item <?= ($i == $page_low) ? 'active' : '' ?>">
+                                    <a class="page-link" href="?page_all=<?= $page_all ?>&page_low=<?= $i ?>#viewLow"><?= $i ?></a>
+                                  </li>
+                                <?php endfor; ?>
+                                <li class="page-item next">
+                                  <a class="page-link" href="?page_all=<?= $page_all ?>&page_low=<?= min($totalLowPages, $page_low + 1) ?>#viewLow"><i class="tf-icon bx bx-chevron-right"></i></a>
+                                </li>
+                                <li class="page-item last">
+                                  <a class="page-link" href="?page_all=<?= $page_all ?>&page_low=<?= $totalLowPages ?>#viewLow"><i class="tf-icon bx bx-chevrons-right"></i></a>
+                                </li>
+                              </ul>
+                            </nav>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div> 
@@ -325,6 +417,7 @@ require_once("../utilities/config.php");
     </div>
   </div>
 </div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
   document.getElementById('searchBar').addEventListener("keyup", () => {

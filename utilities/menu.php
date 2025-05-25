@@ -25,7 +25,7 @@
   <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
     <div class="app-brand demo">
       <a href="index.php" class="app-brand-link">
-        <span class="app-brand-text demo menu-text fw-bolder ms-2">BookNow</span>
+        <span class="app-brand-text demo menu-text fw-bolder ms-2">Eternal Library</span>
       </a>
       <a href="javascript:void(0);" class="layout-menu-toggle menu-link text-large ms-auto d-block d-xl-none">
         <i class="bx bx-chevron-left bx-sm align-middle"></i>
@@ -39,55 +39,106 @@
       <li class="menu-item">
         <a href="index.php" class="menu-link">
           <i class="menu-icon tf-icons bx bx-home-circle"></i>
-          <div>Home</div>
+          <div>Dashboard</div>
         </a>
       </li>
 
       <!-- Management Header -->
-      <li class="menu-header small text-uppercase"><span>Management</span></li>
+      <li class="menu-header small text-uppercase"><span>Content Management</span></li>
 
       <!-- User Management -->
       <li class="menu-item">
-        <a href="userManagement.php" class="menu-link">
+        <a href="javascript:void(0);" class="menu-link menu-toggle">
           <i class="menu-icon tf-icons bx bx-user"></i>
-          <div>User Management</div>
+          <div>Users</div>
         </a>
+        <ul class="menu-sub">
+          <li class="menu-item">
+            <a href="addUser.php" class="menu-link">
+              <i class="menu-icon tf-icons bx bx-user-plus"></i>
+              <div>Add New User</div>
+            </a>
+          </li>
+          <li class="menu-item">
+            <a href="userManagement.php" class="menu-link">
+              <i class="menu-icon tf-icons bx bx-user"></i>
+              <div>User Management</div>
+            </a>
+          </li>
+        </ul>
       </li>
 
+      <!-- Author Management -->
+            <li class="menu-item">
+        <a href="javascript:void(0);" class="menu-link menu-toggle">
+          <i class="menu-icon tf-icons bx bx-user"></i>
+          <div>Authors</div>
+        </a>
+        <ul class="menu-sub">
+          <li class="menu-item">
+            <a href="addAuthor.php" class="menu-link">
+              <i class="menu-icon tf-icons bx bx-user-plus"></i>
+              <div>Add New Author</div>
+            </a>
+          </li>
+          <li class="menu-item">
+            <a href="authorManagement.php" class="menu-link">
+              <i class="menu-icon tf-icons bx bx-user"></i>
+              <div>Author Management</div>
+            </a>
+          </li>
+        </ul>
+      </li>  
+      
       <!-- Book Management -->
       <li class="menu-item">
         <a href="javascript:void(0);" class="menu-link menu-toggle">
           <i class="menu-icon tf-icons bx bx-book"></i>
-          <div>Book Management</div>
+          <div>Books</div>
         </a>
         <ul class="menu-sub">
           <li class="menu-item">
-            <a href="authorManagement.php" class="menu-link">
-              <div>Author Management</div>
-            </a>
-          </li>
-          <li class="menu-item">
             <a href="genreManagement.php" class="menu-link">
-              <div>Genre Management</div>
+              <i class="menu-icon tf-icons bx bx-category"></i>
+              <div>Genre Mangement</div>
             </a>
           </li>
           <li class="menu-item">
             <a href="addBook.php" class="menu-link">
+              <i class="menu-icon tf-icons bx bx-book-add"></i>
               <div>Add Book</div>
             </a>
           </li>
           <li class="menu-item">
             <a href="bookManagement.php" class="menu-link">
+              <i class="menu-icon tf-icons bx bx-library"></i>
               <div>Book Management</div>
             </a>
           </li>
         </ul>
       </li>
+      
+      <!-- Stock Management -->
+      <li class="menu-item">
+        <a href="stockManagement.php" class="menu-link">
+          <i class="menu-icon tf-icons bx bx-store"></i>
+          <div>Stock Management</div>
+        </a>
+      </li>
+      
        <!-- Orders Management -->
       <li class="menu-item">
         <a href="orders.php" class="menu-link">
           <i class="menu-icon tf-icons bx bx-receipt"></i>
           <div>Orders Management</div>
+        </a>
+      </li>
+      
+      <!-- Stock Management -->
+      <li class="menu-item"> 
+        <a href="generateReport.php" class="menu-link">
+          <i class="menu-icon tf-icons bx  bx-chart-bar-rows"></i>
+          <div>Report Management</div>
         </a>
       </li>
     </ul>

@@ -1,4 +1,5 @@
 <?php
+session_start();
 require('../utilities/config.php');
 //Delete report
 if (isset($_GET['delete_id'])) {
