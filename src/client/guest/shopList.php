@@ -482,7 +482,7 @@
                             // ALL BOOKS
                             else {
                                 if ($search) {
-                                    $bookQuery = "SELECT b.*, sb.price, AVG(r.rating) AS avg_rating, COUNT(r.review_id) AS review_count
+                                    $bookQuery = "SELECT b.*, MAX(sb.price) as price ,AVG(r.rating) AS avg_rating, COUNT(r.review_id) AS review_count
                                             FROM book b
                                             JOIN book_author ba ON b.book_id = ba.book_id
                                             LEFT JOIN sale_book sb ON b.book_id = sb.book_id
@@ -491,7 +491,7 @@
                                             GROUP BY b.book_id, b.title, b.isbn, b.image_path, b.format, b.description, 
                                                      b.publication_year, b.publisher, b.language, b.nr_pages, sb.price";
                                 } else {
-                                    $bookQuery = "SELECT b.*, sb.price, AVG(r.rating) AS avg_rating, COUNT(r.review_id) AS review_count
+                                    $bookQuery = "SELECT b.*, sb.price 
                                             FROM book b
                                             JOIN book_author ba ON b.book_id = ba.book_id
                                             LEFT JOIN sale_book sb ON b.book_id = sb.book_id
@@ -507,8 +507,8 @@
                                 $page = $currentPage;
                                 $startPos = ($page-1)*$perPage;
                                 if ($search) {
-                                    $bookQueryPerPage = "SELECT b.*, sb.price, AVG(r.rating) AS avg_rating, COUNT(r.review_id) AS review_count
-                                            FROM book b, AVG(r.rating) AS avg_rating
+                                    $bookQueryPerPage = "SELECT b.*, sb.price 
+                                            FROM book b
                                             JOIN book_genre bg ON b.book_id = bg.book_id
                                             LEFT JOIN sale_book sb ON b.book_id = sb.book_id
                                             LEFT JOIN review r ON b.book_id = r.book_id
@@ -517,7 +517,7 @@
                                                      b.publication_year, b.publisher, b.language, b.nr_pages, sb.price
                                             LIMIT $startPos, $perPage";
                                 } else {
-                                    $bookQueryPerPage = "SELECT b.*, sb.price, AVG(r.rating) AS avg_rating, COUNT(r.review_id) AS review_count
+                                    $bookQueryPerPage = "SELECT b.*, sb.price 
                                             FROM book b
                                             JOIN book_author ba ON b.book_id = ba.book_id
                                             LEFT JOIN sale_book sb ON b.book_id = sb.book_id

@@ -1,106 +1,117 @@
-<?php
-session_start();
-require('../utilities/config.php'); 
-
-// Delete user
-if (isset($_GET['delete_id'])) {
-    $delete_id = $_GET['delete_id'];
-    $delete_query = "DELETE FROM users WHERE id = ?";
-    $stmt = $conn->prepare($delete_query);
-    $stmt->bind_param("i", $delete_id);
-    if ($stmt->execute()) {
-        header("Location: userManagement.php");
-        exit;
-    }
-}
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_id'])) {
-    require('../utilities/config.php');
-
-    $edit_id = (int) $_POST['edit_id'];
-    $user_id = $_POST['user_id'];
-    $full_name = $_POST['full_name'];
-    $email = $_POST['email'];
-    $phone = $_POST['phone'];
-    $address = $_POST['address'];
-    $username = $_POST['username'];
-    $role = $_POST['role'];
-    $gender = $_POST['gender'];
-    $birthday = $_POST['birthday'];
-    $password = !empty($_POST['password']) ? password_hash($_POST['password'], PASSWORD_DEFAULT) : null;
-
-    $image_path = null;
-    if (isset($_FILES['profile_image']) && $_FILES['profile_image']['error'] === UPLOAD_ERR_OK) {
-        $target_dir = "../assets/images/users/";
-        if (!file_exists($target_dir)) {
-            mkdir($target_dir, 0755, true);
-        }
-        $image_name = basename($_FILES["profile_image"]["name"]);
-        $target_file = $target_dir . time() . "_" . $image_name;
-        if (move_uploaded_file($_FILES["profile_image"]["tmp_name"], $target_file)) {
-            $image_path = $target_file;
-        }
-    }
-   
-
-    $update_query = "UPDATE users SET user_id=?, full_name=?, email=?, phone=?, address=?, username=?, role=?, gender=?, birthday=?";
-    $params = [$user_id, $full_name, $email, $phone, $address, $username, $role, $gender, $birthday];
-    $types = "sssssssss";
-
-    if ($password) {
-        $update_query .= ", password=?";
-        $params[] = $password;
-        $types .= "s";
-    }
-
-    if ($image_path) {
-        $update_query .= ", image_path=?";
-        $params[] = $image_path;
-        $types .= "s";
-    }
-
-    $update_query .= " WHERE id=?";
-    $params[] = $edit_id;
-    $types .= "i";
-
-    $stmt = $conn->prepare($update_query);
-    if ($stmt === false) {
-        die("Prepare failed: " . $conn->error);
-    }
-
-    $stmt->bind_param($types, ...$params);
-
-    if ($stmt->execute()) {
-        header("Location: userManagement.php");
-        exit;
-    } else {
-        echo "Error updating user: " . $stmt->error;
-    }
-}
-
-
-$usersPerPage = 5;
-$page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
-$offset = ($page - 1) * $usersPerPage;
-
-
-$totalUsersQuery = "SELECT COUNT(*) AS total FROM users";
-$totalUsersResult = $conn->query($totalUsersQuery);
-$totalUsersRow = $totalUsersResult->fetch_assoc();
-$totalUsers = $totalUsersRow['total'];
-$totalPages = ceil($totalUsers / $usersPerPage);
-$query = "SELECT * FROM users LIMIT $usersPerPage OFFSET $offset";
-$result = $conn->query($query);
-?>
-
 <!DOCTYPE html>
 <html lang="en">
+<?php
+    session_start();
+    ob_start();
+    if(!isset($_SESSION['username'])){
+        echo "<script>window.location.href='addUser.php'</script>";
+    }
+    require_once('../utilities/config.php');
+?>
+ 
 <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>User Management | BookNoW Admin</title>
-    <!-- Include your stylesheets here -->
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+
 </head>
 
 <body>
+    <?php 
+        // Delete user
+    if (isset($_GET['delete_id'])) {
+        $delete_id = $_GET['delete_id'];
+        $delete_query = "DELETE FROM users WHERE id = ?";
+        $stmt = $conn->prepare($delete_query);
+        $stmt->bind_param("i", $delete_id);
+        if ($stmt->execute()) {
+            echo "<script>window.location.href='userManagement.php'</script>";
+            //header("Location: userManagement.php");
+            exit;
+        }
+    }
+    
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_id'])) {
+        //require('../utilities/config.php');
+    
+        $edit_id = (int) $_POST['edit_id'];
+        $user_id = $_POST['user_id'];
+        $full_name = $_POST['full_name'];
+        $email = $_POST['email'];
+        $phone = $_POST['phone'];
+        $address = $_POST['address'];
+        $username = $_POST['username'];
+        $role = $_POST['role'];
+        $gender = $_POST['gender'];
+        $birthday = $_POST['birthday'];
+        $password = !empty($_POST['password']) ? password_hash($_POST['password'], PASSWORD_DEFAULT) : null;
+    
+        $image_path = null;
+        if (isset($_FILES['profile_image']) && $_FILES['profile_image']['error'] === UPLOAD_ERR_OK) {
+            $target_dir = "../assets/images/users/";
+            if (!file_exists($target_dir)) {
+                mkdir($target_dir, 0755, true);
+            }
+            $image_name = basename($_FILES["profile_image"]["name"]);
+            $target_file = $target_dir . time() . "_" . $image_name;
+            if (move_uploaded_file($_FILES["profile_image"]["tmp_name"], $target_file)) {
+                $image_path = $target_file;
+            }
+        }
+       
+    
+        $update_query = "UPDATE users SET user_id=?, full_name=?, email=?, phone=?, address=?, username=?, role=?, gender=?, birthday=?";
+        $params = [$user_id, $full_name, $email, $phone, $address, $username, $role, $gender, $birthday];
+        $types = "sssssssss";
+    
+        if ($password) {
+            $update_query .= ", password=?";
+            $params[] = $password;
+            $types .= "s";
+        }
+    
+        if ($image_path) {
+            $update_query .= ", image_path=?";
+            $params[] = $image_path;
+            $types .= "s";
+        }
+    
+        $update_query .= " WHERE id=?";
+        $params[] = $edit_id;
+        $types .= "i";
+    
+        $stmt = $conn->prepare($update_query);
+        if ($stmt === false) {
+            die("Prepare failed: " . $conn->error);
+        }
+    
+        $stmt->bind_param($types, ...$params);
+    
+        if ($stmt->execute()) {
+            echo "<script>window.location.href='userManagement.php'</script>";
+    
+            exit;
+        } else {
+            echo "Error updating user: " . $stmt->error;
+        }
+    }
+    
+    
+    $usersPerPage = 5;
+    $page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
+    $offset = ($page - 1) * $usersPerPage;
+    
+    
+    $totalUsersQuery = "SELECT COUNT(*) AS total FROM users";
+    $totalUsersResult = $conn->query($totalUsersQuery);
+    $totalUsersRow = $totalUsersResult->fetch_assoc();
+    $totalUsers = $totalUsersRow['total'];
+    $totalPages = ceil($totalUsers / $usersPerPage);
+    $query = "SELECT * FROM users LIMIT $usersPerPage OFFSET $offset";
+    $result = $conn->query($query);
+    ?>
     <div class="layout-container">
         <!-- Include the menu and navbar -->
         <?php include('../utilities/menu.php'); ?>
@@ -111,7 +122,7 @@ $result = $conn->query($query);
 
                 <div class="container-xxl flex-grow-1 container-p-y">
                     <h4 class="fw-bold py-3 mb-4">
-                        <span class="text-muted fw-light">Admin /</span> User Management
+                        <span class="text-muted fw-light">User Management /</span> User Management
                     </h4>
                     <div class="card-body">
                         <div class="col mb-12 d-flex justify-content-end">

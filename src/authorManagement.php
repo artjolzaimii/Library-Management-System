@@ -1,7 +1,8 @@
 <?php
-require_once('../utilities/config1.php');
-session_start();
+require_once('../utilities/config.php');
 
+ob_start();
+session_start();
 if (!isset($_SESSION['role']) || (strtolower($_SESSION['role']) !== 'admin')) {
     header("Location: ../client/guest/mainPage.php");
     exit();
@@ -164,7 +165,6 @@ if (isset($_GET['delete_id'])) {
                                             echo "<td>" . $row['nationality'] . "</td>";
                                             echo "<td>" . $row['birth_year'] . "</td>";
                                             echo "<td>" . (empty($row['death_year']) || $row['death_year'] == '0000' ? '-' : $row['death_year']) . "</td>";
-                                            echo "<td>" . substr($row['bio'], 0, 40) . (strlen($row['bio']) > 40 ? "..." : "") . "</td>";
                                             echo "<td>
                                                <!-- View Button -->
                                                 <button type='button' class='btn rounded-pill btn-icon btn-outline-primary' data-bs-toggle='modal' data-bs-target='#viewAuthorModal{$row['author_id']}' title='View'>
@@ -307,4 +307,4 @@ if (isset($_GET['delete_id'])) {
     <script src="../assets/js/main.js"></script>
     
 </body>
-</html>
+</html><?php ob_flush()?>
