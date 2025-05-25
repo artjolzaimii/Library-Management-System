@@ -1,6 +1,6 @@
 <?php 
     session_start();
-    require_once("../utilities/config.php");
+    require_once("../utilities/config1.php");
 
     if($_SERVER["REQUEST_METHOD"] == "POST"){
         $name = $conn->real_escape_string(trim($_POST['full_name']));
@@ -38,12 +38,9 @@
           $stmt->bind_param("sssiis", $name, $bio, $nationality, $birthYear, $deathYear, $imagePath);
           
             if($stmt->execute()) {
-              echo "<div class='alert alert-success'>Author added successfully!</div>";
-              echo "<script>
-              setTimeout(function() {
-                window.location.href = 'authorManagement.php';
-              }, 2000);
-              </script>";
+              $_SESSION['message'] = "<div class='alert alert-success'>Author added successfully!</div>";
+              header("Location: authorManagement.php");
+              exit();
           } else {
               echo "<div class='alert alert-danger'>Error: " . $stmt->error . "</div>";
           }
