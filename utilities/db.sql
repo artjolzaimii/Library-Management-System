@@ -151,6 +151,7 @@ CREATE TABLE wishlist (
     wishlist_id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     book_id INT NOT NULL,
+    notified TINYINT(1) NOT NULL DEFAULT 0;
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (book_id) REFERENCES book(book_id) ON DELETE CASCADE
