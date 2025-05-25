@@ -4,7 +4,7 @@ ob_start();
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
-require_once("../../../utilities/config.php");
+require_once("../../../utilities/config1.php");
 $error = "";
 
 // Generate a session token if none exists
@@ -39,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['username']) && isset(
                     if ($user['role'] === 'Client') {
                         header("Location: mainPage.php");
                     } else {
-                        header("Location: ../../addBook.php");
+                        header("Location: ../../adminDashboard.php");
                     }
                     exit();
                 } else {
