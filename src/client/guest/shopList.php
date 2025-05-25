@@ -176,11 +176,14 @@
                                                         <li><i class="fa-solid fa-star"></i> '.($book['avg_rating']==0? 0: round($book['avg_rating'],2) )."(".$book['review_count'].")" .' </li> 
                                                     </ul>
                                                     <div class="shop-button">
-                                                        <a href="'.htmlspecialchars($book['book_path']).'" class="theme-btn" target="_blank">Read/Download</a>
-                                                    </div>
+                                                            <a href="bookDetails.php?isbn='.$book['isbn'].'" class="theme-btn">Read/Download</a>
+                                                            </div>
+
                                                 </div>
                                             </div>
                                           </div>';
+
+                                          
                                     $timer++;
                                 }
                                 // Pagination for E-Books

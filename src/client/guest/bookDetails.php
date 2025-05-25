@@ -331,8 +331,8 @@
                                                     }       
                                                 }
                                             ?>
-                                        >−</button>
-                                        <input type="number" name="quantity" id="qty2" min="1" max="199" step="1" value="1"
+                                         ></button>
+                                          <input type="number" name="quantity" id="qty2" min="1" max="199" step="1" value="1"
                                             <?php 
                                                 if($row['format']=='For Sale' ){
                                                     if($formatRow['inventory']<0){
@@ -342,7 +342,7 @@
                                                 
                                             ?>
                                             ?>
-                                        >
+                                        
                                         <button class="qtyplus" aria-hidden="true"
                                             <?php 
                                                 if($row['format']=='For Sale'){
@@ -351,65 +351,76 @@
                                                     }       
                                                 }
                                             ?>
-                                        >+</button>
+                                        ></button>
                                     </p>
                                 </div>
-                                <button type="button" class="theme-btn style-2" data-bs-toggle="modal"
-                                    data-bs-target="#readMoreModal" <?php 
-                                                if($row['format']!='E-Book'){
-                                                    echo "style=\"display: none;\"";
-                                                }
-                                            ?>>
-                                    Read A little
-                                </button>
-                                <!-- Read More Modal -->
-                                <div class="modal fade" id="readMoreModal" tabindex="-1"
-                                    aria-labelledby="readMoreModalLabel" aria-hidden="true">
-                                    <div class="modal-dialog">
+                              
+
+                                                                                                
+                                                                    <!-- Read/Download Button -->
+                                    <button type="button"
+                                            class="theme-btn"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#readBookModal<?= $row['book_id'] ?>">
+                                    <i class="bx bx-book-open"></i> Read/Download
+                                    </button>
+
+                                    <!-- Modal for Read/Download Preview -->
+                                    <div class="modal fade" id="readBookModal<?= $row['book_id'] ?>" tabindex="-1" aria-hidden="true">
+                                    <div class="modal-dialog modal-xl">
                                         <div class="modal-content">
-                                            <div class="modal-body"
-                                                style="background-image: url(../assets/img/popupBg.png);">
-                                                <div class="close-btn">
-                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                                        aria-label="Close"></button>
-                                                </div>
-                                                <div class="readMoreBox">
-                                                    <div class="content">
-                                                        <h3 id="readMoreModalLabel">The Role Of Book</h3>
-                                                        <p>
-                                                            Educating the Public <br>
-                                                            Political books play a crucial role in educating the public
-                                                            about political theories, historical events, policies, and
-                                                            the workings of governments. They provide readers with
-                                                            insights into complex political concepts and the historical
-                                                            context behind current events, helping to foster a more
-                                                            informed citizenry. <br><br>
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">Preview & Download: <?= htmlspecialchars($row['title']) ?></h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                        </div>
 
-                                                            Shaping Public Opinion <br>
-                                                            Authors of political books often aim to influence public
-                                                            opinion by presenting arguments and perspectives on various
-                                                            issues. These books can sway readers' views, either
-                                                            reinforcing their existing beliefs or challenging them to
-                                                            consider alternative viewpoints. This influence can extend
-                                                            to political debates and discussions in the public sphere.
-                                                            <br><br>
+                                        <div class="modal-body">
+                                            <?php
+                                            $book_id = $row['book_id'];
+                                            $previewDir = "../../../uploads/previews/$book_id.pdf";
+                                            $ebookPath = "../../../uploads/eBooks/$book_id.pdf";
 
-                                                            Documenting History <br>
-                                                            Political books serve as valuable records of historical
-                                                            events and political movements. They document the thoughts,
-                                                            actions, and decisions of political leaders and activists,
-                                                            providing future generations with a detailed account of
-                                                            significant periods and events. This historical
-                                                            documentation is essential for understanding the evolution
-                                                            of political systems and ideologies.
+                                            // Show previews (PDF or images)
+                                            if (is_dir($previewDir)) {
+                                            $files = glob($previewDir . "*.{jpg,jpeg,png,pdf}", GLOB_BRACE);
+                                            if ($files && count($files) > 0) {
+                                                echo "<div class='row'>";
+                                                foreach ($files as $file) {
+                                                $fileUrl = htmlspecialchars($file);
+                                                if (preg_match('/\.(jpg|jpeg|png)$/i', $file)) {
+                                                    echo "<div class='col-md-3 mb-3'><img src='$fileUrl' class='img-fluid rounded' style='border:1px solid #ccc;'></div>";
+                                                } elseif (preg_match('/\.pdf$/i', $file)) {
+                                                    echo "<div class='col-12 mb-3'><embed src='$fileUrl' type='application/pdf' width='100%' height='500px'></div>";
+                                                }
+                                                }
+                                                echo "</div>";
+                                            } else {
+                                                echo "<p class='text-muted'>No preview available for this book.</p>";
+                                            }
+                                            } else {
+                                            echo "<p class='text-muted'>No preview available for this book.</p>";
+                                            }
+                                            ?>
+                                        </div>
 
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            </div>
+                                        <div class="modal-footer">
+                                            <?php
+                                            if (file_exists($ebookPath)) {
+                                            $ebookUrl = htmlspecialchars($ebookPath);
+                                            echo "<a href='$ebookUrl' download class='btn btn-primary' target='_blank'><i class='bx bx-download'></i> Download Full Book (PDF)</a>";
+                                            } else {
+                                            echo "<button class='btn btn-secondary' disabled>No PDF Available</button>";
+                                            }
+                                            ?>
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                        </div>
                                         </div>
                                     </div>
-                                </div>
+                                    </div>
+
+
+
+
                                 <!-- Submit button of form-->
                                 <button  type="submit" class="theme-btn"  <?php if($row['format']=='E-Book' || $row['format']=='For Borrow'){
                                                     echo "style=\"display: none;\"";
