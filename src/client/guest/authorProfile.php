@@ -1,6 +1,6 @@
 <?php 
     require_once("./clientmenu.php");
-    require_once("../../../utilities/config.php");
+    require_once("../../../utilities/config1.php");
     if(isset($_GET['authorId'])){
         $authorId=mysqli_real_escape_string($conn,$_GET['authorId']);
         $query="SELECT a.full_name, bio, nationality, birth_year, death_year, image_path, COUNT(a.author_id) as nr_books
@@ -34,9 +34,9 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="author" content="pixel-plus">
-    <meta name="description" content="Eternal Library- Books Library eCommerce Store">
+    <meta name="description" content="Eternal Library- Books Library eCommerce Store">
     <!-- ======== Page title ============ -->
-    <title>Eternal Library - Books Library eCommerce Store</title>
+    <title>Eternal Library - Books Library eCommerce Store</title>
 
     <?php 
         require_once("./styleAndScripts.php");
@@ -227,6 +227,20 @@
             </div>
         </div>
     </section>
+
+    <?php
+    //Fetch author's books
+    $booksQuery = "SELECT b.*, sb.price 
+                FROM book b 
+                JOIN book_author ba ON b.book_id = ba.book_id 
+                LEFT JOIN sale_book sb ON b.book_id = sb.book_id 
+                WHERE ba.author_id = ?";
+    $booksStmt = mysqli_prepare($conn, $booksQuery);
+    $booksStmt->bind_param("i", $authorId);
+    $booksStmt->execute();
+    $booksResult = $booksStmt->get_result();
+    ?>
+
     
     <!-- Author's books -->
     <?php 
@@ -286,26 +300,31 @@
                     <div class="swiper-slide">
                         <div class="shop-box-items style-2">
                             <div class="book-thumb center">
-                                <a href="shop-details"><img src="../../../uploads/images/<?php echo $book['image_path']?>" alt="img"></a>
-                                
-                                <ul class="shop-icon d-grid justify-content-center align-items-center">
+                                <a href="bookDetails.php?isbn=<?php echo $book['isbn']?>">
+                                    <img src="../../../uploads/images/<?php echo $book['image_path']?>" alt="<?php echo htmlspecialchars($book['title'])?>">
+                                </a>
+                                <ul class="post-box">
                                     <li>
-                                        <a href="shop-cart.html"><i class="far fa-heart"></i></a>
+                                        Hot
+                                    </li>
+                                    <li>
+                                        -30%
                                     </li>
                                 </ul>
                                 <ul class="shop-icon d-grid justify-content-center align-items-center">
                                     <li>
-                                        <a href="shop-cart.html"><i class="far fa-heart"></i></a>
+                                    <a href="wishlist.php?add=<?php echo $book['book_id']?>"><i class="far fa-heart"></i></a>
                                     </li>
-                                    >
                                     <li>
                                         <a href="bookDetails.php?isbn=<?php echo $book['isbn']?>"><i class="far fa-eye"></i></a>
                                     </li>
                                 </ul>
                             </div>
                             <div class="shop-content">
-                                <h3><a href="bookDetails.php?isbn=<?php echo $book['isbn']?>"><?php echo $book['title']?></a></h3>
+                                <h5><?php echo htmlspecialchars($book['title'])?></h5>
+                                <h3><a href="bookDetails.php?isbn=<?php echo $book['isbn']?>"><?php echo htmlspecialchars($book['title'])?></a></h3>
                                 <ul class="price-list">
+                                    <li>$<?php echo number_format($book['price'], 2)?></li>
                                     <li><?php echo $book['price']?></li>
                                 
                                 </ul>
@@ -458,5 +477,4 @@
     <!-- Footer Section start  -->
     <?php include("footer.php")?>
 </body>
-
 </html>

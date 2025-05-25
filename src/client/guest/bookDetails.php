@@ -1,7 +1,7 @@
 <!-- Header Section Start -->
 <?php 
     include("clientMenu.php");
-    require_once("../../../utilities/config.php");
+    require_once("../../../utilities/config1.php");
 ?>
 
 
@@ -43,7 +43,7 @@
 <body>
 <!-- Find book by isbn , placed in the url by a get request-->
    <?php
-        require_once("../../../utilities/config.php");
+        require_once("../../../utilities/config1.php");
         
         $isbn = mysqli_real_escape_string($conn, $_GET['isbn']);
         
@@ -416,9 +416,24 @@
                                                 }
                                             ?>>Add To Cart</button>
                                 <div class="icon-box">
-                                    <a href="shop-details.html" class="icon">
-                                        <i class="far fa-heart"></i>
-                                    </a>
+                                    <?php if(isset($_SESSION['username'])){
+                                        $userId = getUserId($_SESSION['username']);
+                                        if(isInWishlist($row['book_id'], $userId)){
+                                            echo "<a href='wishlist.php?remove=" . $row['book_id'] . "' class='icon'>
+                                                    <i class='far fa-heart'></i>
+                                                </a>";
+                                        } else {
+                                            echo "<a href='wishlist.php?add=" . $row['book_id'] . "' class='icon'>
+                                                    <i class='far fa-heart'></i>
+                                                </a>";
+                                        }
+                                    } else {
+                                        echo "<a href='login.php' class='icon'>
+                                                <i class='far fa-heart'></i>
+                                            </a>";
+                                    }
+                                    ?>
+                                    
                                     <a href="shop-details.html" class="icon-2">
                                         <img src="../assets/img/icon/shuffle.svg" alt="svg-icon">
                                     </a>

@@ -1,6 +1,7 @@
 <?php 
     include("clientMenu.php");
-    require_once("../../../utilities/config.php");
+    require_once("../../../utilities/config1.php");
+    require_once("wishlistFunctionality.php");
 ?>
 
 <!DOCTYPE html>
@@ -13,9 +14,9 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="author" content="pixel-plus">
-    <meta name="description" content="EternaLibrary - Books Library eCommerce Store">
+    <meta name="description" content="EternaLibrary - Books Library eCommerce Store">
     <!-- ======== Page title ============ -->
-    <title>Eterna Library - Books Library eCommerce Store</title>
+    <title>Eterna Library - Books Library eCommerce Store</title>
     
     <?php 
         require_once("./styleAndScripts.php");
@@ -241,7 +242,7 @@
                                             <img src="../../../Uploads/images/' . htmlspecialchars($img) . '" alt="img">
                                         </a>
                                         <ul class="shop-icon d-grid justify-content-center align-items-center">
-                                            <li><a href="shop-cart.html"><i class="far fa-heart"></i></a></li>
+                                            <li><a href="wishlist.php?add=' . $book['book_id'] . '" class="icon"><i class="far fa-heart"></i></a></li>
                                             <li><a href="bookDetails.php?isbn=' . htmlspecialchars($book['isbn']) . '"><i class="far fa-eye"></i></a></li>
                                         </ul>
                                         <div class="shop-button">
@@ -296,7 +297,7 @@
             </div>
             <div class="row">
                 <?php
-                require_once("../../../utilities/config.php");
+                require_once("../../../utilities/config1.php");
 
                 $query = "SELECT 
                         b.book_id, b.isbn, b.title, b.image_path, sb.price,
@@ -308,7 +309,7 @@
                     FROM book b
                     LEFT JOIN review r ON b.book_id = r.book_id
                     LEFT JOIN sale_book sb ON b.book_id = sb.book_id
-                    GROUP BY b.book_id
+                    GROUP BY b.book_id, b.isbn, b.title, b.image_path, sb.price
                     ORDER BY avg_rating DESC
                     LIMIT 6;
                 ";
@@ -334,7 +335,23 @@
                                     <h3><a href="<?= $book_url ?>"><?= htmlspecialchars($book['title']) ?></a></h3>
                                 </div>
                                 <ul class="shop-icon d-flex align-items-center">
-                                    <li><a href="#"><i class="far fa-heart"></i></a></li>
+                                    
+                                   <?php if(isset($_SESSION['username'])) {
+                                        $userId = getUserId($_SESSION['username']);
+                                        if(isInWishlist($book['book_id'], $userId)) {
+                                            echo '<li><a href="wishlist.php?remove='.$book['book_id'].'" class="btn btn-link" title="Remove from wishlist">
+                                                    <i class="fas fa-heart"></i>
+                                                    </a></li>';
+                                        } else {
+                                            echo '<li><a href="wishlist.php?add='.$book['book_id'].'" class="btn btn-link" title="Add to wishlist">
+                                                    <i class="far fa-heart"></i>
+                                                    </a></li>';
+                                        }
+                                    } else {
+                                        echo '<a href="login.php" class="btn btn-link" title="Login to add to wishlist">
+                                                <i class="far fa-heart"></i>
+                                                </a>';
+                                    }?>
                                     
                                     <li><a href="<?= $book_url ?>"><i class="far fa-eye"></i></a></li>
                                 </ul>
@@ -388,7 +405,7 @@
                 LEFT JOIN order_book ob ON b.book_id = ob.book_id
                 LEFT JOIN review r ON b.book_id = r.book_id
                 INNER JOIN  sale_book sb ON b.book_id = sb.book_id
-                GROUP BY b.book_id
+                GROUP BY b.book_id, b.isbn, b.title, b.image_path, sb.price, sb.inventory
                 ORDER BY COUNT(ob.order_id) DESC
                 LIMIT 10
             ";
@@ -491,6 +508,8 @@
                      WHERE bg.book_id = b.book_id) AS genres
                 FROM book b LEFT JOIN review r ON b.book_id = r.book_id
                 WHERE b.format='E-Book'
+                GROUP BY b.book_id, b.isbn, b.title, b.image_path, b.format, b.description, 
+                 b.publication_year, b.publisher, b.language, b.nr_pages
                 GROUP BY b.book_id
                 LIMIT 4";
         $ebooks=mysqli_query($conn, $query);
@@ -626,7 +645,7 @@
                             </a>
                             <ul class="shop-icon d-grid justify-content-center align-items-center">
                                 <li>
-                                    <a href="shop-cart.html"><i class="far fa-heart"></i></a>
+                                    <a href="wishlist.php?add=3"><i class="far fa-heart"></i></a>
                                 </li>
                                 <li>
                                     <a href="bookDetails.php?isbn=<?php echo urlencode($book['isbn']); ?>"><i class="far fa-eye"></i></a>
@@ -809,7 +828,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                     By Admin
                                 </li>
                             </ul>
-                            <h3><a href="news-details.html">Playful Picks Paradise: Kids’ Essentials with Dash.</a></h3>
+                            <h3><a href="news-details.html">Playful Picks Paradise: Kids' Essentials with Dash.</a></h3>
                             <a href="news-details.html" class="theme-btn-2">Read More <i
                                     class="fa-regular fa-arrow-right-long"></i></a>
                         </div>
@@ -835,7 +854,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                     By Admin
                                 </li>
                             </ul>
-                            <h3><a href="news-details.html">Tiny Emporium: Playful Picks for Kids’ Delightful Days.</a>
+                            <h3><a href="news-details.html">Tiny Emporium: Playful Picks for Kids' Delightful Days.</a>
                             </h3>
                             <a href="news-details.html" class="theme-btn-2">Read More <i
                                     class="fa-regular fa-arrow-right-long"></i></a>
