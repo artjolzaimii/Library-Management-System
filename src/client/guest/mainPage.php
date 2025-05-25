@@ -246,7 +246,7 @@
                                             <li><a href="bookDetails.php?isbn=' . htmlspecialchars($book['isbn']) . '"><i class="far fa-eye"></i></a></li>
                                         </ul>
                                         <div class="shop-button">
-                                            <a href="' . ($book['format'] === 'For Borrow' ? '#' : 'mainPage.php?add=' . htmlspecialchars($book['book_id'])) . '"
+                                            <a href="' . ($book['format'] === 'For Borrow' ? 'mainPage.php#borrow' : ($book['format'] === 'For Sale'? 'mainPage.php?add=' . htmlspecialchars($book['book_id']): 'mainPage.php?#ebook') ). '"
                                              class="theme-btn' . ($book['format'] === 'For Borrow' ? ' disabled' : '') . '"
                                              ' . ($book['format'] === 'For Borrow' ? 'onclick="return false;"' : '') . '>
                                              ' . ($book['format'] === 'For Sale' ? 'Add To Cart' : ($book['format'] === 'E-Book' ? 'Read/Download' : 'Free Borrow')) . '
@@ -257,7 +257,7 @@
                                         <h5>' . htmlspecialchars($book['genres'] ?? 'No Genres') . '</h5>
                                         <h3><a href="bookDetails.php?isbn=' . htmlspecialchars($book['isbn']) . '">' . htmlspecialchars($book['title'] ?? 'No Title') . '</a></h3>
                                         <ul class="price-list">
-                                            <li>' . ($book['format'] === 'For Sale' ? '$' . htmlspecialchars($book['price'] ?? '20.00') : ($book['format'] === 'For Borrow' ? 'Free' : 'Free')) . '</li>
+                                            <li>' . ($book['format'] === 'For Sale' ? 'All ' . htmlspecialchars($book['price'] ?? '20.00') : ($book['format'] === 'For Borrow' ? 'Free' : 'Free')) . '</li>
                                         </ul>
                                         <ul class="author-post">
                                             <li class="authot-list">

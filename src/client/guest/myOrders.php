@@ -78,7 +78,7 @@ $orders = $ordersQuery->get_result();
                                             <td><?= htmlspecialchars($row['email']) ?></td>
                                             <td><?= htmlspecialchars($row['phone']) ?></td>
                                             <td>
-                                                <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#viewBillingModal<?= $row['order_id'] ?>">
+                                                <button type="button" class="btn btn-sm btn-primary theme-btn" data-bs-toggle="modal" data-bs-target="#viewBillingModal<?= $row['order_id'] ?>">
                                                     View Details
                                                 </button>
                                             </td>
