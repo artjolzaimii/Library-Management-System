@@ -46,7 +46,7 @@
                                         if(isset($_SESSION['username'])):
                                     ?>
                                     <li class="has-dropdown">
-                                        <a href="about.html">
+                                        <a href="myOrders.php">
                                             My Orders
                                         </a>
                                     </li>

@@ -251,36 +251,40 @@
             
         }
         
-        $forSale="SELECT b.book_id,isbn, title, image_path , price,AVG(r.rating) AS avg_rating, COUNT(r.review_id) AS review_count
-                FROM book b INNER JOIN book_author ba ON b.book_id=ba.book_id
-                INNER JOIN sale_book sa ON sa.book_id=b.book_id
+        $forSale="SELECT b.book_id, b.isbn, b.title, b.image_path , sa. price, AVG(r.rating) AS avg_rating, COUNT(r.review_id) AS review_count
+                FROM book b 
+                INNER JOIN book_author ba ON b.book_id=ba.book_id
+                INNER JOIN sale_book sa ON sa.book_id = b.book_id
                 LEFT JOIN review r ON b.book_id = r.book_id
                 WHERE ba.author_id=?
-                GROUP BY b.book_id";
+                GROUP BY b.book_id, b.isbn, b.title, b.image_path, sa.price";
                 
         $stm=$conn->prepare($forSale);
         $stm->bind_param("i",$authorId);
         $stm->execute();
         $forSaleResult=$stm->get_result();
         
-        $forBorrow="SELECT b.book_id,isbn, title, image_path,AVG(r.rating) AS avg_rating, COUNT(r.review_id) AS review_count 
-                FROM book b INNER JOIN book_author ba ON b.book_id=ba.book_id
+        $forBorrow="SELECT b.book_id, b.isbn, b.title, b.image_path, AVG(r.rating) AS avg_rating, COUNT(r.review_id) AS review_count 
+                FROM book b 
+                INNER JOIN book_author ba ON b.book_id=ba.book_id
                 INNER JOIN borrow_book boa ON boa.book_id=b.book_id
                 LEFT JOIN review r ON b.book_id = r.book_id
                 WHERE ba.author_id=?
-                GROUP BY b.book_id"
-                ;
+                GROUP BY b.book_id, b.isbn, b.title, b.image_path";
+
         $stm=$conn->prepare($forBorrow);
         $stm->bind_param("i",$authorId);
         $stm->execute();
         $forBorrowResult=$stm->get_result();        
                 
-        $eBook="SELECT b.book_id,isbn, title, image_path,AVG(r.rating) AS avg_rating, COUNT(r.review_id) AS review_count
-                FROM book b INNER JOIN book_author ba ON b.book_id=ba.book_id
-                INNER JOIN ebook e ON e.book_id=b.book_id
+        $eBook="SELECT b.book_id,b.isbn, b.title, b.image_path, AVG(r.rating) AS avg_rating, COUNT(r.review_id) AS review_count
+                FROM book b 
+                INNER JOIN book_author ba ON b.book_id=ba.book_id
+                INNER JOIN ebook e ON e.book_id = b.book_id
                 LEFT JOIN review r ON b.book_id = r.book_id
                 WHERE ba.author_id=?
-                GROUP BY b.book_id";
+                GROUP BY b.book_id, b.isbn, b.title, b.image_path";
+                
         $stm=$conn->prepare($eBook);
         $stm->bind_param("i",$authorId);
         $stm->execute();

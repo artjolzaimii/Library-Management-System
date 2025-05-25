@@ -1,4 +1,8 @@
 <?php
+if (!isset($row) || !isset($row['order_id'])) {
+    die("Error: Order data not provided");
+}
+
 $order_id = $row['order_id'];
 $billingQuery = $conn->prepare("SELECT * FROM order_billing_details WHERE order_id = ?");
 $billingQuery->bind_param("i", $order_id);

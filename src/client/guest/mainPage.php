@@ -387,23 +387,11 @@
                                     <h3><a href="<?= $book_url ?>"><?= htmlspecialchars($book['title']) ?></a></h3>
                                 </div>
                                 <ul class="shop-icon d-flex align-items-center">
-                                    
-                                   <?php if(isset($_SESSION['username'])) {
-                                        $userId = getUserId($_SESSION['username']);
-                                        if(isInWishlist($book['book_id'], $userId)) {
-                                            echo '<li><a href="wishlist.php?remove='.$book['book_id'].'" class="btn btn-link" title="Remove from wishlist">
-                                                    <i class="fas fa-heart"></i>
-                                                    </a></li>';
-                                        } else {
-                                            echo '<li><a href="wishlist.php?add='.$book['book_id'].'" class="btn btn-link" title="Add to wishlist">
-                                                    <i class="far fa-heart"></i>
-                                                    </a></li>';
-                                        }
-                                    } else {
-                                        echo '<a href="login.php" class="btn btn-link" title="Login to add to wishlist">
-                                                <i class="far fa-heart"></i>
-                                                </a>';
-                                    }?>
+                                    <?php 
+                                        echo '<li><a href="wishlist.php?add='.$book['book_id'].'" class="btn btn-link" title="Toggle wishlist">
+                                                <i class="' . (isset($_SESSION['username']) && isInWishlist($book['book_id'], getUserId($_SESSION['username'])) ? 'fas' : 'far') . ' fa-heart"></i>
+                                              </a></li>';
+                                    ?>
                                     
                                     <li><a href="<?= $book_url ?>"><i class="far fa-eye"></i></a></li>
                                 </ul>
