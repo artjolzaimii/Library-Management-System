@@ -1,8 +1,6 @@
-<div class="menu-cart">
-    <div class="cart-box">
-        <?php
+ <?php
             require_once("shoppingCartFunctionalities.php");
-            require_once("/../../../utilities/config.php");
+            require_once("../../../utilities/config1.php");
             
             
             $cartId = getShopCartId($conn);
@@ -22,6 +20,8 @@
             $totalPrice = 0;
             $cnt=0;
         ?>
+<div class="menu-cart">
+    <div class="cart-box">
         <!-- Make this div scrollable -->
         <div class="cart-items-list" style="max-height: 250px; overflow-y: auto;">
             <?php

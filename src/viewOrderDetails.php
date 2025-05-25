@@ -20,7 +20,6 @@ $billing = $billingQuery->get_result()->fetch_assoc();
       <div class="modal-body">
         <p><strong>First Name:</strong> <?= $billing['first_name'] ?? 'N/A' ?></p>
         <p><strong>Last Name:</strong> <?= $billing['last_name'] ?? 'N/A' ?></p>
-        <p><strong>Company:</strong> <?= $billing['company_name'] ?? 'N/A' ?></p>
         <p><strong>Country:</strong> <?= $billing['country'] ?? 'N/A' ?></p>
         <p><strong>Address:</strong> <?= $billing['street_address'] ?? '' ?> <?= $billing['apartment_suite'] ?? '' ?></p>
         <p><strong>City:</strong> <?= $billing['city'] ?? 'N/A' ?></p>

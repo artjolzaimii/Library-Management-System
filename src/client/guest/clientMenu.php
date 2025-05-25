@@ -2,9 +2,8 @@
     ob_start();
     if (session_status() === PHP_SESSION_NONE) session_start();
 
-    require_once("wishlistFunctionality.php");
-    
     require_once("../../../utilities/config1.php");
+    require_once("wishlistFunctionality.php");
 ?>
 
 <header id="header-sticky" class="header-1">
@@ -83,7 +82,7 @@
                         
                         <!-- Shopping cart -->
                         <?php 
-                          //  include("./ShoppingCart/basket.php");
+                            require_once("./ShoppingCart/basket.php");
                         ?>
                         <div class="header__hamburger d-xl-none my-auto">
                             <div class="sidebar__toggle">

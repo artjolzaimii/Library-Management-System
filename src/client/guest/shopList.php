@@ -490,8 +490,8 @@
                                             WHERE b.format='For Sale' AND b.title LIKE '%$search%'
                                             GROUP BY b.book_id, b.title, b.isbn, b.image_path, b.format, b.description, 
                                                      b.publication_year, b.publisher, b.language, b.nr_pages, sb.price";
-                                } else {
-                                    $bookQuery = "SELECT b.*, sb.price 
+                                } else {                                    
+                                    $bookQuery = "SELECT b.*, sb.price, AVG(r.rating) AS avg_rating
                                             FROM book b
                                             JOIN book_author ba ON b.book_id = ba.book_id
                                             LEFT JOIN sale_book sb ON b.book_id = sb.book_id
@@ -506,9 +506,8 @@
                                 $nrPages = ceil($nrBooks/$perPage);
                                 $page = $currentPage;
                                 $startPos = ($page-1)*$perPage;
-                                if ($search) {
-                                    $bookQueryPerPage = "SELECT b.*, sb.price 
-                                            FROM book b
+                                if ($search) {                                    
+                                    $bookQueryPerPage = "SELECT b.*, sb.price, AVG(r.rating) AS avg_rating, 
                                             JOIN book_genre bg ON b.book_id = bg.book_id
                                             LEFT JOIN sale_book sb ON b.book_id = sb.book_id
                                             LEFT JOIN review r ON b.book_id = r.book_id

@@ -1,6 +1,6 @@
 <?php
     require_once("clientMenu.php");
-    require_once("../../../utilities/config.php");
+    require_once("../../../utilities/config1.php");
     require_once("./ShoppingCart/shoppingCartFunctionalities.php");
     $cartId=getShopCartId($conn);
     
@@ -82,6 +82,28 @@ while($book = $allBooks->fetch_assoc()){
 
     $removeStm->bind_param("ii", $cartId, $book['book_id']);
     $removeStm->execute();
+}
+
+$insertBillingQuery = "INSERT INTO order_billing_details 
+    (order_id, first_name, last_name, email, phone, street_address, city, country, order_notes) 
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+$billingStm = $conn->prepare($insertBillingQuery);
+$billingStm->bind_param("issssssss", 
+    $orderId,
+    $firstName,
+    $lastName,
+    $email,
+    $phone,
+    $address,
+    $city,
+    $country,
+    $notes
+);
+
+if (!$billingStm->execute()) {
+    echo "<div class='alert alert-danger'>Error saving billing details: " . $conn->error . "</div>";
+    exit;
 }
 
 echo "<script>window.location.href=\"orderSentSuccessfullyPage.php\"</script>";
