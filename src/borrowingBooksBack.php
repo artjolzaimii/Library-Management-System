@@ -11,7 +11,7 @@ $phoneNumber = $_POST['phoneNumber'] ?? null;
 $address = $_POST['address'] ?? null;
 
 $sql = "
-    INSERT INTO borrowed_book (book_id, user_name, user_email, user_phone, user_address, borrow_date, return_date)
+    INSERT INTO borrowed_books (book_id, user_name, user_email, user_phone, user_address, borrow_date, return_date)
     VALUES ('$book_id', '$full_name', '$email', '$phoneNumber', '$address', '$borrow_date', '$return_date');
     UPDATE borrow_book SET inventory = inventory - 1 WHERE book_id = '$book_id';
 ";

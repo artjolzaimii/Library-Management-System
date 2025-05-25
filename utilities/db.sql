@@ -167,11 +167,17 @@ CREATE TABLE sales_reports (
 );
 
 
-CREATE TABLE `borrowed_books` (
-  `borrow_book_id` int(11) NOT NULL,
-  `book_id` int(11) DEFAULT NULL,
-  `inventory` int(11) DEFAULT NULL
-) 
+CREATE TABLE borrowed_books (
+id INT AUTO_INCREMENT PRIMARY KEY,
+book_id INT NOT NULL,
+user_name VARCHAR(255) NOT NULL,
+user_email VARCHAR(255) NOT NULL,
+user_phone VARCHAR(20) NOT NULL,
+user_address VARCHAR(255) NOT NULL,
+borrow_date DATE NOT NULL,
+return_date DATE NOT NULL,
+FOREIGN KEY (book_id) REFERENCES book(book_id)
+);
 
 
 
