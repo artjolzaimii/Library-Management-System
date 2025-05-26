@@ -169,26 +169,13 @@ CREATE TABLE sales_reports (
 
 
 CREATE TABLE borrowed_books (
-id INT AUTO_INCREMENT PRIMARY KEY,
-book_id INT NOT NULL,
-user_name VARCHAR(255) NOT NULL,
-user_email VARCHAR(255) NOT NULL,
-user_phone VARCHAR(20) NOT NULL,
-user_address VARCHAR(255) NOT NULL,
-borrow_date DATE NOT NULL,
-return_date DATE NOT NULL,
-FOREIGN KEY (book_id) REFERENCES book(book_id)
+    id INT(11) AUTO_INCREMENT PRIMARY KEY,
+    book_id INT(11) NOT NULL,
+    user_id INT(11) NOT NULL,
+    borrow_date DATE NOT NULL,
+    due_date DATE NOT NULL,
+    return_date DATE,
+    status ENUM('Borrowed', 'Returned', 'Overdue') DEFAULT 'Borrowed',
+    FOREIGN KEY (book_id) REFERENCES book(id),
+    FOREIGN KEY (user_id) REFERENCES users(id)
 );
-
-
-
-ALTER TABLE `borrow_book`
-  ADD PRIMARY KEY (`borrow_book_id`),
-  ADD KEY `book_id` (`book_id`);
-
-ALTER TABLE `borrow_book`
-  MODIFY `borrow_book_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
-
-ALTER TABLE `borrow_book`
-  ADD CONSTRAINT `borrow_book_ibfk_1` FOREIGN KEY (`book_id`) REFERENCES `book` (`book_id`);
-COMMIT;

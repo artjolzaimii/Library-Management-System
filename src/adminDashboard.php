@@ -6,8 +6,8 @@ ob_start();
 session_start();
 
 // Check if user is logged in and has admin role
-if (!isset($_SESSION['role']) || (strtolower($_SESSION['role']) !== 'admin')) {
-    header("Location: ../client/guest/mainPage.php");
+if (!isset($_SESSION['role']) || (strtolower($_SESSION['role']) == 'client')) {
+    header("Location: client/guest/mainPage.php");
     exit();
 }
 
@@ -59,24 +59,12 @@ $stats = $result->fetch_assoc();
                 
                 <div class="container-xxl flex-grow-1 container-p-y">
                     <h4 class="fw-bold py-3 mb-4">
-                        <span class="text-muted fw-light">Admin /</span> Dashboard
+                        <span class="text-muted fw-light"></span> Dashboard
                     </h4>
                     
                     <!-- Stats Cards -->
                     
                     <div class="row">
-                        <div class="col-lg-3 col-md-6 col-sm-12 mb-4">
-                            <?php if($_SESSION['role']=='Admin'):?>
-                            <div class="card stats-card bg-primary text-white h-100">
-                                <div class="card-body">
-                                    <h5 class="card-title text-white">Total Users</h5>
-                                    <h2 class="mb-0"><?php echo $stats['total_users']; ?></h2>
-                                    <small>Registered users</small>
-                                </div>
-                            </div>
-                            <?php endif;?>
-                        </div>
-                        
                         <div class="col-lg-3 col-md-6 col-sm-12 mb-4">
                             <div class="card stats-card bg-success text-white h-100">
                                 <div class="card-body">
@@ -105,6 +93,17 @@ $stats = $result->fetch_assoc();
                                     <small>Processed orders</small>
                                 </div>
                             </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6 col-sm-12 mb-4">
+                            <?php if($_SESSION['role']=='Admin'):?>
+                            <div class="card stats-card bg-primary text-white h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title text-white">Total Users</h5>
+                                    <h2 class="mb-0"><?php echo $stats['total_users']; ?></h2>
+                                    <small>Registered users</small>
+                                </div>
+                            </div>
+                            <?php endif;?>
                         </div>
                     </div>
                     
@@ -171,7 +170,7 @@ $stats = $result->fetch_assoc();
                                             <?php
                                             $ordersQuery = "SELECT o.order_id, u.full_name, o.order_date, 
                                                           GROUP_CONCAT(CONCAT(b.title,'(', ob.quantity, ')') SEPARATOR ', ') as book_titles,
-                                                          SUM(ob.book_id) as total_quantity
+                                                          SUM(ob.quantity) as total_quantity
                                                           FROM orders o
                                                           JOIN shopping_cart sc ON o.cart_id = sc.cart_id
                                                           JOIN users u ON sc.user_id = u.id
@@ -257,14 +256,14 @@ $stats = $result->fetch_assoc();
                                     echo "<tr>
                                             <td>" . htmlspecialchars($book['title']) . "</td>
                                             <td>{$book['quantity']}</td>
-                                            <td>$" . number_format($book['price'], 2) . "</td>
-                                            <td>$" . number_format($subtotal, 2) . "</td>
+                                            <td>All " . number_format($book['price'], 2) . "</td>
+                                            <td>All " . number_format($subtotal, 2) . "</td>
                                           </tr>";
                                 }
                                 
                                 echo "<tr class='fw-bold'>
                                         <td colspan='3' class='text-end'>Total:</td>
-                                        <td>$" . number_format($totalAmount, 2) . "</td>
+                                        <td>All " . number_format($totalAmount, 2) . "</td>
                                      </tr>
                                 </tbody>
                             </table>
@@ -278,14 +277,6 @@ $stats = $result->fetch_assoc();
         </div>";
     }
     ?>
-
-    <!-- Core JS -->
-    <script src="../assets/vendor/libs/jquery/jquery.js"></script>
-    <script src="../assets/vendor/libs/popper/popper.js"></script>
-    <script src="../assets/vendor/js/bootstrap.js"></script>
-    <script src="../assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
-    <script src="../assets/vendor/js/menu.js"></script>
-    <script src="../assets/js/main.js"></script>
 </body>
 </html>
 <?php 

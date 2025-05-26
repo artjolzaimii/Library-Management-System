@@ -1,5 +1,5 @@
 <?php
-// filepath: c:\xampp\htdocs\Online-Library-Management-System\src\client\guest\logInSidebar.php
+
 ob_start();
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
