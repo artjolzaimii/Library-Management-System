@@ -1,7 +1,7 @@
 <?php
-require_once __DIR__ . '/mail/PHPMailer.php';
-require_once __DIR__ . '/mail/SMTP.php';
-require_once __DIR__ . '/mail/Exception.php';
+require_once( '../mail/PHPMailer.php');
+require_once ('../mail/SMTP.php');
+require_once ('../mail/Exception.php');
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
