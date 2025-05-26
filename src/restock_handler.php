@@ -1,13 +1,7 @@
 <?php 
-    require_once('../utilities/config.php');
-    
-    function sendMail($to, $subject, $message) {
-    // There should be out email
-    $headers = "From: library@example.com\r\n";
-    $headers .= "Content-Type: text/plain; charset=UTF-8\r\n";
-    // For real use, set a valid From address and configure your mail server
-    return mail($to, $subject, $message, $headers);
-    }
+    session_start();
+    require_once('../utilities/config.php');    
+    require_once('../src/sendMail.php');	
 
     $book_id = intval($_POST['book_id']);
     $format = $_POST['format'];
@@ -46,7 +40,7 @@
             $to = $user['email'];
             $subject = "Book Available";
             $message = "Hi {$user['full_name']},\n\n\"$book_title\" is now available in the library!";
-            sendMail($to, $subject, $message);
+            sendMail($to, $subject, $message, $user['full_name']);
         }
 
         // Mark users as notified
