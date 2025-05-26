@@ -177,68 +177,70 @@
         if ($result->num_rows === 0) {
             echo '<div class="alert alert-info">Your wishlist is empty</div>';
         }
-    ?>
-    
-    
-    
-    <div class="cart-section section-padding pb-0">
-        <div class="container">
-            <div class="main-cart-wrapper">
-                <div class="row">
-                    <div class="col-12">
-                        <div class="table-responsive">
-                            <table class="table">
-                                <thead>
-                                    <tr>
-                                        <th>Product</th>
-                                        <th>Price</th>
-                                        <th>Stock</th>
-                                        <th>Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                <?php 
-                                    while($book = $result->fetch_assoc()):
-                                        $stockStatus = $book['inventory'] > 0 ? 'In Stock' : 'Out Of Stock';
-                                        $stockClass = $book['inventory'] > 0 ? 'stock-title' : 'stock-title-two';
-                                ?>
-                                    <tr>
-                                        <td>
-                                            <span class="d-flex gap-5 align-items-center">
-                                                <a href="wishlist.php?remove=<?php echo $book['book_id']?>" class="remove-icon">
-                                                    <img src="../assets/img/icon/icon-9.svg" alt="img">
-                                                </a>
-                                                <span class="cart">
-                                                    <img src="<?php echo "../../../uploads/images/".$book['image_path']?>" alt="img" style="height:100px; width:70px;">
+        else{
+            ?>
+            <div class="cart-section section-padding pb-0">
+            <div class="container">
+                <div class="main-cart-wrapper">
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Product</th>
+                                            <th>Price</th>
+                                            <th>Stock</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                    <?php 
+                                        while($book = $result->fetch_assoc()):
+                                            $stockStatus = $book['inventory'] > 0 ? 'In Stock' : 'Out Of Stock';
+                                            $stockClass = $book['inventory'] > 0 ? 'stock-title' : 'stock-title-two';
+                                    ?>
+                                        <tr>
+                                            <td>
+                                                <span class="d-flex gap-5 align-items-center">
+                                                    <a href="wishlist.php?remove=<?php echo $book['book_id']?>" class="remove-icon">
+                                                        <img src="../assets/img/icon/icon-9.svg" alt="img">
+                                                    </a>
+                                                    <span class="cart">
+                                                        <img src="<?php echo "../../../uploads/images/".$book['image_path']?>" alt="img" style="height:100px; width:70px;">
+                                                    </span>
+                                                    <span class="cart-title">
+                                                        <?php echo $book['title'];?>
+                                                    </span>
                                                 </span>
-                                                <span class="cart-title">
-                                                    <?php echo $book['title'];?>
+                                            </td>
+                                            <td>
+                                                <span class="cart-price"><?php echo $book['price']?> All</span>
+                                            </td>
+                                            <td>
+                                                <span class="<?php echo $stockClass?>">
+                                                    <?php echo $stockStatus?>
                                                 </span>
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <span class="cart-price"><?php echo $book['price']?> All</span>
-                                        </td>
-                                        <td>
-                                            <span class="<?php echo $stockClass?>">
-                                                <?php echo $stockStatus?>
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <?php if($book['inventory'] > 0): ?>
-                                            <a href="wishlist.php?add=<?php echo $book['book_id']?>" class="theme-btn">Add to Cart</a>
-                                            <?php endif; ?>
-                                        </td>
-                                    </tr>
-                                <?php endwhile; ?>
-                                </tbody>
-                            </table>
+                                            </td>
+                                            <td>
+                                                <?php if($book['inventory'] > 0): ?>
+                                                <a href="shopCart.php?add=<?php echo $book['book_id']?>" class="theme-btn">Add to Cart</a>
+                                                <?php endif; ?>
+                                            </td>
+                                        </tr>
+                                    <?php endwhile; ?>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+    <?php
+        }  
+    ?>
+    
 
     <?php
     // Handle remove from wishlist

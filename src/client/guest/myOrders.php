@@ -66,6 +66,7 @@ $orders = $ordersQuery->get_result();
                                         <th>Name</th>
                                         <th>Email</th>
                                         <th>Phone</th>
+                                        <th>Books</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
@@ -77,6 +78,23 @@ $orders = $ordersQuery->get_result();
                                             <td><?= htmlspecialchars($row['first_name'] . ' ' . $row['last_name']) ?></td>
                                             <td><?= htmlspecialchars($row['email']) ?></td>
                                             <td><?= htmlspecialchars($row['phone']) ?></td>
+                                            
+                                            <?php 
+                                            // Get books in the order
+                                            $bookItems = [];
+                                            $bookStmt = $conn->prepare("
+                                                SELECT b.title, ob.quantity 
+                                                FROM order_book ob 
+                                                JOIN book b ON ob.book_id = b.book_id 
+                                                WHERE ob.order_id = ?
+                                            ");
+                                            $bookStmt->bind_param("i", $row['order_id']);
+                                            $bookStmt->execute();
+                                            $bookRes = $bookStmt->get_result();
+                                            while ($b = $bookRes->fetch_assoc()) {
+                                                $bookItems[] = "{$b['title']} (x{$b['quantity']})";
+                                            }?>
+                                            <?php echo "<td>" . implode("<br>", $bookItems) . "</td>" ?>
                                             <td>
                                                 <button type="button" class="btn btn-sm btn-primary theme-btn" data-bs-toggle="modal" data-bs-target="#viewBillingModal<?= $row['order_id'] ?>">
                                                     View Details
