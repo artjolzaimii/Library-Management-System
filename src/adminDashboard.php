@@ -153,35 +153,36 @@ $stats = $result->fetch_assoc();
                                                 <th>Order ID</th>
                                                 <th>User</th>
                                                 <th>Date</th>
-                                                <th>Total Books</th>
+                                                <th>Books purchased<th>
+                                                <th>Quantity</th>
                                                 <th>Actions</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             <?php
                                             $ordersQuery = "SELECT o.order_id, u.full_name, o.order_date, 
-                                                          COUNT(ob.book_id) as total_books
+                                                          GROUP_CONCAT(CONCAT(b.title,'(', ob.quantity, ')') SEPARATOR ', ') as book_titles,
+                                                          SUM(ob.book_id) as total_quantity
                                                           FROM orders o
                                                           JOIN shopping_cart sc ON o.cart_id = sc.cart_id
                                                           JOIN users u ON sc.user_id = u.id
                                                           LEFT JOIN order_book ob ON o.order_id = ob.order_id
+                                                          LEFT JOIN book b ON ob.book_id = b.book_id
                                                           GROUP BY o.order_id, u.full_name, o.order_date
                                                           ORDER BY o.order_date DESC
                                                           LIMIT 5";
                                             $ordersResult = $conn->query($ordersQuery);
                                             while ($order = $ordersResult->fetch_assoc()) {
-                                                echo "<tr>";                                                echo "<td>#" . $order['order_id'] . "</td>";
+                                                echo "<tr>";                                                
+                                                echo "<td>#" . $order['order_id'] . "</td>";
                                                 echo "<td>" . htmlspecialchars($order['full_name']) . "</td>";
                                                 echo "<td>" . date('M d, Y', strtotime($order['order_date'])) . "</td>";
-                                                echo "<td>" . $order['total_books'] . "</td>";
+                                                echo "<td>" . htmlspecialchars($order['book_titles']) . "<td>";
+                                                echo "<td>" . $order['total_quantity'] . "</td>";
                                                 echo "<td>
-                                                    <div class='dropdown'>
-                                                        <button type='button' class='btn p-0 dropdown-toggle hide-arrow' data-bs-toggle='dropdown'>
-                                                            <i class='bx bx-dots-vertical-rounded'></i>
-                                                        </button>
-                                                        <div class='dropdown-menu'>                                            <a class='dropdown-item' href='viewOrderDetails.php?id=" . $order['order_id'] . "'><i class='bx bx-show me-1'></i> View Details</a>
-                                                        </div>
-                                                    </div>
+                                                    <button type='button' class='btn btn-primary btn-sm' data-bs-toggle='modal' data-bs-target='#orderModal" . $order['order_id'] . "'>
+                                                        <i class='bx bx-show me-1'></i> View Details
+                                                    </button>
                                                 </td>";
                                                 echo "</tr>";
                                             }
@@ -196,6 +197,78 @@ $stats = $result->fetch_assoc();
             </div>
         </div>
     </div>
+
+    <!-- Order Details Modals -->
+    <?php
+    // Reset the orders result to iterate again for modals
+    $ordersResult = $conn->query($ordersQuery);
+    while ($order = $ordersResult->fetch_assoc()) {
+        echo "
+        <div class='modal fade' id='orderModal{$order['order_id']}' tabindex='-1' aria-labelledby='orderModalLabel{$order['order_id']}' aria-hidden='true'>
+            <div class='modal-dialog modal-lg'>
+                <div class='modal-content'>
+                    <div class='modal-header'>
+                        <h5 class='modal-title'>Order Details - #{$order['order_id']}</h5>
+                        <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
+                    </div>
+                    <div class='modal-body'>
+                        <div class='row mb-3'>
+                            <div class='col-md-6'>
+                                <p><strong>Order ID:</strong> #{$order['order_id']}</p>
+                                <p><strong>Order Date:</strong> " . date('M d, Y', strtotime($order['order_date'])) . "</p>
+                                <p><strong>Customer Name:</strong> " . htmlspecialchars($order['full_name']) . "</p>
+                            </div>
+                        </div>
+                        
+                        <div class='table-responsive'>
+                            <h6 class='fw-bold'>Ordered Books</h6>
+                            <table class='table table-borderless'>
+                                <thead>
+                                    <tr>
+                                        <th>Book Title</th>
+                                        <th>Quantity</th>
+                                        <th>Price</th>
+                                        <th>Subtotal</th>
+                                    </tr>
+                                </thead>
+                                <tbody>";
+                                
+                                // Get detailed book information
+                                $booksQuery = "SELECT b.title, ob.quantity, sb.price 
+                                             FROM order_book ob
+                                             JOIN book b ON ob.book_id = b.book_id
+                                             JOIN sale_book sb ON b.book_id = sb.book_id
+                                             WHERE ob.order_id = {$order['order_id']}";
+                                $booksResult = $conn->query($booksQuery);
+                                $totalAmount = 0;
+                                
+                                while ($book = $booksResult->fetch_assoc()) {
+                                    $subtotal = $book['quantity'] * $book['price'];
+                                    $totalAmount += $subtotal;
+                                    echo "<tr>
+                                            <td>" . htmlspecialchars($book['title']) . "</td>
+                                            <td>{$book['quantity']}</td>
+                                            <td>$" . number_format($book['price'], 2) . "</td>
+                                            <td>$" . number_format($subtotal, 2) . "</td>
+                                          </tr>";
+                                }
+                                
+                                echo "<tr class='fw-bold'>
+                                        <td colspan='3' class='text-end'>Total:</td>
+                                        <td>$" . number_format($totalAmount, 2) . "</td>
+                                     </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class='modal-footer'>
+                        <button type='button' class='btn btn-secondary' data-bs-dismiss='modal'>Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>";
+    }
+    ?>
 
     <!-- Core JS -->
     <script src="../assets/vendor/libs/jquery/jquery.js"></script>
