@@ -68,7 +68,13 @@ $result = $conn->query($query);
                         </h4>
 
                         <div class="card">
-                            <h5 class="card-header">Borrowed Books List</h5>
+                            <h5 class="card-header">Borrowed Books List
+                                <a href = "../src/borrow_book.php"type="button" 
+                                        class="btn btn-primary" style="float: right; margin-top: -8px;">
+                                        Borrow New Book
+                                </a>
+                            </h5>
+                            
                             <div class="table-responsive text-nowrap">
                                 <table class="table">
                                     <thead class="table-light">
