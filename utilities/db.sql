@@ -192,5 +192,3 @@ ALTER TABLE `borrow_book`
 ALTER TABLE `borrow_book`
   ADD CONSTRAINT `borrow_book_ibfk_1` FOREIGN KEY (`book_id`) REFERENCES `book` (`book_id`);
 COMMIT;
-
-<form method="post" action="generateReport.php" class="modal-content" id="generateReportForm">

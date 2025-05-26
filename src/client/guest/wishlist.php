@@ -142,6 +142,14 @@
         </div>
     </div>
 
+
+    <?php 
+        //handle add to cart
+        require_once("./ShoppingCart/shoppingCartFunctionalities.php");
+        if(isset($_GET['add'])){
+            addBookToBasket($conn,$_GET['add'],1);
+        }
+    ?>
     <!-- Shop Cart Section Start -->
      <!-- Fetching the wishlist books from the database -->
     <?php 
@@ -170,6 +178,9 @@
             echo '<div class="alert alert-info">Your wishlist is empty</div>';
         }
     ?>
+    
+    
+    
     <div class="cart-section section-padding pb-0">
         <div class="container">
             <div class="main-cart-wrapper">
@@ -215,7 +226,7 @@
                                         </td>
                                         <td>
                                             <?php if($book['inventory'] > 0): ?>
-                                            <a href="shopCart.php?add=<?php echo $book['book_id']?>" class="theme-btn">Add to Cart</a>
+                                            <a href="wishlist.php?add=<?php echo $book['book_id']?>" class="theme-btn">Add to Cart</a>
                                             <?php endif; ?>
                                         </td>
                                     </tr>

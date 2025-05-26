@@ -56,7 +56,7 @@
                                         endif;
                                     ?>
                                     <li>
-                                        <a href="mainPage.phpS#authors">
+                                        <a href="mainPage.php#authors">
                                             Authors
                                         </a>
                                     </li>

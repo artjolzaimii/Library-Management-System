@@ -118,7 +118,7 @@ session_start();
 
                               // Authors
                               echo "<td><ul class='list-unstyled users-list m-0 avatar-group d-flex align-items-center'>";
-                              $a_query = "SELECT author.full_name FROM author 
+                              $a_query = "SELECT author.full_name ,image_path FROM author 
                                           INNER JOIN book_author ON book_author.author_id = author.author_id 
                                           WHERE book_author.book_id = ?";
                               $a_stmt = $conn->prepare($a_query);
@@ -131,7 +131,7 @@ session_start();
                                            data-bs-toggle='tooltip' 
                                            data-bs-html='true' 
                                            data-bs-title=\"<i class='bx bx-user'></i> <span>{$author['full_name']}</span>\">
-                                          <img src='https://i.pinimg.com/564x/35/bc/af/35bcafd19a9b4557b972ccf96cc34a6c.jpg' alt='Avatar' class='rounded-circle'>
+                                          <img src='../".$author['image_path']."' alt='Avatar' class='rounded-circle'>
                                         </a>
                                       </li>";
                               }
