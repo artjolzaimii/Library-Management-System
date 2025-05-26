@@ -1,5 +1,5 @@
 <?php
-
+session_start();
 require('../utilities/config.php'); 
 
 // Handle return action
