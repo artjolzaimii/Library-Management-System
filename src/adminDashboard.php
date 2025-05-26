@@ -63,8 +63,10 @@ $stats = $result->fetch_assoc();
                     </h4>
                     
                     <!-- Stats Cards -->
+                    
                     <div class="row">
                         <div class="col-lg-3 col-md-6 col-sm-12 mb-4">
+                            <?php if($_SESSION['role']=='Admin'):?>
                             <div class="card stats-card bg-primary text-white h-100">
                                 <div class="card-body">
                                     <h5 class="card-title text-white">Total Users</h5>
@@ -72,6 +74,7 @@ $stats = $result->fetch_assoc();
                                     <small>Registered users</small>
                                 </div>
                             </div>
+                            <?php endif;?>
                         </div>
                         
                         <div class="col-lg-3 col-md-6 col-sm-12 mb-4">
@@ -105,6 +108,7 @@ $stats = $result->fetch_assoc();
                         </div>
                     </div>
                     
+                    
                     <!-- Quick Actions -->
                     <div class="row">
                         <div class="col-12">
@@ -114,11 +118,13 @@ $stats = $result->fetch_assoc();
                                 </div>
                                 <div class="card-body">
                                     <div class="row g-3">
+                                    <?php if($_SESSION['role']=='Admin'):?>
                                         <div class="col-md-3">
                                             <a href="userManagement.php" class="btn btn-outline-primary w-100">
                                                 <i class="bx bx-user me-1"></i> Manage Users
                                             </a>
                                         </div>
+                                        <?php endif;?>
                                         <div class="col-md-3">
                                             <a href="authorManagement.php" class="btn btn-outline-primary w-100">
                                                 <i class="bx bx-book-reader me-1"></i> Manage Authors
@@ -129,11 +135,13 @@ $stats = $result->fetch_assoc();
                                                 <i class="bx bx-book-add me-1"></i> Add New Book
                                             </a>
                                         </div>
+                                        <?php if($_SESSION['role']=='Admin'):?>
                                         <div class="col-md-3">
                                             <a href="addUser.php" class="btn btn-outline-primary w-100">
                                                 <i class="bx bx-user-plus me-1"></i> Add New User
                                             </a>
                                         </div>
+                                        <?php endif;?>
                                     </div>
                                 </div>
                             </div>
@@ -197,14 +205,6 @@ $stats = $result->fetch_assoc();
             </div>
         </div>
     </div>
-
-    <!-- Core JS -->
-    <script src="../assets/vendor/libs/jquery/jquery.js"></script>
-    <script src="../assets/vendor/libs/popper/popper.js"></script>
-    <script src="../assets/vendor/js/bootstrap.js"></script>
-    <script src="../assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
-    <script src="../assets/vendor/js/menu.js"></script>
-    <script src="../assets/js/main.js"></script>
 </body>
 </html>
 <?php 

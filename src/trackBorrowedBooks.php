@@ -68,7 +68,13 @@ $result = $conn->query($query);
                         </h4>
 
                         <div class="card">
-                            <h5 class="card-header">Borrowed Books List</h5>
+                            <h5 class="card-header">Borrowed Books List
+                            <a href = "../src/borrow_book.php"type="button" 
+                                        class="btn btn-primary" style="float: right; margin-top: -8px;">
+                                        Borrow New Book
+                                </a>
+
+                            </h5>
                             <div class="table-responsive text-nowrap">
                                 <table class="table">
                                     <thead class="table-light">
@@ -164,14 +170,6 @@ $result = $conn->query($query);
             </div>
         </div>
     </div>
-
-    <script src="../assets/vendor/libs/jquery/jquery.js"></script>
-    <script src="../assets/vendor/libs/popper/popper.js"></script>
-    <script src="../assets/vendor/js/bootstrap.js"></script>
-    <script src="../assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
-    <script src="../assets/vendor/js/menu.js"></script>
-    <script src="../assets/js/main.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="../assets/js/searchBorrowedBooks.js"></script>
 
 </body>

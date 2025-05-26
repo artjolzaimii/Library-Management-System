@@ -142,15 +142,15 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['generateReport'])) {
                                             <td>" . htmlspecialchars($report['most_sold_book']) . "</td>
                                             <td>$" . number_format($report['total_revenue'], 2) . "</td>
                                             <td>
-                                                <button class='btn btn-sm btn-info' data-bs-toggle='modal'
+                                                <button class='btn rounded-pill btn-icon btn-outline-primary' data-bs-toggle='modal'
                                                         data-bs-target='#viewReportModal'
                                                         data-report-id='{$report['id']}'>
-                                                    View
+                                                    <i class='bx bx-show'></i>
                                                 </button>
                                                 <a href='generateReport.php?delete_id={$report['id']}' 
-                                                   class='btn btn-sm btn-danger' 
+                                                   class='btn rounded-pill btn-icon btn-outline-primary' 
                                                    onclick='return confirm(\"Are you sure you want to delete this report?\");'>
-                                                   Delete
+                                                   <i class='bx bx-trash'></i> 
                                                 </a>
                                             </td>
                                         </tr>";
@@ -213,13 +213,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['generateReport'])) {
   </div>
 </div>
 
-<!-- Scripts -->
-<script src="../assets/vendor/libs/jquery/jquery.js"></script>
-<script src="../assets/vendor/libs/popper/popper.js"></script>
-<script src="../assets/vendor/js/bootstrap.js"></script>
-<script src="../assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
-<script src="../assets/vendor/js/menu.js"></script>
-<script src="../assets/js/main.js"></script>
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {

@@ -314,7 +314,7 @@
                                 }
                             
                             ?>
-                            <!--If an item is out of stock make buttons, inputs disabled -->
+                            <!--If an item is out of stock--buttons, inputs disabled -->
                             <form action="" method="POST" >
                                 <div class="cart-wrapper">
                                 <div class="quantity-basket"  <?php if($row['format']=='E-Book' || $row['format']=='For Borrow'){
@@ -357,7 +357,8 @@
                                 <button type="button"
                                         class="theme-btn"
                                         data-bs-toggle="modal"
-                                        data-bs-target="#readBookModal<?= $row['book_id'] ?>">
+                                        data-bs-target="#readBookModal<?= $row['book_id'] ?>"
+                                        <?php if($row['format']=='For Sale' || $row['format']=='For Borrow'){ echo  ' style="display: none;"';}?>>
                                 <i class="bx bx-book-open"></i> Read/Download
                                 </button>
 
@@ -431,9 +432,6 @@
                                     }
                                     ?>
                                     
-                                    <a href="shop-details.html" class="icon-2">
-                                        <img src="../assets/img/icon/shuffle.svg" alt="svg-icon">
-                                    </a>
                                 </div>
                             </div>
                             </form>

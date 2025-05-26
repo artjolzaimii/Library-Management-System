@@ -216,20 +216,19 @@
                                     $bookQueryPerPage = "SELECT b.*, bb.inventory, AVG(r.rating) AS avg_rating, COUNT(r.review_id) AS review_count
                                         FROM book b
                                         JOIN book_author ba ON b.book_id = ba.book_id
-                                        LEFT JOIN sale_book sb ON b.book_id = sb.book_id
+                                        LEFT JOIN sborrow_book bb ON b.book_id = bb.book_id
                                         LEFT JOIN review r ON b.book_id = r.book_id
-                                        WHERE ba.author_id = '$currentAuthorId'
-                                        AND b.format = 'For Sale'
+                                        wWHERE b.format = 'For Borrow'
                                         AND b.title LIKE '%$search%'
                                         GROUP BY b.book_id
                                         LIMIT $startPos, $perPage";
                                 } else {
-                                    $bookQueryPerPage = "SELECT b.*, sb.price, AVG(r.rating) AS avg_rating, COUNT(r.review_id) AS review_count
+                                    $bookQueryPerPage = "SELECT b.*, bb.inventory, AVG(r.rating) AS avg_rating, COUNT(r.review_id) AS review_count
                                         FROM book b
-                                        JOIN borrow_author ba ON b.book_id = ba.book_id
+                                        JOIN book_author ba ON b.book_id = ba.book_id
+                                        LEFT JOIN borrow_book bb ON b.book_id = bb.book_id
                                         LEFT JOIN review r ON b.book_id = r.book_id
-                                        WHERE ba.author_id = '$currentAuthorId'
-                                        WHERE b.format = 'For Sale'
+                                        WHERE b.format = 'For Borrow'
                                         GROUP BY b.book_id
                                         LIMIT $startPos, $perPage";
                                 }

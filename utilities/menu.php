@@ -1,9 +1,22 @@
+<?php 
+  if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+  require_once("config.php");
+  
+  if(!isset($_SESSION['username'])){
+    header("Location: Client/guest/mainPage.php");
+    exit;
+  }
+?>
+
 <!DOCTYPE html>
 <html lang="en" class="light-style layout-menu-fixed" dir="ltr" data-theme="theme-default" data-assets-path="../assets/" data-template="vertical-menu-template-free">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-  <title>BookNoW Admin Panel</title>
+  <title>Eternal Library Admin Panel</title>
 
   <!-- Favicon -->
   <link rel="icon" type="image/x-icon" href="../assets/img/favicon/favicon.ico" />
@@ -47,6 +60,7 @@
       <li class="menu-header small text-uppercase"><span>Content Management</span></li>
 
       <!-- User Management -->
+      <?php if($_SESSION['role']=='Admin'):?>
       <li class="menu-item">
         <a href="javascript:void(0);" class="menu-link menu-toggle">
           <i class="menu-icon tf-icons bx bx-user"></i>
@@ -67,7 +81,7 @@
           </li>
         </ul>
       </li>
-
+      <?php endif;?>
       <!-- Author Management -->
             <li class="menu-item">
         <a href="javascript:void(0);" class="menu-link menu-toggle">
@@ -117,7 +131,26 @@
           </li>
         </ul>
       </li>
-      
+       <!-- Borrowed Books -->
+      <li class="menu-item">
+        <a href="javascript:void(0);" class="menu-link menu-toggle">
+	      <i class="menu-icon tf-icons bx bx-book-reader"></i>
+
+          <div>Borrowed Books</div>
+        </a>
+        <ul class="menu-sub">
+                    <li class="menu-item">
+            <a href="borrow_book.php" class="menu-link">
+              <div>Borrow a Book</div>
+            </a>
+          </li>
+          <li class="menu-item">
+            <a href="trackBorrowedBooks.php" class="menu-link">
+              <div>Track Borrowed Books</div>
+            </a>
+          </li>
+        </ul>
+      </li>
       <!-- Stock Management -->
       <li class="menu-item">
         <a href="stockManagement.php" class="menu-link">
@@ -134,7 +167,8 @@
         </a>
       </li>
       
-      <!-- Stock Management -->
+      <!-- Report Management -->
+      <?php if($_SESSION['role']=='Admin'):?>
       <li class="menu-item"> 
         <a href="generateReport.php" class="menu-link">
           <i class="menu-icon tf-icons bx  bx-chart-bar-rows"></i>
@@ -142,6 +176,7 @@
         </a>
       </li>
     </ul>
+    <?php endif;?>
   </aside>
   
   <!-- JS Helpers -->
