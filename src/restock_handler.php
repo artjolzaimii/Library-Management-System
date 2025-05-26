@@ -27,7 +27,7 @@
 
     // Notify users if restocked from 0
     if ($prev_inventory == 0 && $new_inventory > 0) {
-        $book = mysqli_fetch_assoc(mysqli_query($conn, "SELECT title FROM books WHERE id = $book_id"));
+        $book = mysqli_fetch_assoc(mysqli_query($conn, "SELECT title FROM book WHERE book_id = $book_id"));
         $book_title = $book ? $book['title'] : 'the book you wished for';
         $user_query = "
             SELECT u.email, u.full_name
@@ -40,7 +40,10 @@
             $to = $user['email'];
             $subject = "Book Available";
             $message = "Hi {$user['full_name']},\n\n\"$book_title\" is now available in the library!";
-            sendMail($to, $subject, $message, $user['full_name']);
+            $sent = sendMail($to, $subject, $message, $user['full_name']);
+            if (!$sent) {
+                error_log("Failed to send mail to $to");
+            }
         }
 
         // Mark users as notified
