@@ -1,3 +1,4 @@
+
 <?php 
     require_once("./clientmenu.php");
     require_once("../../../utilities/config.php");
@@ -34,9 +35,9 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="author" content="pixel-plus">
-    <meta name="description" content="Eternal Library- Books Library eCommerce Store">
+    <meta name="description" content="Eternal Library- Books Library eCommerce Store">
     <!-- ======== Page title ============ -->
-    <title>Eternal Library - Books Library eCommerce Store</title>
+    <title>Eternal Library - Books Library eCommerce Store</title>
 
     <?php 
         require_once("./styleAndScripts.php");
@@ -164,6 +165,34 @@
         </div>
     </div>
 
+    <?php 
+        // Calculate sales
+        $salesQuery = "SELECT SUM(ob.quantity) AS nr_sales
+                       FROM book_author ba
+                       INNER JOIN book b ON ba.book_id = b.book_id
+                       INNER JOIN order_book ob ON ob.book_id = ba.book_id
+                       WHERE ba.author_id = ?";
+        $stm1 = $conn->prepare($salesQuery);
+        $stm1->bind_param("i", $authorId);
+        $stm1->execute();
+        $res1 = $stm1->get_result();
+        $book1 = $res1->fetch_assoc();
+        $salesCount = $book1 ? $book1['nr_sales'] : 0;
+    
+        // Calculate reviews
+        $reviewQuery = "SELECT COUNT(*) as nr_reviews
+                        FROM book_author ba
+                        INNER JOIN book b ON ba.book_id = b.book_id
+                        INNER JOIN review r ON r.book_id = b.book_id
+                        WHERE ba.author_id = ?";
+        $stm2 = $conn->prepare($reviewQuery);
+        $stm2->bind_param("i", $authorId);
+        $stm2->execute();
+        $res2 = $stm2->get_result();
+        $book2 = $res2->fetch_assoc();
+        $reviewCount = $book2 ? $book2['nr_reviews'] : 0;
+    ?>
+
     
     <!-- Team Details Section Start -->
     <section class="team-details-section fix section-padding">
@@ -175,7 +204,8 @@
                     </div>
                     <div class="details-content wow fadeInUp" data-wow-delay=".5s">
                         <h3>Author: <?php echo $author['full_name']?></h3>
-                        <span><?php echo $author['nationality']?></span>
+                        <span><?php echo $author['nationality']?></span><br>
+                        <span><?php echo $author['birth_year'].' - '.($author['death_year']!=0? $author['death_year']: "")?></span>
                     </div>
                 </div>
                 <p class="wow fadeInUp" data-wow-delay=".7s">
@@ -187,11 +217,11 @@
                         <p>Books</p>
                     </div>
                     <div class="counter-items wow fadeInUp" data-wow-delay=".5s">
-                        <h2><span class="count">100</span>+</h2>
-                        <p>Seles</p>
+                        <h2><span class="count"><?php echo $salesCount ?></span>+</h2>
+                        <p>Sales</p>
                     </div>
                     <div class="counter-items wow fadeInUp" data-wow-delay=".7s">
-                        <h2><span class="count">90</span>+</h2>
+                        <h2><span class="count"><?php echo $reviewCount; ?></span>+</h2>
                         <p>Review</p>
                     </div>
                 </div>
@@ -201,30 +231,44 @@
     
     <!-- Author's books -->
     <?php 
-        $forSale="SELECT b.book_id,isbn, title, image_path , price
+        //handle add to cart
+        require_once("./ShoppingCart/shoppingCartFunctionalities.php");
+        if(isset($_GET['add'])){
+            addBookToBasket($conn,$_GET['add'],1);
+            
+        }
+        
+        $forSale="SELECT b.book_id,isbn, title, image_path , price,AVG(r.rating) AS avg_rating, COUNT(r.review_id) AS review_count
                 FROM book b INNER JOIN book_author ba ON b.book_id=ba.book_id
                 INNER JOIN sale_book sa ON sa.book_id=b.book_id
-                WHERE ba.author_id=?";
+                LEFT JOIN review r ON b.book_id = r.book_id
+                WHERE ba.author_id=?
+                GROUP BY b.book_id";
                 
         $stm=$conn->prepare($forSale);
         $stm->bind_param("i",$authorId);
         $stm->execute();
         $forSaleResult=$stm->get_result();
         
-        $forBorrow="SELECT b.book_id,isbn, title, image_path 
+        $forBorrow="SELECT b.book_id,isbn, title, image_path,AVG(r.rating) AS avg_rating, COUNT(r.review_id) AS review_count 
                 FROM book b INNER JOIN book_author ba ON b.book_id=ba.book_id
                 INNER JOIN borrow_book boa ON boa.book_id=b.book_id
-                WHERE ba.author_id=?";
+                LEFT JOIN review r ON b.book_id = r.book_id
+                WHERE ba.author_id=?
+                GROUP BY b.book_id"
+                ;
         $stm=$conn->prepare($forBorrow);
         $stm->bind_param("i",$authorId);
         $stm->execute();
         $forBorrowResult=$stm->get_result();        
                 
-        $eBook="SELECT b.book_id,isbn, title, image_path 
+        $eBook="SELECT b.book_id,isbn, title, image_path,AVG(r.rating) AS avg_rating, COUNT(r.review_id) AS review_count
                 FROM book b INNER JOIN book_author ba ON b.book_id=ba.book_id
                 INNER JOIN ebook e ON e.book_id=b.book_id
-                WHERE ba.author_id=?";
-        $stm=$conn->prepare($forBorrow);
+                LEFT JOIN review r ON b.book_id = r.book_id
+                WHERE ba.author_id=?
+                GROUP BY b.book_id";
+        $stm=$conn->prepare($eBook);
         $stm->bind_param("i",$authorId);
         $stm->execute();
         $eBookResult=$stm->get_result();        
@@ -254,14 +298,9 @@
                                     <li>
                                         <a href="shop-cart.html"><i class="far fa-heart"></i></a>
                                     </li>
+                                    >
                                     <li>
-                                        <a href="shop-cart.html">
-
-                                            <img class="icon" src="../assets/img/icon/shuffle.svg" alt="svg-icon">
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a href="shop-details.html"><i class="far fa-eye"></i></a>
+                                        <a href="bookDetails.php?isbn=<?php echo $book['isbn']?>"><i class="far fa-eye"></i></a>
                                     </li>
                                 </ul>
                             </div>
@@ -276,20 +315,24 @@
                                         <span class="thumb">
                                             <img src="../../../<?php echo $author['image_path']?>" alt="img" width="30px" height="30px">
                                         </span>
-                                        <span class="content"><?php $author['full_name'];?></span>
+                                        <span class="content"><?php echo $author['full_name'];?></span>
                                     </li>
 
-                                    <li class="star">
-                                        <i class="fa-solid fa-star"></i>
-                                        <i class="fa-solid fa-star"></i>
-                                        <i class="fa-solid fa-star"></i>
-                                        <i class="fa-solid fa-star"></i>
-                                        <i class="fa-regular fa-star"></i>
+                                    <li class="">
+                                        <div class="star">
+                                            <?php
+                                            $rating = round($book['avg_rating']);
+                                            for ($i = 1; $i <= 5; $i++) {
+                                                echo '<i class="fa-' . ($i <= $rating ? 'solid' : 'regular') . ' fa-star"></i>';
+                                            }
+                                            ?>
+                                            (<?= $book['review_count'] ?>)
+                                        </div>
                                     </li>
                                 </ul>
                             </div>
                             <div class="shop-button">
-                                <a href="shop-details.html" class="theme-btn">Add To Cart</a>
+                                <a href="authorProfile.php?authorId=<?php echo $authorId?>&add=<?php echo $book['book_id']?>" class="theme-btn">Add To Cart</a>
                             </div>
                         </div>
                     </div>
@@ -310,23 +353,18 @@
                                 </ul>
                                 <ul class="shop-icon d-grid justify-content-center align-items-center">
                                     <li>
-                                        <a href="shop-cart.html"><i class="far fa-heart"></i></a>
+                                        <a href=""><i class="far fa-heart"></i></a>
                                     </li>
+                                    
                                     <li>
-                                        <a href="shop-cart.html">
-
-                                            <img class="icon" src="../assets/img/icon/shuffle.svg" alt="svg-icon">
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a href="shop-details.html"><i class="far fa-eye"></i></a>
+                                        <a href="bookDetails.php?isbn=<?php echo $book['isbn']?>"><i class="far fa-eye"></i></a>
                                     </li>
                                 </ul>
                             </div>
                             <div class="shop-content">
                                 <h3><a href="bookDetails.php?isbn=<?php echo $book['isbn']?>"><?php echo $book['title']?></a></h3>
                                 <ul class="price-list">
-                                    <li><?php echo "\n"?></li>
+                                    <li><?php echo "E-Book"?></li>
                                 
                                 </ul>
                                 <ul class="author-post">
@@ -334,20 +372,24 @@
                                         <span class="thumb">
                                             <img src="../../../<?php echo $author['image_path']?>" alt="img" width="30px" height="30px">
                                         </span>
-                                        <span class="content"><?php $author['full_name'];?></span>
+                                        <span class="content"><?php echo $author['full_name'];?></span>
                                     </li>
 
-                                    <li class="star">
-                                        <i class="fa-solid fa-star"></i>
-                                        <i class="fa-solid fa-star"></i>
-                                        <i class="fa-solid fa-star"></i>
-                                        <i class="fa-solid fa-star"></i>
-                                        <i class="fa-regular fa-star"></i>
+                                    <li class="">
+                                        <div class="star">
+                                            <?php
+                                            $rating = round($book['avg_rating']);
+                                            for ($i = 1; $i <= 5; $i++) {
+                                                echo '<i class="fa-' . ($i <= $rating ? 'solid' : 'regular') . ' fa-star"></i>';
+                                            }
+                                            ?>
+                                            (<?= $book['review_count'] ?>)
+                                        </div>
                                     </li>
                                 </ul>
                             </div>
                             <div class="shop-button">
-                                <a href="shop-details.html" class="theme-btn">Add To Cart</a>
+                                <button class="theme-btn" disabled>Add To Cart</button>
                             </div>
                         </div>
                     </div>
@@ -370,21 +412,16 @@
                                     <li>
                                         <a href="shop-cart.html"><i class="far fa-heart"></i></a>
                                     </li>
+                                    
                                     <li>
-                                        <a href="shop-cart.html">
-
-                                            <img class="icon" src="../assets/img/icon/shuffle.svg" alt="svg-icon">
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a href="shop-details.html"><i class="far fa-eye"></i></a>
+                                        <a href="bookDetails.php?isbn=<?php echo $book['isbn']?>"><i class="far fa-eye"></i></a>
                                     </li>
                                 </ul>
                             </div>
                             <div class="shop-content">
                                 <h3><a href="bookDetails.php?isbn=<?php echo $book['isbn']?>"><?php echo $book['title']?></a></h3>
                                 <ul class="price-list">
-                                    <li> Borrow Pice!! All</li>
+                                    <li>Free Borrowing</li>
                                 
                                 </ul>
                                 <ul class="author-post">
@@ -392,20 +429,24 @@
                                         <span class="thumb">
                                             <img src="../../../<?php echo $author['image_path']?>" alt="img" width="30px" height="30px">
                                         </span>
-                                        <span class="content"><?php $author['full_name'];?></span>
+                                        <span class="content"><?php echo $author['full_name'];?></span>
                                     </li>
 
-                                    <li class="star">
-                                        <i class="fa-solid fa-star"></i>
-                                        <i class="fa-solid fa-star"></i>
-                                        <i class="fa-solid fa-star"></i>
-                                        <i class="fa-solid fa-star"></i>
-                                        <i class="fa-regular fa-star"></i>
+                                    <li class="">
+                                        <div class="star">
+                                            <?php
+                                            $rating = round($book['avg_rating']);
+                                            for ($i = 1; $i <= 5; $i++) {
+                                                echo '<i class="fa-' . ($i <= $rating ? 'solid' : 'regular') . ' fa-star"></i>';
+                                            }
+                                            ?>
+                                            (<?= $book['review_count'] ?>)
+                                        </div>
                                     </li>
                                 </ul>
                             </div>
                             <div class="shop-button">
-                                <a href="shop-details.html" class="theme-btn">Add To Cart</a>
+                                <button  class="theme-btn" disabled>Add To Cart</button>
                             </div>
                         </div>
                     </div>

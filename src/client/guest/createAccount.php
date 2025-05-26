@@ -84,7 +84,7 @@
     $error = '';
     $success = '';
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        $user_id = uniqid('user_');
+        $user_id = uniqid('user_id');
         $full_name = trim($_POST['full_name']);
         $email = trim($_POST['email']);
         $phone = trim($_POST['phone']);

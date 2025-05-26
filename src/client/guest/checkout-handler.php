@@ -77,6 +77,11 @@ $remodeFromCartQuery=
 $removeStm=$conn->prepare($remodeFromCartQuery);
 
 while($book = $allBooks->fetch_assoc()){
+//Update quantity
+    $updateSale = $conn->prepare("UPDATE sale_book SET inventory = inventory - ? WHERE book_id = ? AND inventory >= ?");
+    $updateSale->bind_param("iii", $book['quantity'], $book['book_id'], $book['quantity']);
+    $updateSale->execute();
+    
     $insertStm->bind_param("iii", $orderId, $book['book_id'], $book['quantity']);
     $insertStm->execute();
 
@@ -84,5 +89,7 @@ while($book = $allBooks->fetch_assoc()){
     $removeStm->execute();
 }
 
+
+    
 echo "<script>window.location.href=\"orderSentSuccessfullyPage.php\"</script>";
 ?>

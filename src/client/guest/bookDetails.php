@@ -42,109 +42,91 @@
 
 <body>
 <!-- Find book by isbn , placed in the url by a get request-->
-    <?php 
-        require_once("../../../utilities/config.php");
-    
-        $isbn=mysqli_real_escape_string($conn,$_GET['isbn']);
+   <?php
         
-        $query="SELECT `book_id`,`isbn`, `publication_year`, `publisher`, `language`, `nr_pages`, `description`, `format`, `image_path`, `title` FROM `book` WHERE `isbn`=?";
+        $isbn = mysqli_real_escape_string($conn, $_GET['isbn']);
         
-        $stm=$conn->prepare($query);
-        
-        $stm->bind_param("s",$isbn);
+        // Main book data query
+        $query = "SELECT b.book_id, `isbn`, `publication_year`, `publisher`, `language`, `nr_pages`, `description`, `format`, `image_path`, `title` ,AVG(r.rating) AS avg_rating, COUNT(r.review_id) AS review_count
+        FROM book b LEFT JOIN review r ON b.book_id = r.book_id
+        WHERE `isbn`=?
+        GROUP BY b.book_id"
+        ;
+        $stm = $conn->prepare($query);
+        $stm->bind_param("s", $isbn);
         $stm->execute();
+        $result = $stm->get_result();
         
-        $result=$stm->get_result();
-        
-        if($result->num_rows==1){
-            $row=$result->fetch_assoc();
-            
-            //look for other fields
-            if($row['format']=='For Sale'){
-                $query="SELECT inventory, price 
-                        FROM sale_book INNER JOIN book ON book.book_id=sale_book.book_id
-                        WHERE book.isbn=?
-                        ";
-                $stm=$conn->prepare($query);
-        
-                $stm->bind_param("s",$isbn);
-                $stm->execute();
-                
-                $result=$stm->get_result(); 
-                
-                if($result->num_rows==1){
-                    $saleRow=$result->fetch_assoc();
-                }
-            }
-            else if($row['format']=='For Borrow'){
-                $query="SELECT inventory, condition 
-                        FROM borrow_book INNER JOIN book ON book.book_id=borrow_book.book_id
-                        WHERE book.isbn=?
-                        ";
-                $stm=$conn->prepare($query);
-        
-                $stm->bind_param("s",$isbn);
-                $stm->execute();
-                
-                $result=$stm->get_result(); 
-                
-                if($result->num_rows==1){
-                    $borrowRow=$result->fetch_assoc();
-                }
-            }
-            else if($row['format']=='E-Book'){
-                $query="SELECT book_path 
-                        FROM ebook INNER JOIN book ON book.book_id=ebook.book_id
-                        WHERE book.isbn=?
-                        ";
-                $stm=$conn->prepare($query);
-        
-                $stm->bind_param("s",$isbn);
-                $stm->execute();
-                
-                $result=$stm->get_result(); 
-                
-                if($result->num_rows==1){
-                    $ebookRow=$result->fetch_assoc();
-                }
-            }
-            
-            //loog for authors
-            $query="SELECT full_Name FROM author INNER JOIN book_author ON author.author_id=book_author.author_id
-            INNER JOIN book ON book.book_id=book_author.book_id
-            WHERE book.isbn=?" ;
-            
-            $stm=$conn->prepare($query);
-            $stm->bind_param("s",$isbn);
-            $stm->execute();
-            $authorResult=$stm->get_result();
-            $authors = [];
-            while ($author = mysqli_fetch_assoc($authorResult)) {
-                $authors[] = $author['full_Name'];
-            }
-            $authors = implode(" , ", $authors);
-            
-            //look for gneres
-            $query="SELECT `name` FROM genres INNER JOIN book_genre ON genres.id=book_genre.genre_id
-            INNER JOIN book ON book.book_id=book_genre.book_id
-            WHERE book.isbn=?" ;
-            
-            $stm=$conn->prepare($query);
-            $stm->bind_param("s",$isbn);
-            $stm->execute();
-            $genreResult=$stm->get_result();
-            $genres = [];
-            while ($genre = mysqli_fetch_assoc($genreResult)) {
-                $genres[] = $genre['name'];
-            }
-            $genres = implode(" , ", $genres);
+        if ($result->num_rows !== 1) {
+            echo "The book with this ISBN does not exist!";
+            exit; // Stop execution
         }
-        else{
-            echo "The book with this id does not exist!";
-            header("Location: mainPage.php");
-            
+        
+        $row = $result->fetch_assoc();
+        
+        // Load format-specific info
+        switch ($row['format']) {
+            case 'For Sale':
+                $query = "SELECT inventory, price FROM sale_book WHERE book_id=?";
+                break;
+        
+            case 'For Borrow':
+                $query = "SELECT inventory, `book_condition` FROM borrow_book WHERE book_id=?";
+                break;
+        
+            case 'E-Book':
+                $query = "SELECT book_path FROM ebook WHERE book_id=?";
+                break;
+        
+            default:
+                echo "Invalid book format!";
+                exit;
         }
-    ?>
+        
+        $stm = $conn->prepare($query);
+        $stm->bind_param("i", $row['book_id']);
+        $stm->execute();
+        $result = $stm->get_result();
+        
+        if ($result->num_rows !== 1) {
+            echo "Details for the selected format were not found!";
+            exit;
+        }
+        
+        $formatRow = $result->fetch_assoc(); // Holds saleRow / borrowRow / ebookRow
+        
+        // Fetch authors
+        $query = "SELECT full_Name FROM author 
+            INNER JOIN book_author ON author.author_id = book_author.author_id 
+            WHERE book_author.book_id = ?";
+        $stm = $conn->prepare($query);
+        $stm->bind_param("i", $row['book_id']);
+        $stm->execute();
+        $authorResult = $stm->get_result();
+        
+        $authors = [];
+        while ($author = $authorResult->fetch_assoc()) {
+            $authors[] = $author['full_Name'];
+        }
+        $authors = implode(", ", $authors);
+        
+        // Fetch genres
+        $query = "SELECT `name` FROM genres 
+            INNER JOIN book_genre ON genres.id = book_genre.genre_id 
+            WHERE book_genre.book_id = ?";
+        $stm = $conn->prepare($query);
+        $stm->bind_param("i", $row['book_id']);
+        $stm->execute();
+        $genreResult = $stm->get_result();
+        
+        $genres = [];
+        while ($genre = $genreResult->fetch_assoc()) {
+            $genres[] = $genre['name'];
+        }
+        $genres = implode(", ", $genres);
+        
+        ?>
+
     
         
 
@@ -253,7 +235,7 @@
                 <div class="page-header">
                     <ul class="breadcrumb-items wow fadeInUp" data-wow-delay=".3s">
                         <li>
-                            <a href="index.html">
+                            <a href="mainPage.php">
                                 Home
                             </a>
                         </li>
@@ -292,7 +274,7 @@
                                 <h5>
                                     <?php 
                                         if($row['format']=='For Sale'){
-                                            if($saleRow['inventory']>0){
+                                            if($formatRow['inventory']>0){
                                                 echo "<h5>Stock Available</h5>";
                                             }
                                             else{
@@ -300,7 +282,7 @@
                                             }
                                         }
                                         else if($row['format']=='For Borrow'){
-                                            if($borrowRow['inventory']>0){
+                                            if($formatRow['inventory']>0){
                                                 echo "<h5>Stock Available</h5>";
                                             }
                                             else{
@@ -311,13 +293,14 @@
                                 </h5>
                             </div>
                             <div class="star">
-                                <a href="shop-details.html"> <i class="fas fa-star"></i></a>
-                                <a href="shop-details.html"><i class="fas fa-star"></i></a>
-                                <a href="shop-details.html"> <i class="fas fa-star"></i></a>
-                                <a href="shop-details.html"><i class="fas fa-star"></i></a>
-                                <a href="shop-details.html"><i class="fa-regular fa-star"></i></a>
-                                <span>(1 Customer Reviews)</span>
-                            </div>
+                                    <?php
+                                    $rating = round($row['avg_rating']);
+                                    for ($i = 1; $i <= 5; $i++) {
+                                        echo '<i class="fa-' . ($i <= $rating ? 'solid' : 'regular') . ' fa-star"></i>';
+                                    }
+                                    ?>
+                                    (<?= $row['review_count']. " Customer Reviews" ?>)
+                                </div>
                             <p>
                                 <?php 
                                     echo $row['description'];
@@ -326,110 +309,129 @@
                             <?php 
                                 if($row['format']=='For Sale'){
                                     echo "<div class=\"price-list\">
-                                            <h3>".$saleRow['price']." ALL</h3>
+                                            <h3>".$formatRow['price']." ALL</h3>
                                         </div>";
                                 }
                             
                             ?>
-                            <!--If an item is out of stock make buttons, inputs disabled -->
-                            <form action="" method="POST">
+                            <!--If an item is out of stock--buttons, inputs disabled -->
+                            <form action="" method="POST" >
                                 <div class="cart-wrapper">
-                                <div class="quantity-basket">
+                                <div class="quantity-basket"  <?php if($row['format']=='E-Book' || $row['format']=='For Borrow'){
+                                                    echo "style=\"display: none;\"";
+                                                }
+                                            ?>>
                                     <p class="qty">
                                         <button class="qtyminus" aria-hidden="true"
                                             <?php 
                                                 if($row['format']=='For Sale'){
-                                                    if($saleRow['inventory']<0){
+                                                    if($formatRow['inventory']<0){
                                                         echo "disabled;";
                                                     }       
                                                 }
                                             ?>
-                                        >−</button>
-                                        <input type="number" name="quantity" id="qty2" min="1" max="199" step="1" value="1"
+                                         ></button>
+                                          <input type="number" name="quantity" id="qty2" min="1" max="199" step="1" value="1"
                                             <?php 
-                                                if($row['format']=='For Sale'){
-                                                    if($saleRow['inventory']<0){
+                                                if($row['format']=='For Sale' ){
+                                                    if($formatRow['inventory']<0){
                                                         echo "disabled;";
                                                     }       
                                                 }
-                                            ?>
-                                        >
+                                                
+                                            ?>>
+                                        
                                         <button class="qtyplus" aria-hidden="true"
                                             <?php 
                                                 if($row['format']=='For Sale'){
-                                                    if($saleRow['inventory']<0){
+                                                    if($formatRow['inventory']<0){
                                                         echo "disabled;";
                                                     }       
                                                 }
                                             ?>
-                                        >+</button>
+                                        ></button>
                                     </p>
                                 </div>
-                                <button type="button" class="theme-btn style-2" data-bs-toggle="modal"
-                                    data-bs-target="#readMoreModal" <?php 
-                                                if($row['format']!='E-Book'){
-                                                    echo "style=\"display: none;\"";
-                                                }
-                                            ?>>
-                                    Read A little
+                                                            
+                                <!-- Read/Download Button -->
+                                <button type="button"
+                                        class="theme-btn"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#readBookModal<?= $row['book_id'] ?>"
+                                        <?php if($row['format']=='For Sale' || $row['format']=='For Borrow'){ echo  ' style="display: none;"';}?>>
+                                <i class="bx bx-book-open"></i> Read/Download
                                 </button>
-                                <!-- Read More Modal -->
-                                <div class="modal fade" id="readMoreModal" tabindex="-1"
-                                    aria-labelledby="readMoreModalLabel" aria-hidden="true">
-                                    <div class="modal-dialog">
-                                        <div class="modal-content">
-                                            <div class="modal-body"
-                                                style="background-image: url(../assets/img/popupBg.png);">
-                                                <div class="close-btn">
-                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                                        aria-label="Close"></button>
-                                                </div>
-                                                <div class="readMoreBox">
-                                                    <div class="content">
-                                                        <h3 id="readMoreModalLabel">The Role Of Book</h3>
-                                                        <p>
-                                                            Educating the Public <br>
-                                                            Political books play a crucial role in educating the public
-                                                            about political theories, historical events, policies, and
-                                                            the workings of governments. They provide readers with
-                                                            insights into complex political concepts and the historical
-                                                            context behind current events, helping to foster a more
-                                                            informed citizenry. <br><br>
 
-                                                            Shaping Public Opinion <br>
-                                                            Authors of political books often aim to influence public
-                                                            opinion by presenting arguments and perspectives on various
-                                                            issues. These books can sway readers' views, either
-                                                            reinforcing their existing beliefs or challenging them to
-                                                            consider alternative viewpoints. This influence can extend
-                                                            to political debates and discussions in the public sphere.
-                                                            <br><br>
+                                <!-- Modal for Read/Download -->
+                                <div class="modal fade" id="readBookModal<?= $row['book_id'] ?>" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog modal-xl">
+                                    <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Preview & Download: <?= htmlspecialchars($row['title']) ?></h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
 
-                                                            Documenting History <br>
-                                                            Political books serve as valuable records of historical
-                                                            events and political movements. They document the thoughts,
-                                                            actions, and decisions of political leaders and activists,
-                                                            providing future generations with a detailed account of
-                                                            significant periods and events. This historical
-                                                            documentation is essential for understanding the evolution
-                                                            of political systems and ideologies.
+                                    <div class="modal-body">
+                                        <?php
+                                        // Fetch the actual PDF filename from the ebook table
+                                        $book_id = $row['book_id'];
+                                        $ebookQuery = $conn->prepare("SELECT book_path FROM ebook WHERE book_id = ?");
+                                        $ebookQuery->bind_param("i", $book_id);
+                                        $ebookQuery->execute();
+                                        $ebookResult = $ebookQuery->get_result()->fetch_assoc();
+                                        $ebookQuery->close();
 
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
+                                        $ebookFile = $ebookResult ? $ebookResult['book_path'] : null;
+                                        $ebookPath = "../../../uploads/eBooks/" . $ebookFile;
+
+                                        if ($ebookFile && file_exists($ebookPath)) {
+                                        // Show PDF preview
+                                        echo "<embed src='" . htmlspecialchars($ebookPath) . "' type='application/pdf' width='100%' height='500px'>";
+                                        } else {
+                                        echo "<p class='text-muted'>No preview available for this book.</p>";
+                                        }
+                                        ?>
+                                    </div>
+
+                                    <div class="modal-footer">
+                                        <?php if ($ebookFile && file_exists($ebookPath)): ?>
+                                        <a href="<?= htmlspecialchars($ebookPath) ?>" download class="btn btn-primary" target="_blank"><i class="bx bx-download"></i> Download Full Book (PDF)</a>
+                                        <?php else: ?>
+                                        <button class="btn btn-secondary" disabled>No PDF Available</button>
+                                        <?php endif; ?>
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                    </div>
                                     </div>
                                 </div>
+                                </div>
+
+
+
+
                                 <!-- Submit button of form-->
-                                <button  type="submit" class="theme-btn">Add To Cart</button>
+                                <button  type="submit" class="theme-btn"  <?php if($row['format']=='E-Book' || $row['format']=='For Borrow'){
+                                                    echo "style=\"display: none;\"";
+                                                }
+                                            ?>>Add To Cart</button>
                                 <div class="icon-box">
-                                    <a href="shop-details.html" class="icon">
-                                        <i class="far fa-heart"></i>
-                                    </a>
-                                    <a href="shop-details.html" class="icon-2">
-                                        <img src="../assets/img/icon/shuffle.svg" alt="svg-icon">
-                                    </a>
+                                    <?php if(isset($_SESSION['username'])){
+                                        $userId = getUserId($_SESSION['username']);
+                                        if(isInWishlist($row['book_id'], $userId)){
+                                            echo "<a href='wishlist.php?remove=" . $row['book_id'] . "' class='icon'>
+                                                    <i class='far fa-heart'></i>
+                                                </a>";
+                                        } else {
+                                            echo "<a href='wishlist.php?add=" . $row['book_id'] . "' class='icon'>
+                                                    <i class='far fa-heart'></i>
+                                                </a>";
+                                        }
+                                    } else {
+                                        echo "<a href='wishlist.php?add=" . $row['book_id'] . "' class='icon'>
+                                                    <i class='far fa-heart'></i>
+                                                </a>";
+                                    }
+                                    ?>
+                                    
                                 </div>
                             </div>
                             </form>
@@ -534,7 +536,7 @@
                         <li class="nav-item" role="presentation">
                             <a href="#review" data-bs-toggle="tab" class="nav-link" aria-selected="false" tabindex="-1"
                                 role="tab">
-                                <h6>reviews (3)</h6>
+                                <h6>reviews</h6>
                             </a>
                         </li>
                     </ul>
@@ -557,7 +559,13 @@
                                             <td class="text-2">
                                                 <?php 
                                                     if($row['format'] == 'For Sale'){
-                                                        if($saleRow['inventory'] > 0){
+                                                        if($formatRow['inventory'] > 0){
+                                                            echo "Available";
+                                                        } else {
+                                                            echo "Out of Stock";
+                                                        }
+                                                    } else if($row['format'] == 'For Borrow'){
+                                                        if($formatRow['inventory'] > 0){
                                                             echo "Available";
                                                         } else {
                                                             echo "Out of Stock";
@@ -605,7 +613,7 @@
                                             <td class="text-2">
                                                 <?php 
                                                     if(isset($saleRow['price'])) {
-                                                        echo number_format($saleRow['price'], 2)." All";
+                                                        echo number_format($formatRow['price'], 2)." All";
                                                     } else {
                                                         echo 'N/A';
                                                     }
@@ -615,19 +623,35 @@
                                     </tbody>
                                 </table>
                             </div>
-                        </div>
+                        </div>   
+                                <?php 
+                                    //getUserid
+                                    if(isset($_SESSION['username'])){
+                                        $q="SELECT image_path FROM users WHERE USERNAME=?";
+                                        $photo_stm=$conn->prepare($q);
+                                        $photo_stm->bind_param("s", $_SESSION['username']);
+                                        $photo_stm->execute();
+                                        $p_res=$photo_stm->get_result();
+                                        
+                                        if($p_res->num_rows==1){
+                                            $user_photo=$p_res->fetch_assoc();
+                                            $photo=$user_photo['image_path'];
+                                        }
+                                    }
+                                ?>
                                  <div id="review" class="tab-pane fade" role="tabpanel">
                                     <div class="review-items">
                                     <?php
                                            $book_id = isset($row['book_id']) ? $row['book_id'] : null;
 
-                                            $reviewQuery = $conn->prepare("
-                                        SELECT r.*, u.username, u.email 
-                                        FROM review r 
-                                        JOIN users u ON r.user_id = u.id 
-                                        WHERE r.book_id = ?
-                                        ORDER BY r.created_at DESC
-                                        ");
+                                           $reviewQuery = $conn->prepare("SELECT r.*, u.username, u.email 
+                                                FROM review r 
+                                                JOIN users u ON r.username = u.username 
+                                                WHERE r.book_id = ?
+                                                ORDER BY r.created_at DESC
+                                            ");
+
+
                                         $reviewQuery->bind_param("i", $book_id);
                                         $reviewQuery->execute();
                                         $reviews = $reviewQuery->get_result();
@@ -636,7 +660,7 @@
                                         ?>
                                         <div class="review-wrap-area d-flex gap-4">
                                         <div class="review-thumb">
-                                            <img src="assets/img/shop-details/review.png" alt="img">
+                                            <img src="../../../uploads/users/<?php echo $photo?>" alt="img" width="50px" height="50px" style="border-radius: 25px;">
                                         </div>
 
                                         <div class="review-content">
@@ -658,10 +682,7 @@
                                     </div>
                                     <?php endwhile; ?>
 
-                                           <?php
-                                        
-                                        echo "Logged in as: " . ($_SESSION['user_id'] ?? 'Not logged in');
-                                        ?>
+
                                     <!-- Review Submission Form -->
                                     <div class="review-title mt-5 py-15 mb-30">
                                       <h4>Submit Your Review</h4>
@@ -686,19 +707,9 @@
                                                 <?php endfor; ?>
                                             </div>
 
-                                            <!-- Optional fallback dropdown -->
-                                            <div class="mb-3">
-                                                <select id="ratingSelect" class="form-select">
-                                                    <option value="">Select Rating (optional)</option>
-                                                    <option value="1">★☆☆☆☆</option>
-                                                    <option value="2">★★☆☆☆</option>
-                                                    <option value="3">★★★☆☆</option>
-                                                    <option value="4">★★★★☆</option>
-                                                    <option value="5">★★★★★</option>
-                                                </select>
-                                            </div>
+                                            
 
-                                            <button type="submit" class="btn btn-primary">Submit Review</button>
+                                            <button type="submit" class="theme-btn style-2" <?php if(!isset($_SESSION['username'])){echo 'disabled';}?>>Submit Review</button>
                                         </form>
 
                                         </div>
@@ -707,291 +718,6 @@
                                 </div>
 
                       </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Top Ratting Book Section Start -->
-    <section class="top-ratting-book-section fix">
-        <div class="container">
-            <div class="section-title text-center">
-                <h2 class="mb-3 wow fadeInUp" data-wow-delay=".3s">Related Products</h2>
-                <p class="wow fadeInUp" data-wow-delay=".5s">
-                    Interdum et malesuada fames ac ante ipsum primis in faucibus. <br> Donec at nulla nulla. Duis
-                    posuere ex lacus
-                </p>
-            </div>
-            <div class="swiper book-slider">
-                <div class="swiper-wrapper">
-                    <div class="swiper-slide">
-                        <div class="shop-box-items style-2">
-                            <div class="book-thumb center">
-                                <a href="shop-details"><img src="../assets/img/book/01.png" alt="img"></a>
-                                <ul class="post-box">
-                                    <li>
-                                        Hot
-                                    </li>
-                                    <li>
-                                        -30%
-                                    </li>
-                                </ul>
-                                <ul class="shop-icon d-grid justify-content-center align-items-center">
-                                    <li>
-                                        <a href="shop-cart.html"><i class="far fa-heart"></i></a>
-                                    </li>
-                                </ul>
-                                <ul class="shop-icon d-grid justify-content-center align-items-center">
-                                    <li>
-                                        <a href="shop-cart.html"><i class="far fa-heart"></i></a>
-                                    </li>
-                                    <li>
-                                        <a href="shop-cart.html">
-
-                                            <img class="icon" src="../assets/img/icon/shuffle.svg" alt="svg-icon">
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a href="shop-details.html"><i class="far fa-eye"></i></a>
-                                    </li>
-                                </ul>
-                            </div>
-                            <div class="shop-content">
-                                <h5> Design Low Book </h5>
-                                <h3><a href="shop-details.html">Simple Things You To <br> Save BOOK</a></h3>
-                                <ul class="price-list">
-                                    <li>$30.00</li>
-                                    <li>
-                                        <del>$39.99</del>
-                                    </li>
-                                </ul>
-                                <ul class="author-post">
-                                    <li class="authot-list">
-                                        <span class="thumb">
-                                            <img src="../assets/img/testimonial/client-1.png" alt="img">
-                                        </span>
-                                        <span class="content">Wilson</span>
-                                    </li>
-
-                                    <li class="star">
-                                        <i class="fa-solid fa-star"></i>
-                                        <i class="fa-solid fa-star"></i>
-                                        <i class="fa-solid fa-star"></i>
-                                        <i class="fa-solid fa-star"></i>
-                                        <i class="fa-regular fa-star"></i>
-                                    </li>
-                                </ul>
-                            </div>
-                            <div class="shop-button">
-                                <a href="shop-details.html" class="theme-btn">Add To Cart</a>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="swiper-slide">
-                        <div class="shop-box-items style-2">
-                            <div class="book-thumb center">
-                                <a href="shop-details"><img src="../assets/img/book/02.png" alt="img"></a>
-                                <ul class="shop-icon d-grid justify-content-center align-items-center">
-                                    <li>
-                                        <a href="shop-cart.html"><i class="far fa-heart"></i></a>
-                                    </li>
-                                    <li>
-                                        <a href="shop-cart.html">
-
-                                            <img class="icon" src="../assets/img/icon/shuffle.svg" alt="svg-icon">
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a href="shop-details.html"><i class="far fa-eye"></i></a>
-                                    </li>
-                                </ul>
-                            </div>
-                            <div class="shop-content">
-                                <h5> Design Low Book </h5>
-                                <h3><a href="shop-details.html">How Deal With Very <br> Bad BOOK</a></h3>
-                                <ul class="price-list">
-                                    <li>$30.00</li>
-                                    <li>
-                                        <del>$39.99</del>
-                                    </li>
-                                </ul>
-                                <ul class="author-post">
-                                    <li class="authot-list">
-                                        <span class="thumb">
-                                            <img src="../assets/img/testimonial/client-2.png" alt="img">
-                                        </span>
-                                        <span class="content">Alexander</span>
-                                    </li>
-
-                                    <li class="star">
-                                        <i class="fa-solid fa-star"></i>
-                                        <i class="fa-solid fa-star"></i>
-                                        <i class="fa-solid fa-star"></i>
-                                        <i class="fa-solid fa-star"></i>
-                                        <i class="fa-regular fa-star"></i>
-                                    </li>
-                                </ul>
-                            </div>
-                            <div class="shop-button">
-                                <a href="shop-details.html" class="theme-btn">Add To Cart</a>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="swiper-slide">
-                        <div class="shop-box-items style-2">
-                            <div class="book-thumb center">
-                                <a href="shop-details"><img src="../assets/img/book/03.png" alt="img"></a>
-                                <ul class="shop-icon d-grid justify-content-center align-items-center">
-                                    <li>
-                                        <a href="shop-cart.html"><i class="far fa-heart"></i></a>
-                                    </li>
-                                    <li>
-                                        <a href="shop-cart.html">
-
-                                            <img class="icon" src="../assets/img/icon/shuffle.svg" alt="svg-icon">
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a href="shop-details.html"><i class="far fa-eye"></i></a>
-                                    </li>
-                                </ul>
-                            </div>
-                            <div class="shop-content">
-                                <h5> Design Low Book </h5>
-                                <h3><a href="shop-details.html">Qple GPad With Retina <br> Sisplay</a></h3>
-                                <ul class="price-list">
-                                    <li>$30.00</li>
-                                    <li>
-                                        <del>$39.99</del>
-                                    </li>
-                                </ul>
-                                <ul class="author-post">
-                                    <li class="authot-list">
-                                        <span class="thumb">
-                                            <img src="../assets/img/testimonial/client-3.png" alt="img">
-                                        </span>
-                                        <span class="content">Esther</span>
-                                    </li>
-
-                                    <li class="star">
-                                        <i class="fa-solid fa-star"></i>
-                                        <i class="fa-solid fa-star"></i>
-                                        <i class="fa-solid fa-star"></i>
-                                        <i class="fa-solid fa-star"></i>
-                                        <i class="fa-regular fa-star"></i>
-                                    </li>
-                                </ul>
-                            </div>
-                            <div class="shop-button">
-                                <a href="shop-details.html" class="theme-btn">Add To Cart</a>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="swiper-slide">
-                        <div class="shop-box-items style-2">
-                            <div class="book-thumb center">
-                                <a href="shop-details"><img src="../assets/img/book/04.png" alt="img"></a>
-                                <ul class="post-box">
-                                    <li>
-                                        Hot
-                                    </li>
-                                </ul>
-                                <ul class="shop-icon d-grid justify-content-center align-items-center">
-                                    <li>
-                                        <a href="shop-cart.html"><i class="far fa-heart"></i></a>
-                                    </li>
-                                    <li>
-                                        <a href="shop-cart.html">
-
-                                            <img class="icon" src="../assets/img/icon/shuffle.svg" alt="svg-icon">
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a href="shop-details.html"><i class="far fa-eye"></i></a>
-                                    </li>
-                                </ul>
-                            </div>
-                            <div class="shop-content">
-                                <h5> Design Low Book </h5>
-                                <h3><a href="shop-details.html">Qple GPad With Retina <br> Sisplay</a></h3>
-                                <ul class="price-list">
-                                    <li>$30.00</li>
-                                    <li>
-                                        <del>$39.99</del>
-                                    </li>
-                                </ul>
-                                <ul class="author-post">
-                                    <li class="authot-list">
-                                        <span class="thumb">
-                                            <img src="../assets/img/testimonial/client-4.png" alt="img">
-                                        </span>
-                                        <span class="content">Hawkins</span>
-                                    </li>
-
-                                    <li class="star">
-                                        <i class="fa-solid fa-star"></i>
-                                        <i class="fa-solid fa-star"></i>
-                                        <i class="fa-solid fa-star"></i>
-                                        <i class="fa-solid fa-star"></i>
-                                        <i class="fa-regular fa-star"></i>
-                                    </li>
-                                </ul>
-                            </div>
-                            <div class="shop-button">
-                                <a href="shop-details.html" class="theme-btn">Add To Cart</a>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="swiper-slide">
-                        <div class="shop-box-items style-2">
-                            <div class="book-thumb center">
-                                <a href="shop-details"><img src="../assets/img/book/05.png" alt="img"></a>
-                                <ul class="shop-icon d-grid justify-content-center align-items-center">
-                                    <li>
-                                        <a href="shop-cart.html"><i class="far fa-heart"></i></a>
-                                    </li>
-                                    <li>
-                                        <a href="shop-cart.html">
-
-                                            <img class="icon" src="../assets/img/icon/shuffle.svg" alt="svg-icon">
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a href="shop-details.html"><i class="far fa-eye"></i></a>
-                                    </li>
-                                </ul>
-                            </div>
-                            <div class="shop-content">
-                                <h5> Design Low Book </h5>
-                                <h3><a href="shop-details.html">Simple Things You To <br> Save BOOK</a></h3>
-                                <ul class="price-list">
-                                    <li>$30.00</li>
-                                    <li>
-                                        <del>$39.99</del>
-                                    </li>
-                                </ul>
-                                <ul class="author-post">
-                                    <li class="authot-list">
-                                        <span class="thumb">
-                                            <img src="../assets/img/testimonial/client-5.png" alt="img">
-                                        </span>
-                                        <span class="content">(Author) Albert</span>
-                                    </li>
-
-                                    <li class="star">
-                                        <i class="fa-solid fa-star"></i>
-                                        <i class="fa-solid fa-star"></i>
-                                        <i class="fa-solid fa-star"></i>
-                                        <i class="fa-solid fa-star"></i>
-                                        <i class="fa-regular fa-star"></i>
-                                    </li>
-                                </ul>
-                            </div>
-                            <div class="shop-button">
-                                <a href="shop-details.html" class="theme-btn">Add To Cart</a>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>

@@ -1,12 +1,34 @@
 <?php
 require_once('../utilities/config.php');
 
-$query = "SELECT * FROM author";
-$result = $conn->query($query); 
+ob_start();
+session_start();
+
+if (!isset($_SESSION['role']) || (strtolower($_SESSION['role']) !== 'admin')) {
+    header("Location: ../client/guest/mainPage.php");
+    exit();
+}
+
+// Pagination setup
+$perPage = 10;
+$page = isset($_GET['page']) && is_numeric($_GET['page']) ? (int)$_GET['page'] : 1;
+$offset = ($page - 1) * $perPage;
+
+// Get total authors count
+$countQuery = "SELECT COUNT(*) as total FROM author";
+$countResult = $conn->query($countQuery);
+$totalAuthors = $countResult->fetch_assoc()['total'];
+$totalPages = ceil($totalAuthors / $perPage);
+
+// Fetch authors for current page
+$query = "SELECT a.* FROM author a LIMIT $perPage OFFSET $offset";
+$result = $conn->query($query);
 
 if (!$result) {
     die("Database query failed: " . $conn->error);
 }
+
+$num_rows = $result->num_rows;
 
 //Update author functionality
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -107,20 +129,36 @@ if (isset($_GET['delete_id'])) {
 <html lang="en">
 <head>
     <title>Author Management | BookNoW Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="https://cdn.jsdelivr.net/npm/boxicons@2.0.7/css/boxicons.min.css" rel="stylesheet"/>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 
 <body>
     <div class="layout-container">
         <?php include('../utilities/menu.php'); ?>
-
         <div class="layout-page">
             <div class="content-wrapper">
-                <?php include('../utilities/navbar.php'); ?>
+                <?php include("../utilities/navbar.php");?>
 
                 <div class="container-xxl flex-grow-1 container-p-y">
                     <h4 class="fw-bold py-3 mb-4">
                         <span class="text-muted fw-light">Admin /</span> Author Management
                     </h4>
+                    <?php 
+                     if(isset($_SESSION['message'])) { ?>
+                        <div id="alertMessage">
+                            <?php
+                            echo $_SESSION['message'];
+                            unset($_SESSION['message']);
+                            ?>
+                        </div>
+                        <script>
+                            setTimeout(function() {
+                                document.getElementById('alertMessage').style.display = 'none';
+                            }, 1500);
+                            </script>
+                        <?php } ?>
                     <div class="card-body">
                         <div class="col mb-12 d-flex justify-content-end">
                             <button class="btn btn-primary" onclick="window.location.href='addAuthor.php'">
@@ -132,6 +170,7 @@ if (isset($_GET['delete_id'])) {
                         <div class="card mb-4">
                             <h5 class="card-header">Author List</h5>
                             <div class="table-responsive text-nowrap" style="max-width: 1150px; margin: 0 auto;">
+                                
                                 <table class="table">
                                     <thead class="table-light">
                                         <tr>
@@ -140,20 +179,18 @@ if (isset($_GET['delete_id'])) {
                                             <th>Nationality</th>
                                             <th>Birth year</th>
                                             <th>Death year</th>
-                                            <th>Bio</th>
+                                            <th>Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <?php
                                         while ($row = $result->fetch_assoc()) {
                                             echo "<tr>";
-                                          
                                             echo "<td>" . $row['author_id'] . "</td>";
                                             echo "<td>" . $row['full_name'] . "</td>";
                                             echo "<td>" . $row['nationality'] . "</td>";
                                             echo "<td>" . $row['birth_year'] . "</td>";
                                             echo "<td>" . (empty($row['death_year']) || $row['death_year'] == '0000' ? '-' : $row['death_year']) . "</td>";
-                                            echo "<td>" . substr($row['bio'], 0, 40) . (strlen($row['bio']) > 40 ? "..." : "") . "</td>";
                                             echo "<td>
                                                <!-- View Button -->
                                                 <button type='button' class='btn rounded-pill btn-icon btn-outline-primary' data-bs-toggle='modal' data-bs-target='#viewAuthorModal{$row['author_id']}' title='View'>
@@ -207,13 +244,13 @@ if (isset($_GET['delete_id'])) {
                                                               <!-- Birth year -->
                                                               <div class='mb-3'>
                                                                   <label for='birth_year' class='form-label'>Birth Year</label>
-                                                                  <input type='text' class='form-control' id='birth_year' name='birth_year' value='" . $row['birth_year'] . "' required />
+                                                                  <input type='number' class='form-control' id='birth_year' name='birth_year' value='" . $row['birth_year'] . "' min='0' max='9999' required />
                                                               </div>
 
                                                               <!-- Death year -->
                                                               <div class='mb-3'>
                                                                   <label for='death_year' class='form-label'>Death Year</label>
-                                                                  <input type='text' class='form-control' id='death_year' name='death_year' value='" . $row['death_year'] . "' />
+                                                                  <input type='number' class='form-control' id='death_year' name='death_year' value='" . ($row['death_year'] ? $row['death_year'] : '') . "' min='0' max='9999' />
                                                               </div>
                                                               
                                                               <!-- Author Image -->
@@ -247,7 +284,7 @@ if (isset($_GET['delete_id'])) {
                                                          <div class='modal-body'>
                                                           <p><strong>Author ID:</strong> " . $row['author_id'] . "</p>
                                                              <p><strong>Full Name:</strong> " . $row['full_name'] . "</p>
-                                                             <p><strong>Bio:</strong> " . $row['bio'] . "</p>
+                                                             <p style='white-space: pre-wrap; word-wrap: break-word;'><strong>Bio:</strong><br>" . nl2br(htmlspecialchars($row['bio']))."</p> 
                                                              <p><strong>Nationality:</strong> " . $row['nationality'] . "</p>
                                                              <p><strong>Birth year:</strong> " . $row['birth_year'] . "</p>
                                                              <p><strong>Death year:</strong> " . ($row['death_year'] == 0000 ? '-' : $row['death_year']). "</p>
@@ -260,12 +297,29 @@ if (isset($_GET['delete_id'])) {
                                     </tbody>
                                 </table>
                             </div>
+                            <!-- Pagination Controls -->
+                            <nav aria-label="Author pagination" class="mt-3">
+                                <ul class="pagination justify-content-center">
+                                    <li class="page-item <?php if($page <= 1) echo 'disabled'; ?>">
+                                        <a class="page-link" href="?page=<?php echo $page-1; ?>" tabindex="-1">Previous</a>
+                                    </li>
+                                    <?php for($i = 1; $i <= $totalPages; $i++): ?>
+                                        <li class="page-item <?php if($i == $page) echo 'active'; ?>">
+                                            <a class="page-link" href="?page=<?php echo $i; ?>"><?php echo $i; ?></a>
+                                        </li>
+                                    <?php endfor; ?>
+                                    <li class="page-item <?php if($page >= $totalPages) echo 'disabled'; ?>">
+                                        <a class="page-link" href="?page=<?php echo $page+1; ?>">Next</a>
+                                    </li>
+                                </ul>
+                            </nav>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
     <script>
   document.getElementById('searchBar').addEventListener("keyup", () => {
     filterTables();
@@ -286,14 +340,5 @@ if (isset($_GET['delete_id'])) {
   
   
 </script>
-  
-    <!-- Scripts -->
-    <script src="../assets/vendor/libs/jquery/jquery.js"></script>
-    <script src="../assets/vendor/libs/popper/popper.js"></script>
-    <script src="../assets/vendor/js/bootstrap.js"></script>
-    <script src="../assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
-    <script src="../assets/vendor/js/menu.js"></script>
-    <script src="../assets/js/main.js"></script>
-    
 </body>
 </html>

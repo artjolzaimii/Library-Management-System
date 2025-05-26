@@ -9,6 +9,34 @@ $book_query->execute();
 $book_result = $book_query->get_result();
 $book = $book_result->fetch_assoc();
 
+$author_result = $conn->query("
+  SELECT a.full_name 
+  FROM author a 
+  INNER JOIN book_author ba ON a.author_id = ba.author_id 
+  WHERE ba.book_id = $book_id
+");
+
+$author_names = [];
+while ($a = $author_result->fetch_assoc()) {
+    $author_names[] = $a['full_name'];
+}
+$authors_combined = implode(", ", $author_names);
+
+
+$genre_result = $conn->query("
+  SELECT g.name 
+  FROM genres g 
+  INNER JOIN book_genre bg ON g.id = bg.genre_id 
+  WHERE bg.book_id = $book_id
+");
+
+$genre_names = [];
+while ($g = $genre_result->fetch_assoc()) {
+    $genre_names[] = $g['name'];
+}
+$genres_combined = implode(", ", $genre_names);
+
+
 $price = $inventory = $condition = $ebook_path = "";
 $format = $book['format'];
 
@@ -68,6 +96,44 @@ if ($format === 'For Sale') {
               <input type="text" class="form-control" name="publisher" value="<?= htmlspecialchars($book['publisher']) ?>">
             </div>
           </div>
+
+          <div class="row mb-3">
+  <div class="col-md-6">
+    <label class="form-label">Author</label>
+    <select name="authors[]" class="form-select" multiple>
+      <?php
+        $author_result = $conn->query("SELECT author_id, full_name FROM author");
+        $book_author_result = $conn->query("SELECT author_id FROM book_author WHERE book_id=$book_id");
+        $book_authors = [];
+        while ($ba = $book_author_result->fetch_assoc()) {
+          $book_authors[] = $ba['author_id'];
+        }
+        while ($a = $author_result->fetch_assoc()) {
+          $selected = in_array($a['author_id'], $book_authors) ? 'selected' : '';
+          echo "<option value='{$a['author_id']}' $selected>".htmlspecialchars($a['full_name'])."</option>";
+        }
+      ?>
+    </select>
+  </div>
+  <div class="col-md-6">
+    <label class="form-label">Genre</label>
+    <select name="genres[]" class="form-select" multiple>
+      <?php
+        $genre_result = $conn->query("SELECT id, name FROM genres");
+        $book_genre_result = $conn->query("SELECT genre_id FROM book_genre WHERE book_id=$book_id");
+        $book_genres = [];
+        while ($bg = $book_genre_result->fetch_assoc()) {
+          $book_genres[] = $bg['genre_id'];
+        }
+        while ($g = $genre_result->fetch_assoc()) {
+          $selected = in_array($g['id'], $book_genres) ? 'selected' : '';
+          echo "<option value='{$g['id']}' $selected>".htmlspecialchars($g['name'])."</option>";
+        }
+      ?>
+    </select>
+  </div>
+</div>
+
 
           <div class="row mb-3">
             <div class="col-md-6">

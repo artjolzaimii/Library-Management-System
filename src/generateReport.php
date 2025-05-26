@@ -1,62 +1,103 @@
 <?php
+session_start();
 require('../utilities/config.php');
-//Delete report
+
+// Delete report using prepared statement
 if (isset($_GET['delete_id'])) {
-  $delete_id = $_GET['delete_id'];
-  $delete_query = "DELETE FROM sales_reports WHERE id = $delete_id";
-  if ($conn->query($delete_query) === TRUE) {
-      header("Location: generateReport.php");
-      exit;
-  }
+    $delete_id = intval($_GET['delete_id']);
+    $delete_stmt = $conn->prepare("DELETE FROM sales_reports WHERE id = ?");
+    $delete_stmt->bind_param("i", $delete_id);
+    if ($delete_stmt->execute()) {
+        header("Location: generateReport.php");
+        exit;
+    } else {
+        echo "Error deleting report: " . $conn->error;
+        exit;
+    }
 }
-// Save report if generateReport=1 is in the URL
-if (isset($_GET['generateReport'])) {
-    // Calculate report data
-    $query = "SELECT SUM(o.quantity) AS total_sold, SUM(o.total_amount) AS total_revenue FROM orders o";
-    $result = mysqli_query($conn, $query);
-    $row = mysqli_fetch_assoc($result);
+
+// Handle report generation via POST
+if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['generateReport'])) {
+    $start_date = filter_var($_POST["start_date"], FILTER_SANITIZE_STRING);
+    $end_date = filter_var($_POST["end_date"], FILTER_SANITIZE_STRING);
+
+    // Validate dates
+    if (!strtotime($start_date) || !strtotime($end_date) || strtotime($end_date) < strtotime($start_date)) {
+        echo "Invalid date range.";
+        exit;
+    }
+
+    // Total books sold and total revenue
+    $query = "
+        SELECT 
+            SUM(ob.quantity) AS total_sold,
+            SUM(ob.quantity * sb.price) AS total_revenue
+        FROM order_book ob
+        JOIN orders o ON ob.order_id = o.order_id
+        JOIN sale_book sb ON ob.book_id = sb.book_id
+        WHERE o.order_date BETWEEN ? AND ?
+    ";
+
+    $stmt = $conn->prepare($query);
+    $stmt->bind_param("ss", $start_date, $end_date);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $row = $result->fetch_assoc();
+
     $total_sold = $row['total_sold'] ?? 0;
     $total_revenue = $row['total_revenue'] ?? 0;
 
-    $query2 = "SELECT b.title, SUM(o.quantity) AS total_qty 
-               FROM orders o 
-               JOIN books b ON o.book_id = b.book_id 
-               GROUP BY o.book_id 
-               ORDER BY total_qty DESC 
-               LIMIT 1";
-    $result2 = mysqli_query($conn, $query2);
-    $most_sold_book = ($result2 && mysqli_num_rows($result2) > 0) ? mysqli_fetch_assoc($result2)['title'] : 'N/A';
+    // Most sold book
+    $query2 = "
+        SELECT 
+            b.title, 
+            SUM(ob.quantity) AS total_qty
+        FROM order_book ob
+        JOIN book b ON ob.book_id = b.book_id
+        JOIN orders o ON ob.order_id = o.order_id
+        WHERE o.order_date BETWEEN ? AND ?
+        GROUP BY ob.book_id
+        ORDER BY total_qty DESC
+        LIMIT 1
+    ";
 
-    // Insert report
-    $insert = "INSERT INTO sales_reports (total_books_sold, most_sold_book, total_revenue) 
-               VALUES ('$total_sold', '$most_sold_book', '$total_revenue')";
-    mysqli_query($conn, $insert);
+    $stmt2 = $conn->prepare($query2);
+    $stmt2->bind_param("ss", $start_date, $end_date);
+    $stmt2->execute();
+    $result2 = $stmt2->get_result();
+    $row2 = $result2->fetch_assoc();
+    $most_sold_book = $row2['title'] ?? "No sales";
 
-    // Redirect to clean the URL
-    header("Location: sales_report.php");
-    exit;
+    // Insert into sales_reports
+    $insert_query = "
+        INSERT INTO sales_reports (report_date, total_books_sold, most_sold_book, total_revenue, start_date, end_date)
+        VALUES (NOW(), ?, ?, ?, ?, ?)
+    ";
+    $stmt3 = $conn->prepare($insert_query);
+    $stmt3->bind_param("isdss", $total_sold, $most_sold_book, $total_revenue, $start_date, $end_date);
+    if ($stmt3->execute()) {
+        header("Location: generateReport.php");
+        exit;
+    } else {
+        echo "Error generating report: " . $conn->error;
+        exit;
+    }
 }
 ?>
 
+<!DOCTYPE html>
 <html lang="en" class="light-style layout-menu-fixed" dir="ltr" data-theme="theme-default" data-assets-path="../assets/" data-template="vertical-menu-template-free">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>Sales Report | BookNoW Admin</title>
-
-  <!-- Favicon -->
   <link rel="icon" type="image/x-icon" href="../assets/img/favicon/favicon.ico">
-
-  <!-- Fonts and Icons -->
   <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../assets/vendor/fonts/boxicons.css">
-
-  <!-- Core CSS -->
   <link rel="stylesheet" href="../assets/vendor/css/core.css">
   <link rel="stylesheet" href="../assets/vendor/css/theme-default.css">
   <link rel="stylesheet" href="../assets/css/demo.css">
   <link rel="stylesheet" href="../assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css">
-
 </head>
 <body>
 <div class="layout-container">
@@ -64,11 +105,10 @@ if (isset($_GET['generateReport'])) {
     <div class="layout-page">
         <div class="content-wrapper">
             <?php include('../utilities/navbar.php'); ?>
-
             <div class="container-xxl flex-grow-1 container-p-y">
-          <h4 class="fw-bold py-3 mb-4">
-            <span class="text-muted fw-light">Admin /</span> Sales Report
-          </h4>
+                <h4 class="fw-bold py-3 mb-4">
+                    <span class="text-muted fw-light">Report Management /</span> Sales Report
+                </h4>
 
                 <!-- Report History -->
                 <div class="card" style="margin-top: 20px;">
@@ -82,9 +122,9 @@ if (isset($_GET['generateReport'])) {
                                 <tr>
                                     <th>#</th>
                                     <th>Date</th>
-                                    <th>Total Sold</th>
+                                    <th>Total Books Sold</th>
                                     <th>Most Sold Book</th>
-                                    <th>Revenue</th>
+                                    <th>Total Revenue</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -92,177 +132,184 @@ if (isset($_GET['generateReport'])) {
                                 <?php
                                 $reportQuery = "SELECT * FROM sales_reports ORDER BY report_date DESC";
                                 $reportResult = mysqli_query($conn, $reportQuery);
+
                                 if ($reportResult && mysqli_num_rows($reportResult) > 0) {
                                     while ($report = mysqli_fetch_assoc($reportResult)) {
                                         echo "<tr>
-                                                <td>{$report['id']}</td>
-                                                <td>{$report['report_date']}</td>
-                                                <td>{$report['total_books_sold']}</td>
-                                                <td>" . ($report['most_sold_book']) . "</td>
-                                                <td>$" . number_format($report['total_revenue'], 2) . "</td>
-                                                <td>
-                                                <button class='btn btn-sm btn-info' data-bs-toggle='modal' data-bs-target='#reportModal{$report['id']}'>View</button>
-                                                <a href='generateReport.php?delete_id={$report['id']}' class='btn btn-sm btn-danger' onclick='return confirm('Are you sure you want to delete this user?');'>Delete</a>
-                                              </td>";
-                                        echo "</tr>";
-
-
-                                        // Modal for each saved report
-                                        echo "
-                                        <div class='modal fade' id='reportModal{$report['id']}' aria-hidden='true'>
-                                          <div class='modal-dialog'>
-                                            <div class='modal-content'>
-                                              <div class='modal-header'>
-                                                <h5 class='modal-title'>Sales Report - {$report['report_date']}</h5>
-                                                <button type='button' class='btn-close' data-bs-dismiss='modal'></button>
-                                              </div>
-                                              <div class='modal-body'>
-                                                <p><strong>Report ID:</strong> {$report['id']}</p>
-                                                <p><strong>Total Books Sold:</strong> {$report['total_books_sold']}</p>
-                                                <p><strong>Most Sold Book:</strong> " . ($report['most_sold_book']) . "</p>
-                                                <p><strong>Total Revenue:</strong> $" . number_format($report['total_revenue'], 2) . "</p>
-                                                <p><strong>From Date:</strong> {$report['start_date']}</p>
-                                                <p><strong>To Date:</strong> {$report['end_date']}</p>
-                                              </div>
-                                              <div class='modal-footer'>
-                                                <button type='button' class='btn btn-secondary' data-bs-dismiss='modal'>Close</button>
-                                              </div>
-                                            </div>
-                                          </div>
-                                        </div>";
+                                            <td>{$report['id']}</td>
+                                            <td>{$report['report_date']}</td>
+                                            <td>{$report['total_books_sold']}</td>
+                                            <td>" . htmlspecialchars($report['most_sold_book']) . "</td>
+                                            <td>$" . number_format($report['total_revenue'], 2) . "</td>
+                                            <td>
+                                                <button class='btn rounded-pill btn-icon btn-outline-primary' data-bs-toggle='modal'
+                                                        data-bs-target='#viewReportModal'
+                                                        data-report-id='{$report['id']}'>
+                                                    <i class='bx bx-show'></i>
+                                                </button>
+                                                <a href='generateReport.php?delete_id={$report['id']}' 
+                                                   class='btn rounded-pill btn-icon btn-outline-primary' 
+                                                   onclick='return confirm(\"Are you sure you want to delete this report?\");'>
+                                                   <i class='bx bx-trash'></i> 
+                                                </a>
+                                            </td>
+                                        </tr>";
                                     }
                                 } else {
-                                    echo "<tr><td colspan='6' class='text-center'>No reports yet</td></tr>";
+                                    echo "<tr><td colspan='6' class='text-center'>No reports available</td></tr>";
                                 }
                                 ?>
                             </tbody>
                         </table>
                     </div>
                 </div>
-
-                <!-- Sales Report Modal -->
-                <div class="modal fade" id="salesReportModal" tabindex="-1" aria-labelledby="salesReportModalLabel" aria-hidden="true">
-                    <div class="modal-dialog modal-lg">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="salesReportModalLabel">Sales Report Summary</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-                                <?php
-                                $total_books_query = "SELECT SUM(quantity) AS total_books FROM orders";
-                                $total_books_result = mysqli_query($conn, $total_books_query);
-                                $total_books = mysqli_fetch_assoc($total_books_result)['total_books'] ?? 0;
-
-                                $revenue_query = "SELECT SUM(total_amount) AS total_revenue FROM orders";
-                                $revenue_result = mysqli_query($conn, $revenue_query);
-                                $total_revenue = mysqli_fetch_assoc($revenue_result)['total_revenue'] ?? 0;
-
-                                $top_book_query = "SELECT b.title, SUM(o.quantity) AS total_sold 
-                                                    FROM orders o
-                                                    JOIN books b ON o.book_id = b.book_id
-                                                    GROUP BY o.book_id 
-                                                    ORDER BY total_sold DESC 
-                                                    LIMIT 1";
-                                $top_book_result = mysqli_query($conn, $top_book_query);
-                                $top_book_row = mysqli_fetch_assoc($top_book_result);
-                                $top_book = $top_book_row['title'] ?? 'N/A';
-                                $top_book_sold = $top_book_row['total_sold'] ?? 0;
-                                ?>
-                                <div class="row">
-                                    <div class="col-md-4">
-                                        <div class="card text-center">
-                                            <div class="card-body">
-                                                <h6 class="card-title">Total Books Sold</h6>
-                                                <p class="card-text fs-4 fw-bold"><?= ($total_books) ?></p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="card text-center">
-                                            <div class="card-body">
-                                                <h6 class="card-title">Total Revenue</h6>
-                                                <p class="card-text fs-4 fw-bold">$<?= number_format($total_revenue, 2) ?></p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="card text-center">
-                                            <div class="card-body">
-                                                <h6 class="card-title">Most Sold Book</h6>
-                                                <p class="card-text fs-5"><?= htmlspecialchars($top_book) ?></p>
-                                                <small><?= htmlspecialchars($top_book_sold) ?> copies sold</small>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </div>
-
         </div>
     </div>
 </div>
 
-  <!-- Scripts -->
-  <script src="../assets/vendor/libs/jquery/jquery.js"></script>
-  <script src="../assets/vendor/libs/popper/popper.js"></script>
-  <script src="../assets/vendor/js/bootstrap.js"></script>
-  <script src="../assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
-  <script src="../assets/vendor/js/menu.js"></script>
-  <script src="../assets/js/main.js"></script>
+<!-- Generate report modal -->
+<div class="modal fade" id="generateReportModal" tabindex="-1" aria-labelledby="generateReportModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <form method="post" action="generateReport.php" class="modal-content" id="generateReportForm">
+      <div class="modal-header">
+        <h5 class="modal-title" id="generateReportModalLabel">Generate Sales Report</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label for="start_date" class="form-label">Start Date</label>
+          <input type="date" class="form-control" name="start_date" id="start_date" required max="<?php echo date('Y-m-d'); ?>">
+        </div>
+        <div class="mb-3">
+          <label for="end_date" class="form-label">End Date</label>
+          <input type="date" class="form-control" name="end_date" id="end_date" required max="<?php echo date('Y-m-d'); ?>">
+        </div>
+        <div id="dateError" class="text-danger" style="display: none;">End date must be after start date</div>
+        <input type="hidden" name="generateReport" value="1">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="submit" class="btn btn-primary">Generate</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- View report modal -->
+<div class="modal fade" id="viewReportModal" tabindex="-1" aria-labelledby="viewReportModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="viewReportModalLabel">Report Details</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div id="reportDetailsContent">
+          <p>Loading report details...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
 <script>
-document.getElementById("generateReportBtn").addEventListener("click", function () {
-    fetch("save_report.php", { method: "POST" })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                const table = document.querySelector("table tbody");
-                const newRow = document.createElement("tr");
-                newRow.innerHTML = `
-                    <td>${data.report.id}</td>
-                    <td>${data.report.report_date}</td>
-                    <td>${data.report.total_books_sold}</td>
-                    <td>${data.report.most_sold_book}</td>
-                    <td>$${parseFloat(data.report.total_revenue).toFixed(2)}</td>
-                    <td><button class='btn btn-sm btn-info' data-bs-toggle='modal' data-bs-target='#reportModal${data.report.id}'>View</button></td>
-                `;
-                table.prepend(newRow);
+document.addEventListener('DOMContentLoaded', function () {
+    // Generate Report Modal
+    const generateReportBtn = document.getElementById('generateReportBtn');
+    const generateReportModal = document.getElementById('generateReportModal');
+    const generateReportForm = document.getElementById('generateReportForm');
 
-                const modalHTML = `
-                <div class='modal fade' id='reportModal${data.report.id}' tabindex='-1' aria-hidden='true'>
-                    <div class='modal-dialog'>
-                        <div class='modal-content'>
-                            <div class='modal-header'>
-                                <h5 class='modal-title'>Sales Report - ${data.report.report_date}</h5>
-                                <button type='button' class='btn-close' data-bs-dismiss='modal'></button>
-                            </div>
-                            <div class='modal-body'>
-                                <p><strong>Total Books Sold:</strong> ${data.report.total_books_sold}</p>
-                                <p><strong>Most Sold Book:</strong> ${data.report.most_sold_book}</p>
-                                <p><strong>Total Revenue:</strong> $${parseFloat(data.report.total_revenue).toFixed(2)}</p>
-                            </div>
-                            <div class='modal-footer'>
-                                <button type='button' class='btn btn-secondary' data-bs-dismiss='modal'>Close</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>`;
-                document.body.insertAdjacentHTML('beforeend', modalHTML);
+    if (generateReportBtn && generateReportModal && generateReportForm) {
+        let modalInstance;
+        try {
+            modalInstance = new bootstrap.Modal(generateReportModal);
+        } catch (error) {
+            console.error('Generate modal initialization failed:', error);
+            return;
+        }
 
-                const reportModal = new bootstrap.Modal(document.getElementById(`reportModal${data.report.id}`));
-                reportModal.show();
+        generateReportBtn.addEventListener('click', function () {
+            // Reset form and error messages
+            generateReportForm.reset();
+            document.getElementById('dateError').style.display = 'none';
+            modalInstance.show();
+        });
+
+        // Date validation
+        generateReportForm.addEventListener('submit', function (event) {
+            const startDate = document.getElementById('start_date').value;
+            const endDate = document.getElementById('end_date').value;
+            const dateError = document.getElementById('dateError');
+
+            if (startDate && endDate && new Date(endDate) < new Date(startDate)) {
+                event.preventDefault();
+                dateError.style.display = 'block';
             } else {
-                alert("Failed to generate report.");
+                dateError.style.display = 'none';
             }
         });
+
+        document.getElementById('start_date').onpaste = e => e.preventDefault();
+        document.getElementById('end_date').onpaste = e => e.preventDefault();
+    } else {
+        console.warn('Generate report elements not found in DOM');
+    }
+
+    // View Report Modal
+    const viewModal = document.getElementById('viewReportModal');
+    const reportDetailsContent = document.getElementById('reportDetailsContent');
+
+    if (viewModal && reportDetailsContent) {
+        let viewModalInstance;
+        try {
+            viewModalInstance = new bootstrap.Modal(viewModal);
+        } catch (error) {
+            console.error('View modal initialization failed:', error);
+            return;
+        }
+
+        viewModal.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+            const reportId = parseInt(button.getAttribute('data-report-id'));
+
+            if (!reportId || isNaN(reportId)) {
+                reportDetailsContent.innerHTML = "<p class='text-danger'>Invalid report ID.</p>";
+                return;
+            }
+
+            reportDetailsContent.innerHTML = "<p>Loading...</p>";
+
+            fetch(`fetchReportDetails.php?report_id=${encodeURIComponent(reportId)}`, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'text/html'
+                }
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.text();
+                })
+                .then(data => {
+                    reportDetailsContent.innerHTML = data;
+                })
+                .catch(err => {
+                    reportDetailsContent.innerHTML = "<p class='text-danger'>Failed to load details. Please try again.</p>";
+                    console.error('Fetch error:', err);
+                });
+        });
+
+        // Reset modal content when hidden
+        viewModal.addEventListener('hidden.bs.modal', function () {
+            reportDetailsContent.innerHTML = "<p>Loading report details...</p>";
+        });
+    } else {
+        console.warn('View report modal elements not found in DOM');
+    }
 });
 </script>
-
 </body>
 </html>

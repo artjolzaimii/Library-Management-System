@@ -1,4 +1,5 @@
 <?php 
+    session_start();
     require_once("../utilities/config.php");
 
     if($_SERVER["REQUEST_METHOD"] == "POST"){
@@ -37,12 +38,9 @@
           $stmt->bind_param("sssiis", $name, $bio, $nationality, $birthYear, $deathYear, $imagePath);
           
             if($stmt->execute()) {
-              echo "<div class='alert alert-success'>Author added successfully!</div>";
-              echo "<script>
-              setTimeout(function() {
-                window.location.href = 'authorManagement.php';
-              }, 2000);
-              </script>";
+              $_SESSION['message'] = "<div class='alert alert-success'>Author added successfully!</div>";
+              header("Location: authorManagement.php");
+              exit();
           } else {
               echo "<div class='alert alert-danger'>Error: " . $stmt->error . "</div>";
           }
@@ -101,14 +99,14 @@
                 <label for="birth_year" class="form-label">Birth Year</label>
                 <div class="input-group">
                   <span class="input-group-text"><i class="bx bx-cake"></i></span>
-                  <input type="number" class="form-control" name="birth_year" id="birth_year" placeholder="Ex: 1936" max="2025" required>
+                  <input type="number" class="form-control" name="birth_year" id="birth_year" placeholder="Ex: 1936" min="1000" max="2025" required>
                 </div>
               </div>
               <div class="col-md-4">
                 <label for="death_year" class="form-label">Death Year</label>
                 <div class="input-group">
                   <span class="input-group-text"><i class="bx bx-calendar"></i></span>
-                  <input type="number" class="form-control" name="death_year" id="death_year" placeholder="Ex: 2024" min="1900" max="2025">
+                  <input type="number" class="form-control" name="death_year" id="death_year" placeholder="Ex: 2024" min="1500" max="2025">
                 </div>
               </div>
             </div>
@@ -117,7 +115,7 @@
                 <label for="bio" class="form-label">Biography</label>
                 <div class="input-group">
                   <span class="input-group-text"><i class="bx bx-detail"></i></span>
-                  <textarea class="form-control" name="bio" id="bio" placeholder="Ex: Born on the 28th of January 1936..." rows="2" maxlength="50" required></textarea>
+                  <textarea class="form-control" name="bio" id="bio" placeholder="Ex: Born on the 28th of January 1936..." rows="2" maxlength="5000" required></textarea>
                 </div>
               </div>
             </div>

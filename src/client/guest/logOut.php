@@ -21,4 +21,7 @@
 
         }
     }
+    else{
+        echo "<script>window.location.href='mainPage.php'</script>";
+    }
 ?>

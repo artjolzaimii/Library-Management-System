@@ -1,5 +1,10 @@
 <?php
-require_once(__DIR__."/../../../utilities/config.php");
+
+ob_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+require_once("../../../utilities/config.php");
 $error = "";
 
 if (empty($_SESSION['token'])) {
@@ -23,7 +28,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['username']) && isset(
             $_SESSION['role'] = $user['role'];
             $_SESSION['token'] = bin2hex(random_bytes(32));
             
-            header("Location: mainPage.php");
+            if($user['role']=='Client'){
+                header("Location: mainPage.php");
+            }
+            else{
+                header("Location: ../../adminDashboard.php");
+            }
+            
             exit();
         } else {
             $error = "Incorrect username or password!";
